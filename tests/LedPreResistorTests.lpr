@@ -6,8 +6,8 @@ program LedPreResistorTests;
 {$mode objfpc}{$H+}
 
 uses
-  Classes, SysUtils, fpcunit, testregistry, testutils,
-  TestESeries, TestColorCode, TestCalc;
+  Classes, SysUtils, fpcunit, testregistry,
+  TestESeries, TestColorCode, TestCalc, TestFormat;
 
 type
   { Gibt jeden Test mit Ergebnis auf der Konsole aus }

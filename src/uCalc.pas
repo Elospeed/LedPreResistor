@@ -19,10 +19,21 @@ const
   { Ab dieser Auslastung gibt es eine Warnung (Beschluss 21.10.2026) }
   LOAD_WARN = 0.5;
 
+  { Bauform, auf die sich Auslastung und Erwärmung in der Anzeige beziehen }
+  RATING_REFERENCE = 0.25;
+
   { Wärmewiderstand einer ¼-W-Bauform in °C/W (Näherung, typisch 200–250).
     Für andere Bauformen wird umgekehrt proportional zur Nennleistung
     skaliert, d. h. bei voller Last wird jede Bauform gleich warm. }
   RTH_QUARTER_WATT = 225.0;
+
+type
+  { Die LED-Farben mit Vorgabewerten (Reihenfolge wie in der Auswahlliste) }
+  TLedColor = (lcRed, lcYellow, lcGreen, lcBlue, lcWhite, lcInfrared);
+
+const
+  { Typische Durchlassspannung je LED-Farbe in V (Datenblatt hat Vorrang) }
+  LED_DEFAULT_UD: array[TLedColor] of Double = (2.0, 2.1, 2.2, 3.2, 3.2, 1.3);
 
 type
   { Eingabewerte, alle in SI-Einheiten }

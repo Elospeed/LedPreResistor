@@ -6,13 +6,15 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Rechenkern `uESeries`, `uColorCode`, `uCalc` mit FPCUnit-Tests (dieser PR)
+- [ ] Hauptfenster nach Entwurf A «Labor 2» mit LED-Vorschau, Rechenweg, Statuszeile und Ko-fi-Link (dieser PR)
 
 ## Als Nächstes
 
-- [ ] Anzeige-Formatierung (z. B. 4,7 kΩ, mA mit 1–2 Stellen, mW) als eigene Unit mit Tests
-- [ ] Hauptfenster nach Entwurf A «Labor 2» mit LED-Vorschau, `uTheme`
-- [ ] Rechenweg-Bereich
+- [ ] Projektseite `site/` (Deutsch/Englisch) mit Screenshots, wie bei StemMaker
+- [ ] LED-Info im Programm (Menü Hilfe)
+- [ ] About-Fenster statt Meldungsfenster
+- [ ] Englische Übersetzung (`src/lang/`, LCLTranslator) und Umschaltung DE | EN
+- [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)
 
 ## Offen (Entscheid von Speedy)
 
