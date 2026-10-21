@@ -33,21 +33,15 @@ object FormMain: TFormMain
       Align = alClient
       OnPaint = PaintStatusPaint
     end
-    object LabelKofi: TLabel
-      Left = 800
+    object PaintKofi: TPaintBox
+      Left = 830
       Height = 26
       Top = 0
-      Width = 100
-      Align = alRight
-      Alignment = taRightJustify
-      AutoSize = False
-      BorderSpacing.Right = 10
-      Caption = '☕ Ko-fi'
+      Width = 70
       Cursor = crHandPoint
-      Layout = tlCenter
-      ParentColor = False
-      ParentFont = False
-      OnClick = LabelKofiClick
+      Align = alRight
+      OnClick = KofiClick
+      OnPaint = PaintKofiPaint
     end
   end
   object PanelRechenweg: TPanel
@@ -376,7 +370,7 @@ object FormMain: TFormMain
       Caption = '&Hilfe'
       object MenuKofi: TMenuItem
         Caption = 'Einen Kaffee spendieren (Ko-fi) …'
-        OnClick = LabelKofiClick
+        OnClick = KofiClick
       end
       object MenuAbout: TMenuItem
         Caption = 'Ü&ber LedPreResistor …'

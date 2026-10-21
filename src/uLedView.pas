@@ -201,6 +201,7 @@ var
   PX, PY, SX, SY: Integer; // Pixel und Unterabtastung
   Acc, C: TRGB;         // Summe der Proben, einzelne Probe
   BackC, LedC, OffC: TRGB; // Grundfarben
+  Desc: TRawImageDescription; // Pixelformat des Bilds
   ImgH: HBITMAP;        // Handles für die Übergabe an TBitmap
   MaskH: HBITMAP;
 
@@ -229,7 +230,10 @@ begin
 
   Img := TLazIntfImage.Create(0, 0);
   try
-    Img.DataDescription := GetDescriptionFromDevice(0, W, H);
+    // 24 Bit ohne Alphakanal: Text, den GDI danach ins Bild schreibt, hätte
+    // sonst Alpha 0 und wäre unter Windows unsichtbar
+    Desc.Init_BPP24_B8G8R8_BIO_TTB(W, H);
+    Img.DataDescription := Desc;
     for PY := 0 to H - 1 do
       for PX := 0 to W - 1 do
       begin
@@ -249,9 +253,10 @@ begin
           Round(Acc.G / (SS * SS) * $FFFF),
           Round(Acc.B / (SS * SS) * $FFFF));
       end;
-    Img.CreateBitmaps(ImgH, MaskH, False);
+    // ohne Maske: sonst zeichnet Windows Teile des Bilds (und die
+    // Beschriftung) durchsichtig
+    Img.CreateBitmaps(ImgH, MaskH, True);
     Bmp.Handle := ImgH;
-    Bmp.MaskHandle := MaskH;
   finally
     Img.Free;
   end;

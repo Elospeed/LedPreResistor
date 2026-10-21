@@ -38,7 +38,7 @@ type
     LabelHeadPreview: TLabel;
     LabelI: TLabel;
     LabelIUnit: TLabel;
-    LabelKofi: TLabel;            // Ko-fi-Link unten rechts
+    PaintKofi: TPaintBox;         // Ko-fi-Link unten rechts (selbst gezeichnet)
     LabelN: TLabel;
     LabelNUnit: TLabel;
     LabelSeries: TLabel;
@@ -82,7 +82,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure InputChange(Sender: TObject);
     procedure LabelBlinkClick(Sender: TObject);
-    procedure LabelKofiClick(Sender: TObject);
+    procedure KofiClick(Sender: TObject);
+    procedure PaintKofiPaint(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure MenuBlinkClick(Sender: TObject);
     procedure MenuCopyClick(Sender: TObject);
@@ -192,6 +193,7 @@ resourcestring
   rsRechenweg = 'Rechenweg';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
+  rsKofi = 'Ko-fi';
   rsStep2 = 'Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**';
   rsStep3 = 'Tatsächlicher Strom: I = %s / %s = **%s**';
   rsStep4 = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
@@ -307,8 +309,10 @@ begin
   LabelBlink.Font.Color := clrText;
   ComboFreq.Color := clrDeep;
   ComboFreq.Font.Color := clrTextBright;
-  LabelKofi.Font.Color := clrWarn;
-  LabelKofi.Font.Name := FONT_UI;
+  // Breite des Ko-fi-Links: Herz + Text + Rand
+  PaintKofi.Canvas.Font.Name := FONT_UI;
+  PaintKofi.Canvas.Font.Size := 9;
+  PaintKofi.Width := Px(28) + PaintKofi.Canvas.TextWidth(rsKofi);
 end;
 
 procedure TFormMain.FillCombos;
@@ -813,7 +817,7 @@ var
   HeadH, LineH: Integer; // Höhe Kopfzeile und Textzeile
   L: TStringArray;       // Schritte
   I, Y: Integer;         // Zähler und Zeile
-  Arrow: string;         // Pfeil auf/zu
+  Mid: Integer;          // Mitte der Kopfzeile
 begin
   C := PaintRechenweg.Canvas;
   R := PaintRechenweg.ClientRect;
@@ -824,10 +828,18 @@ begin
   C.Font.Size := 9;
   C.Font.Style := [];
   HeadH := Px(28);
-  if FRechenwegOpen then Arrow := '▾ ' else Arrow := '▸ ';
+  // kleines Dreieck (auf = nach unten, zu = nach rechts) selbst zeichnen,
+  // nicht jede Schrift hat die Pfeilzeichen
+  C.Brush.Color := clrText;
+  C.Pen.Color := clrText;
+  Mid := R.Top + HeadH div 2;
+  if FRechenwegOpen then
+    C.Polygon([Point(R.Left + Px(10), Mid - Px(3)), Point(R.Left + Px(18), Mid - Px(3)), Point(R.Left + Px(14), Mid + Px(2))])
+  else
+    C.Polygon([Point(R.Left + Px(12), Mid - Px(4)), Point(R.Left + Px(17), Mid), Point(R.Left + Px(12), Mid + Px(4))]);
   C.Brush.Style := bsClear;
   C.Font.Color := clrText;
-  C.TextOut(R.Left + Px(10), R.Top + (HeadH - C.TextHeight('Ag')) div 2, Arrow + rsRechenweg);
+  C.TextOut(R.Left + Px(24), R.Top + (HeadH - C.TextHeight('Ag')) div 2, rsRechenweg);
   if not FRechenwegOpen then Exit;
   C.Line(R.Left, R.Top + HeadH, R.Right, R.Top + HeadH);
 
@@ -873,6 +885,9 @@ var
   Fore, Back: TColor;    // Farben des Kästchens
   Lvl: TLoadLevel;  // Bewertung
   X: Integer;       // laufende Position
+  Sym: Integer;    // Symbol: 0 = Haken, 1 = Warndreieck, 2 = Kreuz
+  IconW: Integer;   // Platz für das Symbol
+  IX, IY: Integer;  // Lage des Symbols
 begin
   C := PaintStatus.Canvas;
   R := PaintStatus.ClientRect;
@@ -886,7 +901,8 @@ begin
   X := R.Left + Px(10);
   if FRes.Status <> csOk then
   begin
-    ChipText := '✕';
+    ChipText := '';
+    Sym := 2;
     Fore := clrError;
     Back := clrErrorBack;
     Txt := StatusText(FRes.Status);
@@ -895,12 +911,12 @@ begin
   begin
     Lvl := LoadLevelOf(FRes.Load);
     case Lvl of
-      llOk: begin Fore := clrOk; Back := clrOkBack; ChipText := '✓ '; end;
-      llWarning: begin Fore := clrWarn; Back := clrWarnBack; ChipText := '⚠ '; end;
+      llOk: begin Fore := clrOk; Back := clrOkBack; Sym := 0; end;
+      llWarning: begin Fore := clrWarn; Back := clrWarnBack; Sym := 1; end;
     else
-      begin Fore := clrError; Back := clrErrorBack; ChipText := '⚠ '; end;
+      begin Fore := clrError; Back := clrErrorBack; Sym := 1; end;
     end;
-    ChipText := ChipText + Format(rsStatusLoad, [FormatPercent(FRes.Load)]);
+    ChipText := Format(rsStatusLoad, [FormatPercent(FRes.Load)]);
     if FRes.RecommendedW = 0 then
       Txt := Format(rsStatusNone, [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
     else if Lvl = llOk then
@@ -910,21 +926,74 @@ begin
         FormatRating(FRes.RecommendedW)]);
     Txt := Txt + '   ·   ' + Format(rsStatusTotal, [FormatPower(FRes.PTotal)]);
   end;
-  // Hinweis-Kästchen
-  Chip := Types.Rect(X, R.Top + Px(4), X + C.TextWidth(ChipText) + Px(12), R.Bottom - Px(3));
+  // Hinweis-Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz)
+  IconW := Px(14);
+  Chip := Types.Rect(X, R.Top + Px(4), X + IconW + C.TextWidth(ChipText) + Px(14), R.Bottom - Px(3));
   C.Brush.Color := Back;
   C.Pen.Color := Fore;
+  C.Pen.Width := 1;
   C.Rectangle(Chip);
+  IX := Chip.Left + Px(5);
+  IY := (Chip.Top + Chip.Bottom) div 2;
+  C.Pen.Width := Max(1, Px(2));
+  case Sym of
+    0: C.PolyLine([Point(IX, IY), Point(IX + Px(3), IY + Px(3)), Point(IX + Px(9), IY - Px(4))]);
+    1: begin
+         C.Brush.Color := Fore;
+         C.Pen.Width := 1;
+         C.Polygon([Point(IX + Px(5), IY - Px(6)), Point(IX + Px(10), IY + Px(5)), Point(IX, IY + Px(5))]);
+         C.Pen.Color := Back;
+         C.Line(IX + Px(5), IY - Px(2), IX + Px(5), IY + Px(2));
+         C.Line(IX + Px(5), IY + Px(3), IX + Px(5), IY + Px(4));
+       end;
+  else
+    begin
+      C.Line(IX, IY - Px(4), IX + Px(8), IY + Px(4));
+      C.Line(IX, IY + Px(4), IX + Px(8), IY - Px(4));
+    end;
+  end;
+  C.Pen.Width := 1;
   C.Brush.Style := bsClear;
   C.Font.Color := Fore;
-  C.TextOut(Chip.Left + Px(6), (Chip.Top + Chip.Bottom - C.TextHeight('Ag')) div 2, ChipText);
+  C.TextOut(Chip.Left + Px(6) + IconW, (Chip.Top + Chip.Bottom - C.TextHeight('Ag')) div 2, ChipText);
   C.Font.Color := clrText;
   C.TextOut(Chip.Right + Px(10), (R.Top + R.Bottom - C.TextHeight('Ag')) div 2, Txt);
 end;
 
-procedure TFormMain.LabelKofiClick(Sender: TObject);
+procedure TFormMain.KofiClick(Sender: TObject);
 begin
   OpenURL(KOFI_URL);
+end;
+
+{ Zeichnet den Ko-fi-Link: Herz als Figur (nicht jede Schrift hat ♥) und
+  den Text daneben, beides in der Warnfarbe wie bei StemMaker. }
+procedure TFormMain.PaintKofiPaint(Sender: TObject);
+var
+  C: TCanvas;     // Zeichenfläche
+  R: TRect;       // Bereich
+  HX, HY: Integer; // Mitte des Herzens
+  D: Integer;     // Durchmesser der Herzbögen
+begin
+  C := PaintKofi.Canvas;
+  R := PaintKofi.ClientRect;
+  C.Brush.Color := clrBar;
+  C.FillRect(R);
+  C.Pen.Color := clrBorder;
+  C.Line(R.Left, R.Top, R.Right, R.Top);
+  // Herz aus zwei Kreisen und einem Dreieck
+  D := Px(5);
+  HX := R.Left + Px(8);
+  HY := (R.Top + R.Bottom) div 2 - Px(1);
+  C.Brush.Color := clrWarn;
+  C.Pen.Color := clrWarn;
+  C.Ellipse(HX - D, HY - D div 2, HX + 1, HY + D div 2 + 1);
+  C.Ellipse(HX, HY - D div 2, HX + D + 1, HY + D div 2 + 1);
+  C.Polygon([Point(HX - D, HY + 1), Point(HX + D, HY + 1), Point(HX, HY + D + Px(1))]);
+  C.Font.Name := FONT_UI;
+  C.Font.Size := 9;
+  C.Font.Color := clrWarn;
+  C.Brush.Style := bsClear;
+  C.TextOut(HX + D + Px(5), (R.Top + R.Bottom - C.TextHeight('Ag')) div 2, rsKofi);
 end;
 
 { ---------- Menü ---------- }
