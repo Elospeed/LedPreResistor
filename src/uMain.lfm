@@ -1,0 +1,29 @@
+object FormMain: TFormMain
+  Left = 200
+  Height = 700
+  Top = 120
+  Width = 960
+  Caption = 'LedPreResistor'
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  object LabelTitel: TLabel
+    Left = 24
+    Height = 32
+    Top = 20
+    Width = 400
+    Caption = 'LedPreResistor · Elospeed 2.0'
+    Font.Height = -24
+    Font.Name = 'Segoe UI'
+    ParentFont = False
+  end
+  object LabelHinweis: TLabel
+    Left = 24
+    Height = 20
+    Top = 64
+    Width = 400
+    Caption = 'In Entwicklung – noch ohne Funktion.'
+    Font.Height = -14
+    Font.Name = 'Segoe UI'
+    ParentFont = False
+  end
+end

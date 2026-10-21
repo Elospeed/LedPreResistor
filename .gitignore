@@ -1,0 +1,17 @@
+# Build-Ergebnisse (Lazarus / Free Pascal) – nie ins Repository
+bin/
+lib/
+backup/
+*.exe
+*.o
+*.ppu
+*.compiled
+*.res
+*.lps
+*.dbg
+ausgabe/
+
+# Sonstiges
+*.zip
+.DS_Store
+Thumbs.db

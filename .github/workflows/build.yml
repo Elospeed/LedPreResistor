@@ -1,0 +1,110 @@
+# Automatischer Windows-Build für LedPreResistor.
+#
+# Was passiert wann:
+# - Jeder Pull Request und jeder Push auf main baut die EXE auf einem
+#   Windows-Rechner von GitHub. Fehler im Quelltext fallen so sofort auf.
+# - Die EXE landet nur als Workflow-Artefakt beim Build-Lauf (privat, nur mit
+#   GitHub-Login, 14 Tage). Testversionen werden NICHT als Vor-Release
+#   veröffentlicht, sondern gehen als ZIP mit Anleitung privat an die Tester.
+# - Sollte es doch einmal Vor-Releases mit Tag "test-..." geben, löscht sie der
+#   Job "aufraeumen" bei jedem Push auf main und beim Schliessen eines PRs.
+#
+# Details: docs/TESTVERSIONEN.md
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+# Schreibrecht auf "contents" braucht es nur, um alte Vor-Releases zu löschen.
+permissions:
+  contents: write
+
+# Pro Branch bzw. PR immer nur ein Lauf; ein neuer Push bricht den alten Lauf ab.
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Lazarus-Version für den Build (FPC 3.2.2 ist dabei)
+  LAZARUS_VERSION: "3.8"
+
+jobs:
+  build:
+    # Beim Schliessen eines PRs wird nicht gebaut, nur aufgeräumt (Job "aufraeumen")
+    if: github.event.action != 'closed'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Lazarus installieren
+        # Fremde Action: auf einen festen Commit gepinnt (= Tag v3.4.1), nicht auf
+        # "v3". Ein Tag kann der Autor jederzeit verschieben, und dieser Job läuft
+        # mit Schreibrecht auf das Repository.
+        uses: gcarreno/setup-lazarus@3ee9d77e0c771b37c1069f218cb68bd5ce7c30fe # v3.4.1
+        with:
+          lazarus-version: ${{ env.LAZARUS_VERSION }}
+          with-cache: false
+
+      - name: EXE bauen
+        run: |
+          set -e
+          # -B = alle Units neu übersetzen (kein alter Stand aus einem Cache)
+          lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
+
+      - name: EXE einsammeln, verkleinern und Prüfsumme bilden
+        run: |
+          set -e
+          mkdir -p ausgabe
+          cp bin/LedPreResistor.exe ausgabe/
+
+          # Debug-Infos entfernen. strip.exe liegt bei FPC dabei.
+          STRIP=$(find /c/lazarus -iname strip.exe 2>/dev/null | head -n 1 || true)
+          if [ -z "$STRIP" ]; then STRIP=$(command -v strip || true); fi
+          if [ -n "$STRIP" ]; then
+            echo "strip: $STRIP"
+            "$STRIP" ausgabe/*.exe
+          else
+            echo "::warning::strip.exe nicht gefunden, EXE bleibt gross"
+          fi
+
+          cd ausgabe
+          sha256sum *.exe > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          ls -l
+
+      - name: EXE als Workflow-Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: LedPreResistor-Win64-${{ github.sha }}
+          path: ausgabe/
+          retention-days: 14
+
+  aufraeumen:
+    # Alte Test-Vor-Releases (Tags "test-...") entfernen: bei jedem Push auf main
+    # und nach dem Schliessen oder Mergen eines PRs. Offizielle Releases (v2.0 usw.)
+    # sind keine Vor-Releases und beginnen nicht mit "test-", bleiben also unberührt.
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test-Vor-Releases löschen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Nur Releases, die Vor-Release sind UND deren Tag mit "test-" beginnt
+          gh release list --repo "$REPO" --limit 200 --json tagName,isPrerelease \
+            --jq '.[] | select(.isPrerelease and (.tagName | startswith("test-"))) | .tagName' |
+          while read -r TAG; do
+            echo "Lösche $TAG"
+            gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
+          done

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>LedPreResistor 2.0 – Designentwurf</title>
+<style>
+body{margin:0}
+a{color:#9CC8FF}a:hover{color:#C8E0FF}
+input{font:inherit}
+ html{background:#05080A} body{display:flex;justify-content:center;padding:24px}</style></head>
+<body>
+
+<div style="width: 960px; height: 700px; box-sizing: border-box; background: #0F1418; color: #E6EBF0; font-family: 'Segoe UI Variable','Segoe UI',system-ui,sans-serif; font-size: 13px; display: flex; flex-direction: column; border: 1px solid #2A333C; border-radius: 10px; overflow: hidden">
+
+  <div style="height: 36px; display: flex; align-items: center; gap: 10px; padding: 0 0 0 14px; background: #0B0F12; border-bottom: 1px solid #222A31">
+    <span style="font-weight: 600; letter-spacing: 0.02em">LedPreResistor</span>
+    <span style="color: #8E99A4">Elospeed · 2.0</span>
+    <div style="flex-grow: 1"></div>
+    <span style="color: #8E99A4; padding-right: 12px">DE | EN</span>
+    <div aria-hidden="true" style="display: flex; color: #8E99A4; font-size: 14px">
+      <span style="width: 46px; text-align: center">–</span>
+      <span style="width: 46px; text-align: center">□</span>
+      <span style="width: 46px; text-align: center">×</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; padding: 18px; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 16px">
+
+    <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 20px 18px; display: flex; flex-direction: column; align-items: center; gap: 18px">
+      <div style="height: 170px; display: flex; align-items: center; justify-content: center">
+        <div aria-hidden="true" style="display: flex; flex-direction: column; align-items: center">
+          <div style="width: 62px; height: 76px; border-radius: 31px 31px 6px 6px; background: #F4F8FF; box-shadow: 0 0 28px 8px rgba(220,235,255,0.55), 0 0 80px 20px rgba(200,225,255,0.16)"></div>
+          <div style="width: 74px; height: 8px; border-radius: 2px; background: #C9D1D9"></div>
+          <div style="display: flex; gap: 22px">
+            <div style="width: 3px; height: 52px; background: #8E99A4"></div>
+            <div style="width: 3px; height: 42px; background: #8E99A4"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px">
+        <button aria-label="Rot" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #FF3B30; border: 1px solid #36414B;"></button><button aria-label="Gelb" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #FFD60A; border: 1px solid #36414B;"></button><button aria-label="Grün" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #30D158; border: 1px solid #36414B;"></button><button aria-label="Blau" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #3B82FF; border: 1px solid #36414B;"></button><button aria-label="Weiss" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #F4F8FF; border: 2px solid #FFFFFF; box-shadow: 0 0 0 3px #3A4651;"></button><button aria-label="Infrarot" style="width: 24px; height: 24px; border-radius: 12px; padding: 0; background: #5A1E2E; border: 1px solid #36414B;"></button>
+      </div>
+      <div style="text-align: center; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 600">Weiss</span>
+        <span style="color: #8E99A4">Vorgabe 3,2 V</span>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <button style="width: 100%; height: 36px; border: 1px solid #36414B; border-radius: 6px; background: transparent; color: #E6EBF0; font: inherit">Manuelle Durchlassspannung</button>
+      <button style="width: 100%; height: 36px; border: 1px solid #36414B; border-radius: 6px; background: transparent; color: #E6EBF0; font: inherit">LED-Info</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; min-width: 0">
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <label for="f-u" style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">Betriebsspannung</label>
+          <div style="display: flex; align-items: baseline; gap: 6px"><input id="f-u" value="12.00" style="width: 100px; background: transparent; border: 0; border-bottom: 1px solid #36414B; color: #FFB547; font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace; font-size: 26px; padding: 0"><span style="color: #8E99A4">V</span></div>
+        </div>
+        <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <label for="f-ud" style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">Durchlass Ud</label>
+          <div style="display: flex; align-items: baseline; gap: 6px"><input id="f-ud" value="3.20" style="width: 100px; background: transparent; border: 0; border-bottom: 1px solid #36414B; color: #FFB547; font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace; font-size: 26px; padding: 0"><span style="color: #8E99A4">V</span></div>
+        </div>
+        <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <label for="f-i" style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">LED-Strom</label>
+          <div style="display: flex; align-items: baseline; gap: 6px"><input id="f-i" value="20.0" style="width: 100px; background: transparent; border: 0; border-bottom: 1px solid #36414B; color: #FFB547; font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace; font-size: 26px; padding: 0"><span style="color: #8E99A4">mA</span></div>
+        </div>
+        <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px">
+          <label for="f-n" style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">LEDs in Reihe</label>
+          <div style="display: flex; align-items: baseline; gap: 6px"><input id="f-n" value="1" style="width: 100px; background: transparent; border: 0; border-bottom: 1px solid #36414B; color: #FFB547; font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace; font-size: 26px; padding: 0"><span style="color: #8E99A4">Stk.</span></div>
+        </div>
+      </div>
+
+      <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; gap: 22px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">Vorwiderstand</span>
+          <span style="font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace; font-size: 54px; line-height: 1; color: #FFFFFF">470 Ω</span>
+          <span style="color: #8E99A4">berechnet 440 Ω → nächster E12-Wert</span>
+        </div>
+        <div style="flex-grow: 1"></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div role="img" aria-label="Farbringe gelb, violett, braun, gold" style="display: flex; align-items: center">
+            <div style="width: 22px; height: 2px; background: #8E99A4"></div>
+            <div style="width: 104px; height: 32px; border-radius: 12px; background: #D9C59C; display: flex; gap: 8px; padding: 0 12px; box-sizing: border-box">
+              <div style="width: 8px; background: #F2C200"></div>
+              <div style="width: 8px; background: #7A3EB1"></div>
+              <div style="width: 8px; background: #7B4A2A"></div>
+              <div style="flex-grow: 1"></div>
+              <div style="width: 8px; background: #C9A23A"></div>
+            </div>
+            <div style="width: 22px; height: 2px; background: #8E99A4"></div>
+          </div>
+          <div style="display: flex; gap: 4px; background: #0F1418; border-radius: 6px; padding: 3px">
+            <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 4px; background: #2B3640; color: #FFFFFF; font: inherit; font-weight: 600">E12</button>
+            <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 4px; background: transparent; color: #8E99A4; font: inherit">E24</button>
+            <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 4px; background: transparent; color: #8E99A4; font: inherit">E96</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #161D23; border: 1px solid #222A31; border-radius: 10px; padding: 12px 20px 8px; display: flex; flex-direction: column; gap: 4px">
+        <span style="color: #8E99A4; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase">Schaltung</span>
+        <div role="img" aria-label="Schaltplan: 12 V Quelle, Vorwiderstand 470 Ohm, weisse LED, Strom 18,7 mA" style="position: relative; height: 196px; font-family: 'Cascadia Mono',Consolas,ui-monospace,monospace">
+          <div style="position: absolute; left: 109px; top: 50px; width: 2px; height: 46px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 88px; top: 96px; width: 44px; height: 3px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 98px; top: 112px; width: 24px; height: 6px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 109px; top: 118px; width: 2px; height: 54px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 138px; top: 80px; color: #8E99A4">+</div>
+          <div style="position: absolute; left: 0px; top: 92px; width: 76px; text-align: right; font-size: 17px; color: #FFB547">12 V</div>
+
+          <div style="position: absolute; left: 110px; top: 49px; width: 110px; height: 2px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 220px; top: 37px; width: 100px; height: 26px; box-sizing: border-box; border: 2px solid #C9D1D9; border-radius: 3px; background: #0F1418; display: flex; gap: 6px; padding: 0 12px">
+            <div style="width: 6px; background: #F2C200"></div>
+            <div style="width: 6px; background: #7A3EB1"></div>
+            <div style="width: 6px; background: #7B4A2A"></div>
+            <div style="flex-grow: 1"></div>
+            <div style="width: 6px; background: #C9A23A"></div>
+          </div>
+          <div style="position: absolute; left: 200px; top: 6px; width: 140px; text-align: center; font-size: 17px; color: #FFFFFF">470 Ω</div>
+          <div style="position: absolute; left: 180px; top: 72px; width: 180px; text-align: center; color: #8E99A4; line-height: 1.5">8,80 V · 165 mW</div>
+          <div style="position: absolute; left: 320px; top: 49px; width: 90px; height: 2px; background: #C9D1D9"></div>
+
+          <svg aria-hidden="true" width="60" height="56" viewBox="0 0 60 56" style="position: absolute; left: 410px; top: 14px">
+            <path d="M0 36 H16 M42 36 H60" stroke="#C9D1D9" stroke-width="2"></path>
+            <path d="M16 22 L16 50 L42 36 Z" fill="#0F1418" stroke="#C9D1D9" stroke-width="2" stroke-linejoin="round"></path>
+            <path d="M42 22 V50" stroke="#C9D1D9" stroke-width="2"></path>
+            <path d="M32 16 L42 6 M37 6 H42 V11" fill="none" stroke="#F4F8FF" stroke-width="1.5"></path>
+            <path d="M41 20 L51 10 M46 10 H51 V15" fill="none" stroke="#F4F8FF" stroke-width="1.5"></path>
+          </svg>
+          <div style="position: absolute; left: 380px; top: 76px; width: 120px; text-align: center; color: #8E99A4; line-height: 1.5">Ud 3,20 V</div>
+
+          <div style="position: absolute; left: 470px; top: 49px; width: 110px; height: 2px; background: #C9D1D9"></div>
+          <div style="position: absolute; left: 579px; top: 50px; width: 2px; height: 123px; background: #C9D1D9"></div>
+          <svg aria-hidden="true" width="14" height="12" viewBox="0 0 14 12" style="position: absolute; left: 573px; top: 104px"><path d="M0 0 H14 L7 12 Z" fill="#FFB547"></path></svg>
+          <div style="position: absolute; left: 594px; top: 98px; font-size: 17px; color: #FFB547; white-space: nowrap">18,7 mA</div>
+          <div style="position: absolute; left: 110px; top: 171px; width: 471px; height: 2px; background: #C9D1D9"></div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div style="flex-grow: 1; display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: 8px; border: 1px solid #5C4313; background: #251C0B; color: #FFCF7A">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 L15 14 H1 Z" fill="none" stroke="#FFCF7A" stroke-width="1.5" stroke-linejoin="round"></path><path d="M8 6.5 V10" stroke="#FFCF7A" stroke-width="1.5"></path><circle cx="8" cy="12" r="0.8" fill="#FFCF7A"></circle></svg>
+          <span>¼ W zu 66 % ausgelastet – ½ W verwenden · total 225 mW</span>
+        </div>
+        <button style="height: 38px; padding: 0 14px; border: 1px solid #36414B; border-radius: 6px; background: transparent; color: #E6EBF0; font: inherit">Resultat kopieren</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>
