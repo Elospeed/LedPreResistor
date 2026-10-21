@@ -19,4 +19,3 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 - [ ] Programmname: bleibt «LedPreResistor»?
 - [ ] LED-Info: Seite im Programm oder neue PDF?
-- [ ] Testversionen: öffentlich als Vor-Release (wie Skill und Spezifikation) oder nur als Artefakt wie bei StemMaker seit 13.10.2026?

@@ -3,12 +3,11 @@
 # Was passiert wann:
 # - Jeder Pull Request und jeder Push auf main baut die EXE auf einem
 #   Windows-Rechner von GitHub. Fehler im Quelltext fallen so sofort auf.
-# - Die fertige EXE kommt als Vor-Release (Pre-release) mit festem Tag:
-#     test-main         = Stand von main
-#     test-pr-<Nummer>  = Stand eines PRs (nur PRs aus diesem Repository)
-#     test-<Branch>     = Workflow von Hand gestartet
-#   Vorher wird das alte Vor-Release samt Tag gelöscht, der Link bleibt gleich.
-# - Beim Schliessen oder Mergen eines PRs löscht der Job "aufraeumen" test-pr-<Nummer>.
+# - Die EXE landet nur als Workflow-Artefakt beim Build-Lauf (privat, nur mit
+#   GitHub-Login, 14 Tage). Testversionen werden NICHT als Vor-Release
+#   veröffentlicht, sondern gehen als ZIP mit Anleitung privat an die Tester.
+# - Sollte es doch einmal Vor-Releases mit Tag "test-..." geben, löscht sie der
+#   Job "aufraeumen" bei jedem Push auf main und beim Schliessen eines PRs.
 #
 # Details: docs/TESTVERSIONEN.md
 
@@ -21,7 +20,7 @@ on:
     types: [opened, synchronize, reopened, closed]
   workflow_dispatch:
 
-# Schreibrecht auf "contents" braucht es für die Vor-Releases (GITHUB_TOKEN reicht).
+# Schreibrecht auf "contents" braucht es nur, um alte Vor-Releases zu löschen.
 permissions:
   contents: write
 
@@ -83,54 +82,29 @@ jobs:
           cat SHA256SUMS.txt
           ls -l
 
-      - name: EXE als Workflow-Artefakt ablegen (Reserve, nur mit Login)
+      - name: EXE als Workflow-Artefakt ablegen
         uses: actions/upload-artifact@v4
         with:
           name: LedPreResistor-Win64-${{ github.sha }}
           path: ausgabe/
           retention-days: 14
 
-      - name: Testversion als Vor-Release veröffentlichen
-        # PRs aus fremden Forks bekommen kein Schreibrecht, dort nur das Artefakt.
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          EVENT: ${{ github.event_name }}
-          PR_NR: ${{ github.event.pull_request.number }}
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          set -e
-          # Tag je nach Anlass bestimmen
-          if [ "$EVENT" = "pull_request" ]; then
-            TAG="test-pr-$PR_NR"; WAS="Pull Request #$PR_NR"
-          elif [ "$EVENT" = "push" ]; then
-            TAG="test-main"; WAS="Stand von main"
-          else
-            # Branch-Namen wie "elospeed/xyz" taugen nicht als Teil eines Tags
-            TAG="test-$(echo "$BRANCH" | tr '/' '-')"; WAS="Branch $BRANCH"
-          fi
-          echo "Tag: $TAG"
-
-          # Altes Vor-Release samt Tag löschen (Fehler = gab es noch nicht)
-          gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
-
-          NOTES="Automatische Testversion ($WAS), Commit ${GITHUB_SHA::7}. Nicht für den normalen Gebrauch. Prüfsummen: SHA256SUMS.txt"
-          gh release create "$TAG" ausgabe/LedPreResistor.exe ausgabe/SHA256SUMS.txt \
-            --repo "$REPO" --target "$GITHUB_SHA" \
-            --title "Testversion $TAG" --notes "$NOTES" \
-            --prerelease --latest=false
-
-          echo "Download: https://github.com/$REPO/releases/download/$TAG/LedPreResistor.exe"
-
   aufraeumen:
-    # Vor-Release eines PRs löschen, sobald der PR geschlossen oder gemergt ist.
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    # Alte Test-Vor-Releases (Tags "test-...") entfernen: bei jedem Push auf main
+    # und nach dem Schliessen oder Mergen eines PRs. Offizielle Releases (v2.0 usw.)
+    # sind keine Vor-Releases und beginnen nicht mit "test-", bleiben also unberührt.
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
-      - name: test-pr-<Nummer> löschen
+      - name: Test-Vor-Releases löschen
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          TAG: test-pr-${{ github.event.pull_request.number }}
-        run: gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
+        run: |
+          # Nur Releases, die Vor-Release sind UND deren Tag mit "test-" beginnt
+          gh release list --repo "$REPO" --limit 200 --json tagName,isPrerelease \
+            --jq '.[] | select(.isPrerelease and (.tagName | startswith("test-"))) | .tagName' |
+          while read -r TAG; do
+            echo "Lösche $TAG"
+            gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
+          done

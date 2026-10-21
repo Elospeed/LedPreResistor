@@ -161,7 +161,7 @@ Das Repo folgt der üblichen Elospeed-Struktur, Arbeitsname `Elospeed/LedPreResi
 - `CHANGELOG.md`, `ROADMAP.md`, `TODO.md` im Root
 - `docs/ENTWICKLUNGSLOG.md`, `docs/IDEEN.md`, `docs/TESTVERSIONEN.md`
 - `src/` mit den Units oben, `src/lang/` für DE/EN
-- `.github/workflows/build.yml`: Build mit Lazarus 3.8 auf `windows-latest`, `strip`, `SHA256SUMS.txt`, Testversionen als Vor-Release (`test-main`, `test-pr-<Nr>`)
+- `.github/workflows/build.yml`: Build mit Lazarus 3.8 auf `windows-latest`, `strip`, `SHA256SUMS.txt`, Testversionen nur als Workflow-Artefakt (keine Vor-Releases, wie bei StemMaker)
 - Keine EXE im Repository; Downloads nur über Releases
 - Altversion: Delphi-Quellcode als Referenz unter `docs/legacy/` (ohne EXE, DCU, RES-Binärdateien)
 - Commits als Elospeed, Kommentare im Code auf Deutsch, jede Funktion dokumentiert
@@ -188,4 +188,4 @@ Das Repo folgt der üblichen Elospeed-Struktur, Arbeitsname `Elospeed/LedPreResi
 - [ ] LED-Zeichnung und Schaltplan-Zeichnung umsetzen
 - [ ] Rechenweg-Bereich
 - [ ] About-Fenster und Sprachumschaltung DE/EN
-- [ ] Erste Testversion bauen, unter Wine starten, Download-Link an Speedy
+- [ ] Erste Testversion bauen, unter Wine starten, als ZIP mit Anleitung an Speedy
