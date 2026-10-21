@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Die Leuchtdiode</title>
+<!-- LED-Info für LedPreResistor. Wird als Ressource in die EXE eingebunden
+     und beim Öffnen im Standard-Browser angezeigt. Ohne Webschriften,
+     damit die Seite auch offline gleich aussieht. -->
+<style>
+/* Layout: Laborbank. Schmale Lesespalte, Messwerte in Mono, das Spektrum als einziges Farbelement. */
+:root {
+  --bg: #111417;
+  --panel: #181d21;
+  --line: #2a3238;
+  --fg: #e3e7e9;
+  --muted: #98a3aa;
+  --accent: #ffb347;          /* Bernstein: Anzeige-LED */
+  --accent-ink: #1a1206;
+  --ok: #5fd39a;
+  --warn: #ffb347;
+  --bad: #ff6b5e;
+  --led: #ffb347;             /* aktuelle LED-Farbe, per Script gesetzt */
+  --f-display: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Segoe UI", system-ui, sans-serif;
+  --f-mono: Consolas, "Courier New", monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f5f6; --panel: #ffffff; --line: #d5dbdf; --fg: #15191c; --muted: #58646c;
+    --accent: #b86400; --accent-ink: #ffffff; --ok: #1d8a57; --warn: #b86400; --bad: #c4362a;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f3f5f6; --panel: #ffffff; --line: #d5dbdf; --fg: #15191c; --muted: #58646c;
+  --accent: #b86400; --accent-ink: #ffffff; --ok: #1d8a57; --warn: #b86400; --bad: #c4362a;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 17px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 980px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--f-display); line-height: 1.1; text-wrap: balance; margin: 0; }
+h2 { font-size: clamp(1.7rem, 3.4vw, 2.2rem); font-weight: 700; letter-spacing: .01em; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+p { margin: 0; max-width: 66ch; }
+a { color: var(--accent); }
+.eyebrow { font-family: var(--f-mono); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.mono, code { font-family: var(--f-mono); font-size: .9em; font-variant-numeric: tabular-nums; }
+sub { font-size: .7em; }
+
+/* Kopf */
+header.hero { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px; align-items: center; padding-block: 56px 40px; border-bottom: 1px solid var(--line); }
+.hero h1 { font-size: clamp(2.8rem, 8vw, 5.2rem); font-weight: 700; letter-spacing: -.01em; }
+.hero .lead { font-size: 1.15rem; color: var(--muted); margin-top: 16px; }
+.hero .meta { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.ledfig { display: flex; justify-content: center; }
+.ledfig svg { width: 100%; max-width: 300px; height: auto; overflow: visible; }
+.glow { transition: fill .5s; }
+@media (prefers-reduced-motion: no-preference) {
+  .pulse { animation: pulse 3.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
+}
+
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 20px; }
+nav.toc a { font-family: var(--f-mono); font-size: .8rem; text-decoration: none; color: var(--fg); border: 1px solid var(--line); padding: 5px 11px; border-radius: 3px; }
+nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+section { padding-block: 48px 8px; display: grid; gap: 18px; scroll-margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 32px; }
+.cols > * { min-width: 0; display: grid; gap: 10px; align-content: start; }
+
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; color: var(--fg); max-width: 66ch; }
+.note.bad { border-color: var(--bad); }
+.note strong { font-family: var(--f-display); font-size: 1.05rem; letter-spacing: .02em; }
+
+/* Spektrum */
+.spectrum { position: relative; margin-top: 8px; }
+.band { height: 34px; border-radius: 3px; background:
+  linear-gradient(90deg,
+    #2b1840 0%, #5a1e8c 6%,               /* UV */
+    #6b00d6 9%, #2a3cff 17%, #0094ff 22%, #00d0c8 27%, #00e05a 32%, #7ee000 38%,
+    #ffe100 44%, #ffa200 48%, #ff4a1a 53%, #d6001c 60%, #7a0010 68%,
+    #3a0d12 74%, #24161a 100%);            /* IR */
+}
+.ticks { position: relative; height: 22px; font-family: var(--f-mono); font-size: .7rem; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); top: 4px; white-space: nowrap; }
+.zones { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: .7rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--f-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
+td.num { font-family: var(--f-mono); font-size: .9rem; white-space: nowrap; }
+.dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; vertical-align: -1px; box-shadow: 0 0 10px 1px currentColor; }
+.caption { font-size: .88rem; color: var(--muted); }
+
+/* Formeln */
+.formulas { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.formulas div { background: var(--panel); padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.formulas .f { font-family: var(--f-mono); font-size: 1.05rem; color: var(--accent); }
+.formulas .d { font-size: .9rem; color: var(--muted); }
+
+/* Rechner */
+.calc { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); overflow: hidden; }
+.inputs { padding: 20px; display: grid; gap: 14px; align-content: start; border-right: 1px solid var(--line); }
+.inputs label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+.inputs input, .inputs select { font-family: var(--f-mono); font-size: 1rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 8px 10px; width: 100%; }
+.inputs input:focus-visible, .inputs select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.unitrow { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.unitrow span { font-family: var(--f-mono); color: var(--muted); width: 2.4em; }
+.result { padding: 20px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.readout { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+.readout div { display: grid; }
+.readout .v { font-family: var(--f-mono); font-size: 1.7rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.readout .k { font-size: .78rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; font-family: var(--f-mono); }
+.status { font-family: var(--f-mono); font-size: .85rem; padding: 8px 12px; border-radius: 3px; border: 1px solid currentColor; }
+.status.ok { color: var(--ok); } .status.warn { color: var(--warn); } .status.bad { color: var(--bad); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 2em minmax(0, 1fr); gap: 4px 10px; padding: 10px 0; border-top: 1px dashed var(--line); }
+.steps li::before { content: counter(s); font-family: var(--f-mono); color: var(--accent); font-size: .85rem; padding-top: 2px; }
+.steps .t { font-size: .92rem; }
+.steps .m { grid-column: 2; font-family: var(--f-mono); font-size: .88rem; color: var(--muted); overflow-wrap: anywhere; }
+.steps .m b { color: var(--fg); font-weight: 600; }
+details summary { cursor: pointer; font-family: var(--f-display); font-weight: 600; font-size: 1.1rem; }
+details summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Polarität */
+.pol { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; }
+.pol figure { margin: 0; border: 1px solid var(--line); border-radius: 4px; padding: 16px; background: var(--panel); display: grid; gap: 10px; justify-items: center; }
+.pol svg { width: 100%; max-width: 180px; height: auto; }
+.pol figcaption { font-size: .9rem; color: var(--muted); text-align: center; }
+
+/* Zeitleiste */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.timeline li { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.timeline .y { font-family: var(--f-mono); color: var(--accent); font-weight: 600; }
+
+.check { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; max-width: 70ch; }
+.check li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; }
+.check li::before { content: ""; width: 14px; height: 14px; margin-top: 5px; border: 1.5px solid var(--accent); border-radius: 2px; }
+
+dl.gloss { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 20px; margin: 0; }
+dl.gloss dt { font-family: var(--f-mono); color: var(--accent); }
+dl.gloss dd { margin: 0; }
+
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 720px) {
+  header.hero { grid-template-columns: 1fr; padding-block: 32px 28px; }
+  .ledfig svg { max-width: 190px; }
+  .calc { grid-template-columns: 1fr; }
+  .inputs { border-right: 0; border-bottom: 1px solid var(--line); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <div>
+    <div class="eyebrow">LedPreResistor · Info</div>
+    <h1>Die Leuchtdiode</h1>
+    <p class="lead">Wie eine LED funktioniert, welche Spannung sie braucht und wie man den Vorwiderstand richtig berechnet. Für Hobbyisten geschrieben, mit Werten auf dem Stand von 2026.</p>
+    <div class="meta">
+      <span class="eyebrow">Autor: Speedy</span>
+      <span class="eyebrow">Neufassung 2026 (Original 2004)</span>
+    </div>
+  </div>
+  <div class="ledfig" aria-hidden="true">
+    <svg viewBox="0 0 200 260">
+      <defs>
+        <radialGradient id="halo" cx="50%" cy="38%" r="50%">
+          <stop offset="0%" stop-color="var(--led)" stop-opacity=".55"/>
+          <stop offset="60%" stop-color="var(--led)" stop-opacity=".08"/>
+          <stop offset="100%" stop-color="var(--led)" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle class="pulse" cx="100" cy="72" r="98" fill="url(#halo)"/>
+      <!-- Gehäuse: Kuppel + Kragen, Abflachung rechts = Kathode -->
+      <path class="glow" d="M62 118 V72 a38 38 0 0 1 76 0 V118 Z" fill="var(--led)" fill-opacity=".35" stroke="var(--led)" stroke-width="2"/>
+      <path d="M56 118 H138 V128 H56 Z" fill="var(--led)" fill-opacity=".45" stroke="var(--led)" stroke-width="2"/>
+      <line x1="138" y1="114" x2="138" y2="132" stroke="var(--bg)" stroke-width="5"/>
+      <!-- Elektroden innen -->
+      <path d="M84 118 V92 h8 v26" fill="none" stroke="var(--fg)" stroke-opacity=".7" stroke-width="2"/>
+      <path d="M108 118 V86 l10 -6 v38" fill="var(--fg)" fill-opacity=".25" stroke="var(--fg)" stroke-opacity=".7" stroke-width="2"/>
+      <!-- Beine: Anode länger -->
+      <line x1="86" y1="128" x2="86" y2="248" stroke="var(--muted)" stroke-width="3"/>
+      <line x1="114" y1="128" x2="114" y2="222" stroke="var(--muted)" stroke-width="3"/>
+      <text x="78" y="246" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">A +</text>
+      <text x="122" y="220" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--muted)">K −</text>
+    </svg>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Inhalt">
+  <a href="#funktion">Funktion</a>
+  <a href="#farben">Farben &amp; Spannungen</a>
+  <a href="#weiss">Weisse LED</a>
+  <a href="#polaritaet">Polarität</a>
+  <a href="#berechnung">Vorwiderstand</a>
+  <a href="#rechner">Rechner</a>
+  <a href="#mehrere">Mehrere LEDs</a>
+  <a href="#konstantstrom">Konstantstrom</a>
+  <a href="#waerme">Wärme &amp; Lebensdauer</a>
+  <a href="#geschichte">Entwicklung</a>
+  <a href="#tipps">Praxistipps</a>
+</nav>
+
+<section id="funktion">
+  <div class="eyebrow">Grundlagen</div>
+  <h2>So entsteht das Licht</h2>
+  <div class="cols">
+    <div>
+      <p>Eine LED (Light Emitting Diode) ist eine Halbleiterdiode, die in Durchlassrichtung betrieben wird. Legt man Plus an die Anode und Minus an die Kathode, wandern Elektronen aus der N-Schicht und Löcher aus der P-Schicht in die Sperrschicht. Dort rekombinieren sie und geben Energie als Licht ab.</p>
+      <p>Die Farbe hängt vom Halbleitermaterial ab, genauer von seinem Bandabstand E<sub>g</sub>. Je grösser der Bandabstand, desto kürzer die Wellenlänge und desto höher die Durchlassspannung. Darum braucht eine blaue LED rund 3 V, eine rote nur rund 2 V.</p>
+    </div>
+    <div>
+      <div class="formulas" style="grid-template-columns:1fr">
+        <div><span class="f">λ [nm] ≈ 1240 / E<sub>g</sub> [eV]</span><span class="d">Wellenlänge aus dem Bandabstand. Beispiel: E<sub>g</sub> = 2,0 eV ergibt rund 620 nm, also Rot.</span></div>
+        <div><span class="f">U<sub>F</sub> ≳ E<sub>g</sub> / e</span><span class="d">Die Durchlassspannung liegt etwa beim Bandabstand in Volt, plus Verluste im Chip.</span></div>
+      </div>
+      <p class="caption">Heute dominieren zwei Materialsysteme: AlInGaP für Rot, Orange und Gelb, InGaN für UV, Blau, Grün und (mit Leuchtstoff) Weiss. Infrarot-LEDs (IRED) basieren auf GaAs bzw. AlGaAs.</p>
+    </div>
+  </div>
+  <p class="note"><strong>Wichtig:</strong> Eine LED hat fast keinen eigenen Widerstand. Oberhalb der Durchlassspannung steigt der Strom sehr steil an. Ohne Strombegrenzung (Vorwiderstand oder Konstantstromquelle) brennt sie in Sekunden durch.</p>
+</section>
+
+<section id="farben">
+  <div class="eyebrow">Farben &amp; Durchlassspannungen</div>
+  <h2>Von UV bis Infrarot</h2>
+  <p>Die Farbe einer einfarbigen LED wird als dominante Wellenlänge in Nanometern angegeben. Die Durchlassspannung U<sub>F</sub> steht im Datenblatt, meist bei 20 mA gemessen. Die Werte unten sind typische Richtwerte für Standard-LEDs (3 mm, 5 mm, SMD).</p>
+  <div class="spectrum" aria-hidden="true">
+    <div class="zones"><span>UV</span><span>sichtbares Licht</span><span>IR</span></div>
+    <div class="band"></div>
+    <div class="ticks">
+      <span style="left:6%">365</span><span style="left:17%">450</span><span style="left:32%">525</span><span style="left:44%">590</span><span style="left:56%">630</span><span style="left:85%">850</span><span style="left:96%">940 nm</span>
+    </div>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>Farbe</th><th>Wellenlänge</th><th>Material</th><th>U<sub>F</sub> typisch</th><th>U<sub>F</sub> Bereich</th></tr></thead>
+      <tbody>
+        <tr><td><span class="dot" style="color:#7a3cff;background:#7a3cff"></span>UV</td><td class="num">365–405 nm</td><td>InGaN</td><td class="num">3,3 V</td><td class="num">3,0–4,0 V</td></tr>
+        <tr><td><span class="dot" style="color:#2f6bff;background:#2f6bff"></span>Blau</td><td class="num">460–470 nm</td><td>InGaN</td><td class="num">3,1 V</td><td class="num">2,8–3,4 V</td></tr>
+        <tr><td><span class="dot" style="color:#20d07a;background:#20d07a"></span>Echtgrün</td><td class="num">520–530 nm</td><td>InGaN</td><td class="num">3,1 V</td><td class="num">2,8–3,4 V</td></tr>
+        <tr><td><span class="dot" style="color:#9be22a;background:#9be22a"></span>Gelbgrün</td><td class="num">565–575 nm</td><td>GaP, AlInGaP</td><td class="num">2,1 V</td><td class="num">1,9–2,4 V</td></tr>
+        <tr><td><span class="dot" style="color:#ffcf1f;background:#ffcf1f"></span>Gelb</td><td class="num">585–595 nm</td><td>AlInGaP</td><td class="num">2,0 V</td><td class="num">1,9–2,4 V</td></tr>
+        <tr><td><span class="dot" style="color:#ff8a1a;background:#ff8a1a"></span>Orange</td><td class="num">600–610 nm</td><td>AlInGaP</td><td class="num">2,0 V</td><td class="num">1,9–2,3 V</td></tr>
+        <tr><td><span class="dot" style="color:#ff3b2a;background:#ff3b2a"></span>Rot</td><td class="num">620–635 nm</td><td>AlInGaP</td><td class="num">2,0 V</td><td class="num">1,8–2,3 V</td></tr>
+        <tr><td><span class="dot" style="color:#f4f1e8;background:#f4f1e8"></span>Weiss</td><td class="num">2700–6500 K</td><td>InGaN + Leuchtstoff</td><td class="num">3,1 V</td><td class="num">2,8–3,4 V</td></tr>
+        <tr><td><span class="dot" style="color:#6a2a2a;background:#6a2a2a"></span>Infrarot</td><td class="num">850 / 940 nm</td><td>GaAs, AlGaAs</td><td class="num">1,3 V</td><td class="num">1,2–1,6 V</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="caption">Zwischen Grün und Gelb (etwa 540–590 nm) sind LEDs bis heute deutlich weniger effizient als bei Blau oder Rot. Diese Lücke heisst «Green Gap». Im Zweifel gilt immer das Datenblatt der konkreten LED.</p>
+  <p class="note bad"><strong>UV und IR:</strong> Beide Strahlungsarten sind für das Auge kaum oder gar nicht sichtbar, können es aber schädigen. Nie direkt hineinschauen, auch wenn «nichts leuchtet». IR-LEDs lassen sich mit einer Handykamera prüfen.</p>
+</section>
+
+<section id="weiss">
+  <div class="eyebrow">Weisslicht</div>
+  <h2>Wie eine weisse LED entsteht</h2>
+  <div class="cols">
+    <div>
+      <h3>Blau plus Leuchtstoff</h3>
+      <p>Fast alle weissen LEDs sind heute blaue InGaN-LEDs mit einer Leuchtstoffschicht (meist YAG:Ce). Der Leuchtstoff wandelt einen Teil des blauen Lichts in Gelb und Rot um. Zusammen ergibt das Weiss. Über die Menge und Art des Leuchtstoffs wird der Farbton eingestellt.</p>
+    </div>
+    <div>
+      <h3>RGB-Mischung</h3>
+      <p>Alternativ sitzen ein roter, ein grüner und ein blauer Chip im selben Gehäuse. Durch getrennte Ansteuerung lässt sich jede Farbe mischen. Adressierbare RGB-LEDs (z. B. WS2812) haben den Treiber gleich eingebaut und werden über eine Datenleitung gesteuert, sie brauchen keinen Vorwiderstand.</p>
+    </div>
+    <div>
+      <h3>Farbtemperatur und Farbwiedergabe</h3>
+      <p><span class="mono">2700–3000 K</span> warmweiss, <span class="mono">4000 K</span> neutralweiss, <span class="mono">5000–6500 K</span> kaltweiss. Der Farbwiedergabeindex CRI (R<sub>a</sub>) sagt, wie natürlich Farben wirken: ab 80 gut, ab 90 sehr gut.</p>
+    </div>
+  </div>
+</section>
+
+<section id="polaritaet">
+  <div class="eyebrow">Anschluss</div>
+  <h2>Polarität erkennen</h2>
+  <p>Eine LED leuchtet nur in Durchlassrichtung. Falsch herum gepolt passiert meist nichts, solange die Sperrspannung (typisch nur 5 V) nicht überschritten wird. Merkhilfe: <strong>Kathode = kurz = Kante</strong>.</p>
+  <div class="pol">
+    <figure>
+      <svg viewBox="0 0 180 150" aria-label="Bedrahtete LED">
+        <path d="M60 80 V44 a30 30 0 0 1 60 0 V80 Z" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <path d="M54 80 H126 V88 H54 Z" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="126" y1="76" x2="126" y2="92" stroke="var(--bg)" stroke-width="4"/>
+        <line x1="78" y1="88" x2="78" y2="146" stroke="var(--muted)" stroke-width="3"/>
+        <line x1="102" y1="88" x2="102" y2="126" stroke="var(--muted)" stroke-width="3"/>
+        <text x="70" y="142" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">Anode</text>
+        <text x="110" y="122" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">Kathode</text>
+        <text x="136" y="70" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--muted)">Kante</text>
+      </svg>
+      <figcaption>Bedrahtet: Anode ist das längere Bein. Die Kathode liegt an der abgeflachten Seite des Kragens.</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 180 150" aria-label="Schaltzeichen">
+        <line x1="10" y1="75" x2="70" y2="75" stroke="var(--fg)" stroke-width="2"/>
+        <path d="M70 50 L110 75 L70 100 Z" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <line x1="110" y1="50" x2="110" y2="100" stroke="var(--fg)" stroke-width="3"/>
+        <line x1="110" y1="75" x2="170" y2="75" stroke="var(--fg)" stroke-width="2"/>
+        <path d="M92 44 l14 -16 M100 30 l6 -2 -1 6 M104 52 l14 -16 M112 38 l6 -2 -1 6" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text x="20" y="118" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">A +</text>
+        <text x="138" y="118" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">K −</text>
+      </svg>
+      <figcaption>Schaltzeichen: Das Dreieck zeigt in Stromrichtung, der Balken ist die Kathode.</figcaption>
+    </figure>
+    <figure>
+      <svg viewBox="0 0 180 150" aria-label="SMD-LED">
+        <rect x="40" y="45" width="100" height="60" rx="4" fill="none" stroke="var(--fg)" stroke-width="2"/>
+        <rect x="40" y="45" width="18" height="60" fill="var(--muted)" fill-opacity=".35"/>
+        <rect x="122" y="45" width="18" height="60" fill="var(--muted)" fill-opacity=".35"/>
+        <path d="M66 52 h14 l-14 14 Z" fill="var(--ok)"/>
+        <circle cx="90" cy="75" r="14" fill="var(--led)" fill-opacity=".5"/>
+        <text x="49" y="128" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">K</text>
+        <text x="131" y="128" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="var(--accent)">A</text>
+      </svg>
+      <figcaption>SMD: Eine Markierung (Ecke, Punkt, Kerbe) zeigt meist die Kathode. Hersteller unterscheiden sich, also Datenblatt prüfen.</figcaption>
+    </figure>
+  </div>
+  <p class="caption">Sicher geht es mit dem Multimeter im Diodentest: Leuchtet die LED schwach oder zeigt das Gerät eine Spannung, liegt die rote Messspitze an der Anode. Die grössere Elektrode im Inneren ist oft, aber nicht immer die Kathode.</p>
+  <p class="note"><strong>Wechselspannung:</strong> Weil die Sperrspannung so klein ist, braucht eine LED an Wechselspannung Schutz: eine Diode (z. B. 1N4148) antiparallel zur LED oder in Reihe, oder zwei LEDs antiparallel. An Netzspannung (230 V) keine Bastellösungen, sondern fertige, zugelassene Treiber verwenden.</p>
+</section>
+
+<section id="berechnung">
+  <div class="eyebrow">Berechnung</div>
+  <h2>Den Vorwiderstand berechnen</h2>
+  <p>Der Vorwiderstand nimmt die Spannung auf, die die LED nicht braucht, und legt damit den Strom fest. Die Rechnung ist einfach. Wichtig ist, danach auf den nächsten Normwert <em>aufzurunden</em> und die Leistung des Widerstands zu prüfen.</p>
+  <div class="formulas">
+    <div><span class="f">U<sub>R</sub> = U − n · U<sub>F</sub></span><span class="d">Spannung am Widerstand (n = Anzahl LEDs in Reihe)</span></div>
+    <div><span class="f">R = U<sub>R</sub> / I<sub>F</sub></span><span class="d">Vorwiderstand in Ω, Strom in A</span></div>
+    <div><span class="f">I = U<sub>R</sub> / R<sub>E12</sub></span><span class="d">tatsächlicher Strom mit dem Normwert</span></div>
+    <div><span class="f">P<sub>R</sub> = U<sub>R</sub> · I</span><span class="d">Verlustleistung am Widerstand</span></div>
+    <div><span class="f">P<sub>ges</sub> = U · I</span><span class="d">Leistung der ganzen Schaltung</span></div>
+    <div><span class="f">η = n · U<sub>F</sub> / U</span><span class="d">Anteil, der bei der LED ankommt</span></div>
+  </div>
+  <div class="cols">
+    <div>
+      <h3>Welcher Strom?</h3>
+      <p>Standard-LEDs (3 mm, 5 mm) sind meist für maximal 20 mA spezifiziert. Moderne LEDs sind aber so effizient, dass für eine Anzeige oft 2–10 mA reichen. Weniger Strom heisst weniger Wärme, längere Lebensdauer und längere Batterielaufzeit.</p>
+    </div>
+    <div>
+      <h3>Wie viel Watt?</h3>
+      <p>Ein Widerstand sollte dauerhaft höchstens mit der Hälfte seiner Nennleistung belastet werden. LedPreResistor warnt darum ab 50 % Belastung. Als Richtwert erwärmt sich ein ¼-W-Widerstand um etwa 200–250 °C pro Watt über die Umgebung. LedPreResistor rechnet mit 225 °C/W, grössere Bauformen entsprechend weniger (½ W etwa die Hälfte).</p>
+    </div>
+  </div>
+</section>
+
+<section id="rechner">
+  <div class="eyebrow">Ausprobieren</div>
+  <h2>Rechner mit Rechenweg</h2>
+  <p>Die Werte sind mit dem Beispiel aus LedPreResistor vorbelegt: 12 V, eine weisse LED mit 3,2 V und 20 mA. Ändere die Werte und verfolge jeden Rechenschritt.</p>
+  <div class="calc">
+    <form class="inputs" id="calcForm" autocomplete="off">
+      <label for="inU">Versorgungsspannung U
+        <span class="unitrow"><input id="inU" type="number" step="0.1" min="0" value="12"><span>V</span></span>
+      </label>
+      <label for="inType">LED-Typ
+        <select id="inType">
+          <option value="1.3|#b04040">Infrarot (1,3 V)</option>
+          <option value="2.0|#ff3b2a">Rot (2,0 V)</option>
+          <option value="2.0|#ff8a1a">Orange (2,0 V)</option>
+          <option value="2.0|#ffcf1f">Gelb (2,0 V)</option>
+          <option value="2.1|#9be22a">Gelbgrün (2,1 V)</option>
+          <option value="3.1|#20d07a">Echtgrün (3,1 V)</option>
+          <option value="3.1|#2f6bff">Blau (3,1 V)</option>
+          <option value="3.2|#f4f1e8" selected>Weiss (3,2 V)</option>
+          <option value="3.3|#7a3cff">UV (3,3 V)</option>
+        </select>
+      </label>
+      <label for="inUf">Durchlassspannung U<sub>F</sub>
+        <span class="unitrow"><input id="inUf" type="number" step="0.05" min="0" value="3.2"><span>V</span></span>
+      </label>
+      <label for="inI">LED-Strom I<sub>F</sub>
+        <span class="unitrow"><input id="inI" type="number" step="1" min="0" value="20"><span>mA</span></span>
+      </label>
+      <label for="inN">LEDs in Reihe n
+        <span class="unitrow"><input id="inN" type="number" step="1" min="1" value="1"><span>Stk</span></span>
+      </label>
+    </form>
+    <div class="result" aria-live="polite">
+      <div class="readout">
+        <div><span class="k">Widerstand E12</span><span class="v" id="oR">470 Ω</span></div>
+        <div><span class="k">Strom</span><span class="v" id="oI">18,72 mA</span></div>
+        <div><span class="k">Leistung</span><span class="v" id="oP">164,8 mW</span></div>
+        <div><span class="k">Bauform</span><span class="v" id="oW">½ W</span></div>
+      </div>
+      <div class="status warn" id="oStatus">¼ W wäre zu 66 % belastet. ½ W empfohlen.</div>
+      <details open>
+        <summary>Rechenweg</summary>
+        <ol class="steps" id="steps"></ol>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="mehrere">
+  <div class="eyebrow">Schaltungen</div>
+  <h2>Mehrere LEDs</h2>
+  <div class="cols">
+    <div>
+      <h3>In Reihe: die bessere Wahl</h3>
+      <p>Bei einer Reihenschaltung fliesst durch alle LEDs derselbe Strom. Die Durchlassspannungen addieren sich, ein gemeinsamer Vorwiderstand genügt. Lass am Widerstand mindestens 1–2 V Reserve, sonst schwankt der Strom stark, wenn die Versorgung oder die Temperatur sich ändert.</p>
+      <p class="mono">12 V: 3 × weiss (9,6 V) + 2,4 V am Widerstand</p>
+    </div>
+    <div>
+      <h3>Parallel: jede LED mit eigenem Widerstand</h3>
+      <p>Auch LEDs aus derselben Charge haben leicht unterschiedliche Durchlassspannungen. Zudem sinkt U<sub>F</sub> mit steigender Temperatur (etwa −2 mV/K). Hängen mehrere LEDs an einem gemeinsamen Widerstand, zieht die «schwächste» den meisten Strom, wird wärmer, zieht noch mehr und fällt zuerst aus.</p>
+    </div>
+  </div>
+</section>
+
+<section id="konstantstrom">
+  <div class="eyebrow">Alternativen zum Widerstand</div>
+  <h2>Konstantstrom und Dimmen</h2>
+  <div class="cols">
+    <div>
+      <h3>Wann Konstantstrom?</h3>
+      <p>Ein Vorwiderstand ist ideal bei fester Spannung und kleinen Strömen. Schwankt die Versorgung (Batterie, Auto mit 12–14,4 V) oder geht es um Power-LEDs ab etwa 350 mA, ist eine Konstantstromquelle besser.</p>
+      <p>Klassiker: der LM317 als Stromquelle mit <span class="mono">R = 1,25 V / I</span>. Für 20 mA ergibt das 62 Ω. Er braucht etwa 3 V Spannungsreserve und arbeitet zuverlässig ab rund 10 mA.</p>
+    </div>
+    <div>
+      <h3>Power-LEDs</h3>
+      <p>Für 1-W- und 3-W-LEDs und LED-Streifen mit hoher Leistung nimmt man fertige Schaltregler-Treiber (Buck-Treiber). Sie arbeiten mit über 90 % Wirkungsgrad, während ein Widerstand die Differenzspannung einfach in Wärme umsetzt. Power-LEDs brauchen immer einen Kühlkörper.</p>
+    </div>
+    <div>
+      <h3>Dimmen mit PWM</h3>
+      <p>LEDs dimmt man am besten mit Pulsweitenmodulation: Die LED wird sehr schnell ein- und ausgeschaltet, die Farbe bleibt dabei gleich. Damit kein Flimmern sichtbar ist (auch nicht auf Kameras), sollte die Frequenz bei mindestens 1 kHz liegen.</p>
+    </div>
+  </div>
+  <p class="note"><strong>Im Auto:</strong> Die Bordspannung beträgt beim Laden bis 14,4 V. Rechne den Vorwiderstand mit diesem Wert, sonst fliesst bei laufendem Motor zu viel Strom.</p>
+</section>
+
+<section id="waerme">
+  <div class="eyebrow">Betrieb</div>
+  <h2>Wärme und Lebensdauer</h2>
+  <div class="cols">
+    <div>
+      <p>LEDs werden nicht durch Abnutzen einer Glühwendel alt, sondern durch Wärme. Je heisser die Sperrschicht, desto schneller sinkt die Helligkeit. Hersteller geben die Lebensdauer meist als L70 an: die Zeit, bis die LED noch 70 % ihrer ursprünglichen Helligkeit hat. Typisch sind 25 000–50 000 Stunden.</p>
+    </div>
+    <div>
+      <p>Moderne weisse LEDs erreichen 150–220 lm/W, im Labor über 300 lm/W. Zum Vergleich: Eine Glühbirne schafft etwa 12 lm/W, eine Leuchtstoffröhre 60–100 lm/W. Trotzdem wird ein grosser Teil der Leistung zu Wärme, die abgeführt werden muss.</p>
+    </div>
+  </div>
+  <p class="note bad"><strong>Elektrostatik:</strong> Blaue, weisse, grüne und UV-LEDs (InGaN) sind empfindlich gegen elektrostatische Entladung. Vor dem Anfassen kurz einen geerdeten Gegenstand berühren.</p>
+</section>
+
+<section id="geschichte">
+  <div class="eyebrow">Geschichte</div>
+  <h2>Entwicklung der LED</h2>
+  <p>Seit den 1960er-Jahren hat sich der Lichtstrom pro LED etwa alle zehn Jahre um den Faktor 20 erhöht, während der Preis pro Lumen auf ein Zehntel fiel. Diese Faustregel heisst Haitz'sches Gesetz.</p>
+  <ol class="timeline">
+    <li><span class="y">1962</span><span>Nick Holonyak baut die erste LED mit sichtbarem, rotem Licht (GaAsP). Effizienz rund 0,1 lm/W.</span></li>
+    <li><span class="y">1972</span><span>George Craford entwickelt gelbe LEDs und steigert die Helligkeit roter LEDs deutlich.</span></li>
+    <li><span class="y">1990er</span><span>AlInGaP bringt helle rote, orange und gelbe LEDs, die erstmals in Ampeln und Rückleuchten taugen.</span></li>
+    <li><span class="y">1993</span><span>Shuji Nakamura stellt die erste helle blaue LED aus InGaN vor.</span></li>
+    <li><span class="y">1996</span><span>Erste weisse LED: blauer Chip mit gelbem Leuchtstoff.</span></li>
+    <li><span class="y">2014</span><span>Nobelpreis für Physik an Akasaki, Amano und Nakamura für die blaue LED.</span></li>
+    <li><span class="y">heute</span><span>Weisse LEDs mit 150–220 lm/W sind Standard. Glühbirnen sind in der EU und der Schweiz weitgehend verboten.</span></li>
+  </ol>
+</section>
+
+<section id="tipps">
+  <div class="eyebrow">Für die Werkbank</div>
+  <h2>Praxistipps</h2>
+  <ul class="check">
+    <li><span>Nie eine LED direkt an eine Spannungsquelle hängen. Immer Vorwiderstand oder Konstantstromquelle.</span></li>
+    <li><span>Vorwiderstand auf den nächsten E12-Wert <strong>aufrunden</strong>. Abrunden erhöht den Strom.</span></li>
+    <li><span>Verlustleistung prüfen und den Widerstand höchstens zu 50 % belasten.</span></li>
+    <li><span>Zuerst mit wenig Strom (5–10 mA) testen. Oft ist das hell genug.</span></li>
+    <li><span>U<sub>F</sub> und maximalen Strom im Datenblatt nachsehen, die Tabelle oben gibt nur Richtwerte.</span></li>
+    <li><span>Beim Löten kurz und nicht zu heiss arbeiten (max. etwa 3 s bei 260 °C), Beine nicht direkt am Gehäuse biegen.</span></li>
+    <li><span>Parallel geschaltete LEDs bekommen je einen eigenen Widerstand.</span></li>
+    <li><span>Bei Batterie- oder Autobetrieb mit der höchsten möglichen Spannung rechnen.</span></li>
+  </ul>
+</section>
+
+<section id="formelzeichen">
+  <div class="eyebrow">Formelzeichen</div>
+  <h2>Abkürzungen</h2>
+  <dl class="gloss">
+    <dt>U</dt><dd>Versorgungsspannung (Batterie, Netzteil)</dd>
+    <dt>U<sub>F</sub></dt><dd>Durchlassspannung der LED (Flussspannung, englisch forward voltage)</dd>
+    <dt>U<sub>R</sub></dt><dd>Spannung am Vorwiderstand</dd>
+    <dt>I<sub>F</sub></dt><dd>Strom durch die LED</dd>
+    <dt>R</dt><dd>Vorwiderstand in Ohm (Ω)</dd>
+    <dt>P<sub>R</sub></dt><dd>Verlustleistung am Widerstand</dd>
+    <dt>P<sub>ges</sub></dt><dd>Gesamtleistung der Schaltung</dd>
+    <dt>n</dt><dd>Anzahl LEDs in Reihe</dd>
+    <dt>η</dt><dd>Wirkungsgrad der Beschaltung (Eta)</dd>
+  </dl>
+</section>
+
+<footer>
+  <span>LedPreResistor 2.0 · Info zur Leuchtdiode</span>
+  <span>Alle Werte sind Richtwerte. Massgebend ist das Datenblatt.</span>
+</footer>
+</div>
+
+<script>
+(function () {
+  var E12 = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2];
+  var RATINGS = [[0.125, "⅛ W"], [0.25, "¼ W"], [0.5, "½ W"], [1, "1 W"], [2, "2 W"], [5, "5 W"]];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function fmt(x, d) { return x.toFixed(d).replace(".", ","); }
+  function ohm(r) {
+    if (r >= 1e6) return fmt(r / 1e6, r % 1e6 ? 1 : 0) + " MΩ";
+    if (r >= 1e3) return fmt(r / 1e3, r % 1e3 ? 1 : 0) + " kΩ";
+    return fmt(r, r % 1 ? 1 : 0) + " Ω";
+  }
+  function e12Up(r) {
+    var dec = Math.pow(10, Math.floor(Math.log10(r)));
+    for (var k = 0; k < 2; k++) {
+      for (var i = 0; i < E12.length; i++) {
+        var v = Math.round(E12[i] * dec * 1000) / 1000;
+        if (v >= r - 1e-9) return v;
+      }
+      dec *= 10;
+    }
+    return r;
+  }
+
+  function step(t, m) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="t">' + t + '</span><span class="m">' + m + '</span>';
+    $("steps").appendChild(li);
+  }
+
+  function calc() {
+    var U = parseFloat($("inU").value), Uf = parseFloat($("inUf").value);
+    var ImA = parseFloat($("inI").value), n = Math.max(1, Math.round(parseFloat($("inN").value) || 1));
+    var st = $("oStatus");
+    $("steps").innerHTML = "";
+    if (!(U > 0) || !(Uf > 0) || !(ImA > 0)) {
+      st.className = "status bad"; st.textContent = "Bitte alle Werte grösser als 0 eingeben.";
+      ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
+      return;
+    }
+    var I = ImA / 1000, Uled = n * Uf, Ur = U - Uled;
+    step("Spannung, die die LED" + (n > 1 ? "s" : "") + " brauchen",
+      "n · U<sub>F</sub> = " + n + " × " + fmt(Uf, 2) + " V = <b>" + fmt(Uled, 2) + " V</b>");
+    if (Ur <= 0) {
+      st.className = "status bad";
+      st.textContent = "Die Versorgung reicht nicht: Sie muss grösser sein als " + fmt(Uled, 2) + " V.";
+      ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
+      step("Spannung am Widerstand", "U<sub>R</sub> = " + fmt(U, 2) + " V − " + fmt(Uled, 2) + " V = <b>" + fmt(Ur, 2) + " V</b>, also zu wenig.");
+      return;
+    }
+    var Rid = Ur / I, R = e12Up(Rid), Ireal = Ur / R, P = Ur * Ireal, Pges = U * Ireal, eta = Uled / U;
+    var quarter = P / 0.25, pick = RATINGS[RATINGS.length - 1];
+    for (var i = 0; i < RATINGS.length; i++) { if (P <= RATINGS[i][0] * 0.5) { pick = RATINGS[i]; break; } }
+    var dT4 = P * 225, dTpick = P * 225 * 0.25 / pick[0];
+
+    step("Spannung am Widerstand", "U<sub>R</sub> = U − n · U<sub>F</sub> = " + fmt(U, 2) + " V − " + fmt(Uled, 2) + " V = <b>" + fmt(Ur, 2) + " V</b>");
+    step("Idealer Widerstand", "R = U<sub>R</sub> / I<sub>F</sub> = " + fmt(Ur, 2) + " V / " + fmt(I, 3) + " A = <b>" + ohm(Math.round(Rid * 10) / 10) + "</b>");
+    step("Nächster E12-Wert aufwärts (Strom wird etwas kleiner, also sicherer)", "<b>" + ohm(R) + "</b>");
+    step("Tatsächlicher Strom", "I = U<sub>R</sub> / R = " + fmt(Ur, 2) + " V / " + ohm(R) + " = <b>" + fmt(Ireal * 1000, 2) + " mA</b>");
+    step("Leistung am Widerstand", "P<sub>R</sub> = U<sub>R</sub> · I = " + fmt(Ur, 2) + " V × " + fmt(Ireal * 1000, 2) + " mA = <b>" + fmt(P * 1000, 1) + " mW</b>");
+    step("Belastung prüfen (Grenze 50 %)", "¼ W: " + fmt(quarter * 100, 0) + " % → empfohlen <b>" + pick[1] + "</b> (" + fmt(P / pick[0] * 100, 0) + " % belastet)");
+    step("Erwärmung (Richtwert 225 °C/W bei ¼ W, umgekehrt zur Nennleistung skaliert)", "¼ W: " + fmt(P, 4) + " W × 225 °C/W ≈ " + fmt(dT4, 0) + " °C; " + pick[1] + ": " + fmt(225 * 0.25 / pick[0], 1) + " °C/W ≈ <b>" + fmt(dTpick, 0) + " °C</b> über Umgebung");
+    step("Gesamtleistung und Wirkungsgrad", "P<sub>ges</sub> = U · I = <b>" + fmt(Pges * 1000, 1) + " mW</b>, η = " + fmt(Uled, 2) + " V / " + fmt(U, 2) + " V = <b>" + fmt(eta * 100, 0) + " %</b>");
+
+    $("oR").textContent = ohm(R);
+    $("oI").textContent = fmt(Ireal * 1000, 2) + " mA";
+    $("oP").textContent = fmt(P * 1000, 1) + " mW";
+    $("oW").textContent = pick[1];
+    if (quarter <= 0.5) {
+      st.className = "status ok";
+      st.textContent = "¼ W ist zu " + fmt(quarter * 100, 0) + " % belastet. Passt, Erwärmung ca. " + fmt(dT4, 0) + " °C.";
+    } else {
+      st.className = "status warn";
+      st.textContent = "¼ W wäre zu " + fmt(quarter * 100, 0) + " % belastet (ca. " + fmt(dT4, 0) + " °C). " + pick[1] + " empfohlen (ca. " + fmt(dTpick, 0) + " °C).";
+    }
+    if (Ur < 1) {
+      st.className = "status warn";
+      st.textContent += " Achtung: Nur " + fmt(Ur, 2) + " V Reserve am Widerstand, der Strom wird stark schwanken.";
+    }
+  }
+
+  $("inType").addEventListener("change", function () {
+    var p = this.value.split("|");
+    $("inUf").value = p[0];
+    document.documentElement.style.setProperty("--led", p[1]);
+    calc();
+  });
+  ["inU", "inUf", "inI", "inN"].forEach(function (id) { $(id).addEventListener("input", calc); });
+  $("calcForm").addEventListener("submit", function (e) { e.preventDefault(); });
+  document.documentElement.style.setProperty("--led", "#ffb347");
+  calc();
+})();
+</script>
+</body>
+</html>

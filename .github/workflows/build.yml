@@ -60,6 +60,11 @@ jobs:
           set -e
           # -B = alle Units neu übersetzen (kein alter Stand aus einem Cache)
           lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
+          # LED-Info muss als Ressource in der EXE stecken
+          if ! grep -q "<title>Die Leuchtdiode</title>" bin/LedPreResistor.exe; then
+            echo "::error::LED-Info (Ressource LEDINFO) fehlt in der EXE"
+            exit 1
+          fi
 
       - name: Tests der Rechenlogik bauen und ausführen
         run: |

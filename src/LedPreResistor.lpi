@@ -14,6 +14,9 @@
       <Icon Value="0"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
+      <Resources Count="1">
+        <Resource_0 FileName="info/led-info.html" Type="RCDATA" ResourceName="LEDINFO"/>
+      </Resources>
       <UseXPManifest Value="True"/>
       <XPManifest>
         <DpiAware Value="True"/>
@@ -76,6 +79,10 @@
       </Unit>
       <Unit>
         <Filename Value="uLedView.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uLedInfo.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

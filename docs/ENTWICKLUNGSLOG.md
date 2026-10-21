@@ -8,6 +8,16 @@ Neueste Einträge oben.
 
 ---
 
+## LED-Info (Oktober 2026)
+
+| Problem | Lösung |
+|---|---|
+| Die LCL hat keine HTML-Anzeige; eine Zusatzkomponente (z. B. IPro) wollen wir nicht. | Die Seite steckt als Ressource `LEDINFO` (RCDATA, Projektoptionen → Ressourcen) in der EXE. `uLedInfo` schreibt sie beim Öffnen in den Temp-Ordner und öffnet sie mit `OpenDocument` im Standard-Browser. |
+| Der Entwurf lud Webschriften von Google; offline sähe die Seite anders aus, und jeder Aufruf ginge ins Netz. | Nur Systemschriften (Bahnschrift, Segoe UI, Consolas) mit Ersatz. |
+| `lazbuild` meldet «File "info/led-info.html" not found», wenn es nicht aus dem Projektordner gestartet wird; die Ressource kommt trotzdem in die EXE. | Im Build geprüft; die EXE enthält die Seite vollständig. |
+
+---
+
 ## Hauptfenster (Oktober 2026)
 
 | Problem | Lösung |
