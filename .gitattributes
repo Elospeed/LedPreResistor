@@ -1,0 +1,4 @@
+# Zeilenenden im Repository einheitlich (LF), beim Auschecken je nach System
+* text=auto
+*.ico binary
+*.png binary

@@ -1,0 +1,136 @@
+# Automatischer Windows-Build für LedPreResistor.
+#
+# Was passiert wann:
+# - Jeder Pull Request und jeder Push auf main baut die EXE auf einem
+#   Windows-Rechner von GitHub. Fehler im Quelltext fallen so sofort auf.
+# - Die fertige EXE kommt als Vor-Release (Pre-release) mit festem Tag:
+#     test-main         = Stand von main
+#     test-pr-<Nummer>  = Stand eines PRs (nur PRs aus diesem Repository)
+#     test-<Branch>     = Workflow von Hand gestartet
+#   Vorher wird das alte Vor-Release samt Tag gelöscht, der Link bleibt gleich.
+# - Beim Schliessen oder Mergen eines PRs löscht der Job "aufraeumen" test-pr-<Nummer>.
+#
+# Details: docs/TESTVERSIONEN.md
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+# Schreibrecht auf "contents" braucht es für die Vor-Releases (GITHUB_TOKEN reicht).
+permissions:
+  contents: write
+
+# Pro Branch bzw. PR immer nur ein Lauf; ein neuer Push bricht den alten Lauf ab.
+concurrency:
+  group: build-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Lazarus-Version für den Build (FPC 3.2.2 ist dabei)
+  LAZARUS_VERSION: "3.8"
+
+jobs:
+  build:
+    # Beim Schliessen eines PRs wird nicht gebaut, nur aufgeräumt (Job "aufraeumen")
+    if: github.event.action != 'closed'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Lazarus installieren
+        # Fremde Action: auf einen festen Commit gepinnt (= Tag v3.4.1), nicht auf
+        # "v3". Ein Tag kann der Autor jederzeit verschieben, und dieser Job läuft
+        # mit Schreibrecht auf das Repository.
+        uses: gcarreno/setup-lazarus@3ee9d77e0c771b37c1069f218cb68bd5ce7c30fe # v3.4.1
+        with:
+          lazarus-version: ${{ env.LAZARUS_VERSION }}
+          with-cache: false
+
+      - name: EXE bauen
+        run: |
+          set -e
+          # -B = alle Units neu übersetzen (kein alter Stand aus einem Cache)
+          lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
+
+      - name: EXE einsammeln, verkleinern und Prüfsumme bilden
+        run: |
+          set -e
+          mkdir -p ausgabe
+          cp bin/LedPreResistor.exe ausgabe/
+
+          # Debug-Infos entfernen. strip.exe liegt bei FPC dabei.
+          STRIP=$(find /c/lazarus -iname strip.exe 2>/dev/null | head -n 1 || true)
+          if [ -z "$STRIP" ]; then STRIP=$(command -v strip || true); fi
+          if [ -n "$STRIP" ]; then
+            echo "strip: $STRIP"
+            "$STRIP" ausgabe/*.exe
+          else
+            echo "::warning::strip.exe nicht gefunden, EXE bleibt gross"
+          fi
+
+          cd ausgabe
+          sha256sum *.exe > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          ls -l
+
+      - name: EXE als Workflow-Artefakt ablegen (Reserve, nur mit Login)
+        uses: actions/upload-artifact@v4
+        with:
+          name: LedPreResistor-Win64-${{ github.sha }}
+          path: ausgabe/
+          retention-days: 14
+
+      - name: Testversion als Vor-Release veröffentlichen
+        # PRs aus fremden Forks bekommen kein Schreibrecht, dort nur das Artefakt.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          PR_NR: ${{ github.event.pull_request.number }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -e
+          # Tag je nach Anlass bestimmen
+          if [ "$EVENT" = "pull_request" ]; then
+            TAG="test-pr-$PR_NR"; WAS="Pull Request #$PR_NR"
+          elif [ "$EVENT" = "push" ]; then
+            TAG="test-main"; WAS="Stand von main"
+          else
+            # Branch-Namen wie "elospeed/xyz" taugen nicht als Teil eines Tags
+            TAG="test-$(echo "$BRANCH" | tr '/' '-')"; WAS="Branch $BRANCH"
+          fi
+          echo "Tag: $TAG"
+
+          # Altes Vor-Release samt Tag löschen (Fehler = gab es noch nicht)
+          gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
+
+          NOTES="Automatische Testversion ($WAS), Commit ${GITHUB_SHA::7}. Nicht für den normalen Gebrauch. Prüfsummen: SHA256SUMS.txt"
+          gh release create "$TAG" ausgabe/LedPreResistor.exe ausgabe/SHA256SUMS.txt \
+            --repo "$REPO" --target "$GITHUB_SHA" \
+            --title "Testversion $TAG" --notes "$NOTES" \
+            --prerelease --latest=false
+
+          echo "Download: https://github.com/$REPO/releases/download/$TAG/LedPreResistor.exe"
+
+  aufraeumen:
+    # Vor-Release eines PRs löschen, sobald der PR geschlossen oder gemergt ist.
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: test-pr-<Nummer> löschen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: test-pr-${{ github.event.pull_request.number }}
+        run: gh release delete "$TAG" --cleanup-tag --yes --repo "$REPO" || true
