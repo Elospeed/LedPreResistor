@@ -18,7 +18,7 @@ Alte Vor-Releases mit Tag `test-...` löscht der Job `aufraeumen` im Workflow au
 
 1. Prüfsumme kontrollieren: `certutil -hashfile LedPreResistor.exe SHA256` (Windows) und mit `SHA256SUMS.txt` vergleichen.
 2. Starten. Es gibt nichts zu installieren und nichts aufzuräumen.
-3. Referenzrechnung eintippen: 12 V, weisse LED (3,2 V), 20 mA, E12 → 470 Ω, 18,72 mA, 164,7 mW, Empfehlung ½ W.
+3. Referenzrechnung eintippen: 12 V, weisse LED (3,2 V), 20 mA, E12 → 470 Ω, 18,72 mA, 164,8 mW, Empfehlung ½ W.
 
 Die EXE ist nicht signiert. Windows SmartScreen warnt deshalb: «Weitere Informationen» → «Trotzdem ausführen».
 

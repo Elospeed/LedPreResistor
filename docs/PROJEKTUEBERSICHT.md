@@ -71,8 +71,8 @@ Auslastung = P_R / P_Nenn
 | Berechneter Widerstand | 440 Ω |
 | Normwert E12 | 470 Ω (gelb, violett, braun, gold) |
 | Tatsächlicher Strom | 18,72 mA |
-| Leistung Widerstand | 164,7 mW |
-| Leistung total | 224,6 mW |
+| Leistung Widerstand | 164,8 mW (genau 164,77 mW) |
+| Leistung total | 224,7 mW (genau 224,68 mW) |
 | Auslastung ¼-W-Widerstand | 66 % → Empfehlung ½ W |
 
 ## Design
@@ -183,7 +183,7 @@ Das Repo folgt der üblichen Elospeed-Struktur, Arbeitsname `Elospeed/LedPreResi
 **Nächste Schritte:**
 
 - [x] Repo `Elospeed/LedPreResistor` mit Grundstruktur und Build-Workflow anlegen
-- [ ] `uCalc`, `uESeries`, `uColorCode` schreiben und mit Testprojekt prüfen
+- [x] `uCalc`, `uESeries`, `uColorCode` schreiben und mit Testprojekt prüfen
 - [ ] Hauptfenster mit Eingaben, Resultatkarte und Theme aufbauen
 - [ ] LED-Zeichnung und Schaltplan-Zeichnung umsetzen
 - [ ] Rechenweg-Bereich

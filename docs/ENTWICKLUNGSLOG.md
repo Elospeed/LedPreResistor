@@ -8,6 +8,20 @@ Neueste Einträge oben.
 
 ---
 
+## Rechenkern (Oktober 2026)
+
+| Problem | Lösung |
+|---|---|
+| Beispielrechnung in der Projektübersicht nannte 164,7 mW und 224,6 mW. Genau sind es 8,8² / 470 = 164,77 mW und 12 V × 18,723 mA = 224,68 mW, gerundet also 164,8 und 224,7 mW (vorher abgeschnitten statt gerundet). | Werte in Projektübersicht, README und LIESMICH korrigiert; die Tests prüfen auf 0,005 mW genau. |
+| Testunit `tESeries` liess sich nicht übersetzen («"." expected»): Pascal unterscheidet keine Gross-/Kleinschreibung, der Unit-Name war gleich wie der Typ `TESeries`. | Testunits heissen `TestESeries`, `TestColorCode`, `TestCalc`. |
+| `NextStdValue(NaN)` brach mit `EInvalidOp` ab: Free Pascal löst bei einem Vergleich mit NaN eine Exception aus. | Zuerst `IsNan`/`IsInfinite` prüfen, erst dann vergleichen. |
+| Geschätzte Erwärmung: Richtwert 200–250 °C/W gilt nur für ¼-W-Bauformen. | Näherung: 225 °C/W für ¼ W, für andere Bauformen umgekehrt proportional zur Nennleistung (½ W = 112,5 °C/W). Bei voller Last wird so jede Bauform gleich warm (ca. 56 °C). In der Anzeige als Schätzung kennzeichnen. |
+| Toleranzring: E12 wäre früher 10 % (silber). Heute sind Kohle- und Metallschichtwiderstände praktisch immer 5 % oder besser. | E12 und E24 mit Goldring (5 %), wie im Beispiel der Projektübersicht; E96 mit Braun (1 %). |
+| Fehlermeldungen als Text in der Rechenlogik würden die Übersetzung erschweren. | `uCalc` liefert Status als Aufzählung (`csUTooLow` usw.), den Text erzeugt die Anzeige. |
+| Das Testprogramm muss bei einem Fehler den Build rot machen. | Eigener kleiner Konsolen-Runner (`tests/LedPreResistorTests.lpr`) setzt Exitcode 1 bei Fehlern oder Abbrüchen; geprüft mit einem absichtlich fehlschlagenden Test. |
+
+---
+
 ## Grundstruktur und Altversion (Oktober 2026)
 
 | Problem | Lösung |

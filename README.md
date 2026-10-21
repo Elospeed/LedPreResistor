@@ -18,7 +18,7 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - Presets for red, yellow, green, blue, white and infrared LEDs, or your own forward voltage from the datasheet.
 - Comma and dot both work as decimal separator. German and English.
 
-**Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.7 mW in the resistor → use a ½ W resistor.
+**Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 
 ## Building
 
@@ -36,6 +36,7 @@ Every pull request and every push to `main` is built automatically by GitHub Act
 |---|---|
 | `src/` | Lazarus project and units |
 | `src/lang/` | Translations (German / English) |
+| `tests/` | Unit tests of the calculation (FPCUnit, run by every build) |
 | `docs/` | Project overview, development log, ideas, test builds (German) |
 | `docs/legacy/` | Original Delphi 7 source code from 2004, for reference only |
 | `docs/design/` | Approved design draft (open the HTML file in a browser) |
