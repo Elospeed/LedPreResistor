@@ -28,7 +28,7 @@ Version 2.0 rechnet live bei jeder Eingabe und zeigt das Resultat als Zahl, als 
 | Schematischer Schaltplan mit Werten | nein | ja |
 | Leuchtende LED in gewählter Farbe | blinkende LEDs | statisch leuchtend |
 | Resultat in Zwischenablage kopieren | nein | ja |
-| LED-Info | PDF über Acrobat | Info-Seite im Programm oder PDF mit Standardprogramm |
+| LED-Info | PDF über Acrobat | HTML-Seite als Ressource in der EXE, Anzeige im Standard-Browser (entschieden 21.10.2026) |
 | Komma und Punkt als Dezimalzeichen | nur Punkt | beides |
 | Sprache | Deutsch | Deutsch und Englisch |
 
@@ -178,7 +178,6 @@ Das Repo folgt der üblichen Elospeed-Struktur, Arbeitsname `Elospeed/LedPreResi
 **Zu entscheiden:**
 
 - Programmname bleibt «LedPreResistor» oder wird auf Deutsch/Englisch angepasst? (vorerst Arbeitsname)
-- LED-Info als Seite im Programm oder als neue PDF mit Standardprogramm?
 
 **Nächste Schritte:**
 

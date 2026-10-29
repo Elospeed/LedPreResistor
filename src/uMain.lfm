@@ -374,6 +374,14 @@ object FormMain: TFormMain
     end
     object MenuHelp: TMenuItem
       Caption = '&Hilfe'
+      object MenuLedInfo: TMenuItem
+        Caption = '&LED-Info (Die Leuchtdiode) …'
+        ShortCut = 112
+        OnClick = MenuLedInfoClick
+      end
+      object MenuSepHelp: TMenuItem
+        Caption = '-'
+      end
       object MenuKofi: TMenuItem
         Caption = 'Einen Kaffee spendieren (Ko-fi) …'
         OnClick = KofiClick

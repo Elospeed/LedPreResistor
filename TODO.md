@@ -6,12 +6,11 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Hauptfenster nach Entwurf A «Labor 2» mit LED-Vorschau, Rechenweg, Statuszeile und Ko-fi-Knopf (dieser PR)
+- [ ] LED-Info «Die Leuchtdiode» als Ressource in der EXE, Menü Hilfe (dieser PR)
 
 ## Als Nächstes
 
 - [ ] Projektseite `site/` (Deutsch/Englisch) mit Screenshots, wie bei StemMaker
-- [ ] LED-Info im Programm (Menü Hilfe)
 - [ ] About-Fenster statt Meldungsfenster
 - [ ] Englische Übersetzung (`src/lang/`, LCLTranslator) und Umschaltung DE | EN
 - [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)
@@ -19,4 +18,3 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 ## Offen (Entscheid von Speedy)
 
 - [ ] Programmname: bleibt «LedPreResistor»?
-- [ ] LED-Info: Seite im Programm oder neue PDF?

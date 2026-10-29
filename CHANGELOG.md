@@ -9,6 +9,10 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ## Unveröffentlicht
 
+### LED-Info
+- Neue Seite «Die Leuchtdiode» (`src/info/led-info.html`): Aufbau, Farben und Durchlassspannungen, Vorwiderstand mit kleinem Rechner, Leistung und Erwärmung.
+- Steckt als Ressource in der EXE und öffnet sich über Hilfe → LED-Info (F1) im Standard-Browser. Keine Zusatzdatei, kein Acrobat Reader mehr.
+
 ### Hauptfenster (Entwurf A «Labor 2»)
 - Eingaben links: Speisespannung, LED-Farbe (mit Farbpunkt), Durchlassspannung, LED-Strom, E-Reihe, Anzahl LEDs in Reihe. Pfeiltasten und Mausrad ändern die Werte schrittweise (mit Umschalt ×10).
 - LED-Vorschau: realistische 5-mm-LED in der gewählten Farbe mit Leuchtschein, Anode/Kathode und flacher Seite beschriftet; blinkt auf Wunsch (0,5 / 1 / 2 / 5 Hz).

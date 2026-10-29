@@ -56,6 +56,8 @@ type
     MenuFile: TMenuItem;
     MenuHelp: TMenuItem;
     MenuKofi: TMenuItem;
+    MenuLedInfo: TMenuItem;
+    MenuSepHelp: TMenuItem;
     MenuRechenweg: TMenuItem;
     MenuReset: TMenuItem;
     MenuSep1: TMenuItem;
@@ -87,6 +89,7 @@ type
     procedure PaintKofiMouseEnter(Sender: TObject);
     procedure PaintKofiMouseLeave(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
+    procedure MenuLedInfoClick(Sender: TObject);
     procedure MenuBlinkClick(Sender: TObject);
     procedure MenuCopyClick(Sender: TObject);
     procedure MenuExitClick(Sender: TObject);
@@ -220,6 +223,7 @@ resourcestring
   rsCopyCurrent = 'Tatsächlicher Strom: %s';
   rsCopyPower = 'Leistung Widerstand: %s, LEDs: %s, gesamt: %s';
   rsCopyRating = 'Empfohlene Bauform: %s (%s zu %s ausgelastet)';
+  rsLedInfoFailed = 'Die LED-Info konnte nicht geöffnet werden.';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -227,7 +231,7 @@ resourcestring
 implementation
 
 uses
-  Math, Clipbrd, LCLIntf, Dialogs, uTheme, uFormat, uLedView, uSchematic, uRichText, uKofiButton;
+  Math, Clipbrd, LCLIntf, Dialogs, uTheme, uFormat, uLedView, uSchematic, uRichText, uLedInfo, uKofiButton;
 
 {$R *.lfm}
 
@@ -1057,6 +1061,12 @@ end;
 procedure TFormMain.MenuAboutClick(Sender: TObject);
 begin
   MessageDlg(Format(rsAbout, [APP_VER]), mtInformation, [mbOK], 0);
+end;
+
+procedure TFormMain.MenuLedInfoClick(Sender: TObject);
+begin
+  if not ShowLedInfo then
+    MessageDlg(rsLedInfoFailed, mtError, [mbOK], 0);
 end;
 
 end.
