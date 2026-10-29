@@ -8,6 +8,19 @@ Neueste Einträge oben.
 
 ---
 
+## Hauptfenster (Oktober 2026)
+
+| Problem | Lösung |
+|---|---|
+| Die LED braucht Transparenz und weiche Verläufe (Leuchtschein), die LCL-Canvas kann unter Windows weder Alpha noch Kantenglättung. Geplant waren PNGs pro Farbe in einer TImageList. | `uLedView` rechnet das Bild Pixel für Pixel in ein `TLazIntfImage` (3×3-Unterabtastung, eigene Mischrechnung) nach der SVG-Vorlage des Entwurfs. Vorteil: jede Farbe und jede Grösse ohne Bilddateien, keine Zusatzbibliothek. Ein- und Aus-Bild werden zwischengespeichert, das Blinken schaltet nur um. |
+| Windows zeichnet die Beschriftung von TCheckBox mit Design immer schwarz, auch im dunklen Fenster. | Häkchen ohne Text, daneben ein TLabel, das beim Klick umschaltet. |
+| Auswahllisten (TComboBox) sind unter Windows hell. | `csOwnerDrawFixed` und eigenes Zeichnen (`ComboDrawItem`), bei der LED-Farbe mit Farbpunkt. |
+| Das Menü (TMainMenu) bleibt unter Windows hell. | Bleibt vorerst so; ein dunkles Menü ginge nur mit eigenem Zeichnen aller Menüpunkte. |
+| Tiefgestellte Zeichen (U_R, U_F) und Fettdruck im Rechenweg und Schaltplan. | Kleine Unit `uRichText`: `**fett**` und `_X` für ein tiefgestelltes Zeichen. |
+| Der Entwurf hat kein Feld für mehrere LEDs in Reihe, die Spezifikation verlangt es. | Feld «LEDs in Reihe» neben der E-Reihe ergänzt. |
+
+---
+
 ## Rechenkern (Oktober 2026)
 
 | Problem | Lösung |
