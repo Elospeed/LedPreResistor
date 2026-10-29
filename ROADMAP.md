@@ -7,7 +7,7 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 ## 2.0 – Neuauflage
 
 1. **Grundstruktur** – Repository, Doku, automatischer Build. ✔
-2. **Rechenkern** – `uCalc`, `uESeries`, `uColorCode` mit FPCUnit-Testprojekt (Referenz: 12 V / 3,2 V / 20 mA → 470 Ω E12, 18,72 mA, 164,7 mW, ½ W).
+2. **Rechenkern** – `uCalc`, `uESeries`, `uColorCode` mit FPCUnit-Testprojekt (Referenz: 12 V / 3,2 V / 20 mA → 470 Ω E12, 18,72 mA, 164,8 mW, ½ W). ✔
 3. **Hauptfenster** – Eingaben im Labornetzgerät-Stil, Resultatkarte, Statuszeile mit Belastbarkeit (Warnung ab 50 %, geschätzte Erwärmung), `uTheme`.
 4. **Zeichnungen** – leuchtende LED (`uLedView`), Farbringe, Schaltplan mit Werten (`uSchematic`).
 5. **Rechenweg** – aufklappbarer Bereich, der die Rechnung Schritt für Schritt mit den aktuellen Werten erklärt.

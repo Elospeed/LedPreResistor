@@ -6,14 +6,13 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Grundstruktur des Repositorys mit Build-Workflow (dieser PR)
+- [ ] Rechenkern `uESeries`, `uColorCode`, `uCalc` mit FPCUnit-Tests (dieser PR)
 
 ## Als Nächstes
 
-- [ ] `uESeries`: Tabellen E12, E24, E96, Suche nächsthöherer Normwert mit relativer Toleranz 1e-9
-- [ ] `uCalc`: U_R, R, I_tat, Leistungen, Auslastung, Empfehlung Bauform, geschätzte Erwärmung, Prüfungen
-- [ ] `uColorCode`: Farbringe (4 Ringe, 5 Ringe bei E96)
-- [ ] FPCUnit-Testprojekt `tests/` mit der Beispielrechnung, im Build-Workflow ausführen
+- [ ] Anzeige-Formatierung (z. B. 4,7 kΩ, mA mit 1–2 Stellen, mW) als eigene Unit mit Tests
+- [ ] Hauptfenster nach Entwurf A «Labor 2» mit LED-Vorschau, `uTheme`
+- [ ] Rechenweg-Bereich
 
 ## Offen (Entscheid von Speedy)
 

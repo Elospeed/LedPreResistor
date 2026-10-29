@@ -61,6 +61,13 @@ jobs:
           # -B = alle Units neu übersetzen (kein alter Stand aus einem Cache)
           lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
 
+      - name: Tests der Rechenlogik bauen und ausführen
+        run: |
+          set -e
+          # FPCUnit-Testprogramm (Konsole). Exitcode 1 bei einem Fehler -> Build rot.
+          lazbuild -B --os=win64 --cpu=x86_64 tests/LedPreResistorTests.lpi
+          ./bin/LedPreResistorTests.exe
+
       - name: EXE einsammeln, verkleinern und Prüfsumme bilden
         run: |
           set -e

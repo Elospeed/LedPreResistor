@@ -18,7 +18,7 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs oder eigene Durchlassspannung aus dem Datenblatt.
 - Komma und Punkt als Dezimalzeichen. Deutsch und Englisch.
 
-**Beispiel:** 12 V, eine weisse LED (3,2 V), 20 mA → berechnet 440 Ω, **470 Ω** (E12, gelb-violett-braun-gold), tatsächlich 18,72 mA, 164,7 mW im Widerstand → ½-W-Widerstand nehmen.
+**Beispiel:** 12 V, eine weisse LED (3,2 V), 20 mA → berechnet 440 Ω, **470 Ω** (E12, gelb-violett-braun-gold), tatsächlich 18,72 mA, 164,8 mW im Widerstand → ½-W-Widerstand nehmen.
 
 ## Bauen
 
@@ -36,6 +36,7 @@ Jeder Pull Request und jeder Push auf `main` wird von GitHub Actions automatisch
 |---|---|
 | `src/` | Lazarus-Projekt und Units |
 | `src/lang/` | Übersetzungen (Deutsch / Englisch) |
+| `tests/` | Tests der Rechenlogik (FPCUnit, laufen bei jedem Build mit) |
 | `docs/PROJEKTUEBERSICHT.md` | Verbindliche Spezifikation: Funktionen, Berechnung, Design, Units |
 | `docs/ENTWICKLUNGSLOG.md` | Fehler, Lehren, Stolperfallen |
 | `docs/IDEEN.md` | Ideen, noch nicht eingeplant |
