@@ -86,6 +86,10 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
+        <Filename Value="uKofiButton.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
         <Filename Value="uSchematic.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>

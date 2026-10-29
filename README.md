@@ -20,7 +20,7 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 
 **Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 
-LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way. The program never asks; there is just a small Ko-fi link in the status bar.
+LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way. The program never asks; there is just a small "Kaffee spendieren" button in the status bar.
 
 ## Building
 
