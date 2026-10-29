@@ -6,11 +6,11 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Projektseite `site/` (Englisch/Deutsch) mit Screenshots und Pages-Workflow, README/LIESMICH veröffentlichungsreif (dieser PR)
+- [ ] Release 2.0 vorbereiten: Workflow «Release erstellen», CHANGELOG-Abschnitt 2.0 (dieser PR)
 
 ## Als Nächstes
 
-- [ ] Release 2.0 (ZIP mit SHA-256), danach Repo öffentlich und Pages einschalten
+- [ ] Nach dem Release: Repo öffentlich und Pages einschalten (Settings → Pages → Source = GitHub Actions)
 - [ ] Screenshots für die Seite unter echtem Windows neu aufnehmen (jetzt unter Wine)
 - [ ] About-Fenster statt Meldungsfenster
 - [ ] Englische Übersetzung (`src/lang/`, LCLTranslator) und Umschaltung DE | EN

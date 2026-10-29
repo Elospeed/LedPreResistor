@@ -1,0 +1,142 @@
+# Release erstellen: ein Klick statt ZIP von Hand bauen und hochladen (wie StemMaker).
+#
+# So geht's: Actions -> "Release erstellen" -> Run workflow -> Version eintragen
+# (z. B. 2.0, ohne "v"). Vorher muss auf main schon alles für diese Version drin
+# sein: APP_VER in src/uMain.pas, ProductVersion in src/LedPreResistor.lpi
+# (Projektoptionen -> Versionsinfo) und ein Abschnitt "## <Version> – ..." im CHANGELOG.
+#
+# Was passiert:
+# 1. Prüfen: Version passt zu APP_VER, lpi und CHANGELOG, Tag gibt es noch nicht.
+# 2. EXE bauen (wie build.yml), Tests laufen lassen, EXE verkleinern.
+# 3. Release-ZIP zusammenstellen: EXE, LIESMICH, README, Lizenz.
+# 4. Release v<Version> anlegen, Text = CHANGELOG-Abschnitt + SHA-256, ZIP dran.
+
+name: Release erstellen
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version ohne v, z. B. 2.0"
+        required: true
+
+permissions:
+  contents: write   # Release anlegen und ZIP hochladen
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+env:
+  LAZARUS_VERSION: "3.8"
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Version prüfen
+        # Version kommt über eine Umgebungsvariable ins Skript, nicht direkt per ${{ }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          VERSION=$(printf '%s' "$VERSION" | tr -d ' \r')
+          VERSION="${VERSION#v}"
+          echo "$VERSION" | grep -qE '^[0-9]+(\.[0-9]+)+$' || { echo "::error::Version '$VERSION' ist keine Versionsnummer wie 2.0"; exit 1; }
+          APP=$(sed -n "s/^ *APP_VER *= *'\(.*\)';.*/\1/p" src/uMain.pas | head -n 1 | tr -d '\r')
+          [ "$APP" = "$VERSION" ] || { echo "::error::src/uMain.pas hat APP_VER '$APP', nicht '$VERSION'"; exit 1; }
+          grep -q "ProductVersion=\"$VERSION\"" src/LedPreResistor.lpi || { echo "::error::src/LedPreResistor.lpi hat nicht ProductVersion=\"$VERSION\""; exit 1; }
+          grep -q "^## $VERSION " CHANGELOG.md || { echo "::error::Im CHANGELOG fehlt der Abschnitt '## $VERSION – ...'"; exit 1; }
+          if gh release view "v$VERSION" --repo "$REPO" > /dev/null 2>&1; then
+            echo "::error::Release v$VERSION gibt es schon"; exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Lazarus installieren
+        # gleicher gepinnter Commit wie in build.yml (= Tag v3.4.1)
+        uses: gcarreno/setup-lazarus@3ee9d77e0c771b37c1069f218cb68bd5ce7c30fe # v3.4.1
+        with:
+          lazarus-version: ${{ env.LAZARUS_VERSION }}
+          with-cache: false
+
+      - name: EXE bauen, testen und verkleinern
+        run: |
+          set -e
+          lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
+          # LED-Info muss als Ressource in der EXE stecken
+          grep -q "<title>Die Leuchtdiode</title>" bin/LedPreResistor.exe || { echo "::error::LED-Info fehlt in der EXE"; exit 1; }
+          lazbuild -B --os=win64 --cpu=x86_64 tests/LedPreResistorTests.lpi
+          ./bin/LedPreResistorTests.exe
+          STRIP=$(find /c/lazarus -iname strip.exe 2>/dev/null | head -n 1 || true)
+          if [ -z "$STRIP" ]; then STRIP=$(command -v strip || true); fi
+          [ -n "$STRIP" ] || { echo "::error::strip.exe nicht gefunden"; exit 1; }
+          "$STRIP" bin/LedPreResistor.exe
+          ls -l bin/LedPreResistor.exe
+
+      - name: Release-ZIP zusammenstellen
+        run: |
+          set -e
+          ORDNER="LedPreResistor-$VERSION"
+          mkdir -p "ausgabe/$ORDNER"
+          cp bin/LedPreResistor.exe LIESMICH.md README.md "ausgabe/$ORDNER/"
+          cp LICENSE "ausgabe/$ORDNER/LICENSE.txt"
+          EXESHA=$(sha256sum bin/LedPreResistor.exe | cut -d' ' -f1)
+          cd ausgabe
+          7z a -tzip -mx=9 "$ORDNER.zip" "$ORDNER" > /dev/null
+          ZIPSHA=$(sha256sum "$ORDNER.zip" | cut -d' ' -f1)
+          ls -l
+          echo "EXESHA=$EXESHA" >> "$GITHUB_ENV"
+          echo "ZIPSHA=$ZIPSHA" >> "$GITHUB_ENV"
+
+      - name: Release anlegen und ZIP hochladen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          # Release-Text: der CHANGELOG-Abschnitt dieser Version (ohne Überschrift)
+          python - "$VERSION" > notizen.md <<'PY'
+          import sys
+          v = sys.argv[1]
+          zeilen = open('CHANGELOG.md', encoding='utf-8').read().splitlines()
+          drin, aus = False, []
+          for z in zeilen:
+              if z.startswith('## '):
+                  if drin:
+                      break
+                  drin = z.startswith('## ' + v + ' ')
+                  continue
+              if drin:
+                  aus.append(z)
+          sys.stdout.reconfigure(encoding='utf-8')
+          print('\n'.join(aus).strip())
+          PY
+          {
+            echo
+            echo "ZIP entpacken und \`LedPreResistor.exe\` starten, keine Installation. / Unzip and start \`LedPreResistor.exe\`, nothing to install."
+            echo
+            echo "Alle Änderungen / All changes: [CHANGELOG](https://github.com/$REPO/blob/main/CHANGELOG.md)"
+            echo
+            echo "SHA-256 \`LedPreResistor-$VERSION.zip\`: \`$ZIPSHA\`"
+            echo
+            echo "SHA-256 \`LedPreResistor.exe\`: \`$EXESHA\`"
+          } >> notizen.md
+          gh release create "v$VERSION" "ausgabe/LedPreResistor-$VERSION.zip" --repo "$REPO" \
+            --target "$GITHUB_SHA" --title "LedPreResistor $VERSION" --notes-file notizen.md --latest
+
+      - name: Zusammenfassung
+        run: |
+          {
+            echo "### Release v$VERSION angelegt"
+            echo
+            echo "- ZIP: \`LedPreResistor-$VERSION.zip\`, SHA-256 \`$ZIPSHA\`"
+            echo "- EXE: SHA-256 \`$EXESHA\`"
+          } >> "$GITHUB_STEP_SUMMARY"

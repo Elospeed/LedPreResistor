@@ -7,7 +7,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## Unveröffentlicht
+## 2.0 – 29. Oktober 2026
 
 ### Projektseite
 - `site/` mit englischer und deutscher Seite, Screenshots, Vorschaubildern für Links und Sitemap; Veröffentlichung über GitHub Pages (`.github/workflows/pages.yml`), Aufbau wie bei StemMaker.

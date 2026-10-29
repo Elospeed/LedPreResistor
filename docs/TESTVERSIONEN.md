@@ -24,5 +24,5 @@ Die EXE ist nicht signiert. Windows SmartScreen warnt deshalb: «Weitere Informa
 
 ## Gut zu wissen
 
-- Offizielle Releases legt Speedy von Hand an.
+- Offizielle Releases startet Speedy mit dem Workflow «Release erstellen» (Actions → Run workflow → Version, z. B. 2.0). Er baut, testet, packt das ZIP und legt das Release mit SHA-256 an.
 - Testversionen gehören nicht ins Repository: jede eingecheckte EXE bliebe für immer im Git-Verlauf.
