@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LedPreResistor – kostenloser LED-Vorwiderstandsrechner für Windows</title>
+<meta name="description" content="Elospeed LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs: Normwert aus E12/E24/E96, Farbringe, tatsächlicher Strom, Leistung und passende Bauform, mit Rechenweg Schritt für Schritt. Kostenlos, Open Source, eine kleine Windows-EXE.">
+<meta name="keywords" content="LED Vorwiderstand berechnen, Vorwiderstand Rechner, LED Widerstand, E12, E24, E96, Farbcode Widerstand, Elektronik, Windows, kostenlos, Open Source">
+<meta name="author" content="Elospeed">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://elospeed.github.io/LedPreResistor/de/">
+<link rel="alternate" hreflang="en" href="https://elospeed.github.io/LedPreResistor/">
+<link rel="alternate" hreflang="de" href="https://elospeed.github.io/LedPreResistor/de/">
+<link rel="alternate" hreflang="x-default" href="https://elospeed.github.io/LedPreResistor/">
+<meta name="theme-color" content="#15181c">
+<link rel="icon" type="image/svg+xml" href="../img/icon.svg">
+<link rel="icon" type="image/png" href="../img/icon-192.png">
+<link rel="apple-touch-icon" href="../img/icon-192.png">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Elospeed LedPreResistor">
+<meta property="og:title" content="LedPreResistor – Vorwiderstand für LEDs berechnen">
+<meta property="og:description" content="Normwert, Farbringe, Leistung und die richtige Bauform für deine LEDs, mit Rechenweg Schritt für Schritt. Kostenlos und Open Source für Windows.">
+<meta property="og:url" content="https://elospeed.github.io/LedPreResistor/de/">
+<meta property="og:image" content="https://elospeed.github.io/LedPreResistor/img/og-image-de.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="de_DE">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="LedPreResistor – Vorwiderstand für LEDs berechnen">
+<meta name="twitter:description" content="Normwert, Farbringe, Leistung und die richtige Bauform für deine LEDs, mit Rechenweg Schritt für Schritt. Kostenlos und Open Source für Windows.">
+<meta name="twitter:image" content="https://elospeed.github.io/LedPreResistor/img/og-image-de.png">
+
+<link rel="stylesheet" href="../style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Elospeed LedPreResistor",
+  "operatingSystem": "Windows 10, Windows 11 (64-bit)",
+  "applicationCategory": "UtilitiesApplication",
+  "description": "Berechnet den Vorwiderstand für eine oder mehrere LEDs in Reihe: nächsthöherer Normwert aus E12, E24 oder E96, Farbringe, tatsächlicher Strom, Leistung und empfohlene Bauform, mit Rechenweg Schritt für Schritt.",
+  "url": "https://elospeed.github.io/LedPreResistor/de/",
+  "downloadUrl": "https://github.com/Elospeed/LedPreResistor/releases/latest",
+  "softwareVersion": "2.0",
+  "inLanguage": "de",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+  "author": { "@type": "Organization", "name": "Elospeed", "url": "https://github.com/Elospeed" },
+  "screenshot": "https://elospeed.github.io/LedPreResistor/img/ledpreresistor-main.png"
+}
+</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./"><img src="../img/icon-192.png" alt="" width="30" height="30">Elospeed LedPreResistor</a>
+    <nav>
+      <a class="hide-m" href="#funktionen">Funktionen</a>
+      <a class="hide-m" href="#so-gehts">So geht's</a>
+      <a class="hide-m" href="#faq">Fragen</a>
+      <a class="hide-m" href="https://github.com/Elospeed/LedPreResistor">GitHub</a>
+      <a class="lang" href="../" hreflang="en" lang="en">English</a>
+    </nav>
+  </div>
+  <div class="stripes"><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="wrap">
+    <h1>Der richtige Widerstand<br>für <span class="grad">jede LED</span></h1>
+    <p class="lead">Speisespannung eingeben, LED-Farbe und Strom wählen. LedPreResistor sucht den nächsten Normwiderstand, zeigt seine Farbringe, den tatsächlichen Strom und die Leistung und sagt dir, welche Bauform du brauchst. Jeder Rechenschritt steht mit deinen eigenen Zahlen da. Ein kleines Windows-Programm, kostenlos und Open Source.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/latest">⬇ Download für Windows</a>
+      <a class="btn" href="https://github.com/Elospeed/LedPreResistor">Quelltext auf GitHub</a>
+    </div>
+    <ul class="facts">
+      <li>Kostenlos &amp; MIT-Lizenz</li>
+      <li>Windows 10 / 11</li>
+      <li>Eine EXE, keine Installation</li>
+      <li>Läuft offline</li>
+      <li>E12, E24 und E96</li>
+    </ul>
+    <figure class="shot hero-shot">
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.0</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="../img/ledpreresistor-main.png" width="900" height="799" alt="Hauptfenster von LedPreResistor: 12 V, weisse LED, 20 mA. Schaltplan mit 470-Ohm-Widerstand, Farbringe gelb violett braun gold, 18,72 mA, 164,8 mW, empfohlene Bauform ein halbes Watt, darunter der Rechenweg">
+    </figure>
+  </div>
+</section>
+
+<section id="funktionen" class="alt">
+  <div class="wrap">
+    <h2>Alles auf einen Blick</h2>
+    <p class="sub">Das Resultat ändert sich schon beim Tippen. Kein Knopf zum Drücken, kein Menü zum Suchen.</p>
+    <div class="grid">
+      <div class="card"><h3><span class="dot" style="background:var(--red)"></span>Normwert und Farbringe</h3><p>Immer der nächsthöhere Wert aus der Reihe E12, E24 oder E96, damit die LED nie mehr Strom bekommt als geplant. Der Widerstand wird mit seinen Farbringen gezeichnet: vier Ringe bei E12/E24, fünf bei E96.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span>Leistung und Bauform</h3><p>Tatsächlicher Strom, Leistung im Widerstand und in den LEDs. LedPreResistor empfiehlt ⅛, ¼, ½ oder 1 W und warnt ab 50 % Auslastung, mit geschätzter Erwärmung des Widerstands.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--green)"></span>Rechenweg Schritt für Schritt</h3><p>Ein aufklappbarer Bereich zeigt die fünf Schritte mit deinen Werten: Spannung am Widerstand, idealer Wert, Normwert, tatsächlicher Strom, Leistung und Erwärmung. Zum Lernen und zum Nachprüfen.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED-Vorschau</h3><p>Eine realistische 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet, damit sie richtig herum eingelötet wird. Blinkt auf Wunsch mit 0,5 bis 5 Hz.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schaltplan mit allen Werten</h3><p>Spannungsquelle, Widerstand und LED in einem übersichtlichen Schaltplan, mit Spannung, Strom und Widerstand an jedem Bauteil. Auch mehrere LEDs in Reihe.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--accent)"></span>LED-Info eingebaut</h3><p>Mit F1 öffnet sich «Die Leuchtdiode»: wie eine LED funktioniert, Farben und Durchlassspannungen, Polarität, Vorwiderstand, Konstantstrom und Praxistipps. Im Browser, auch offline.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap split">
+    <div>
+      <h2>Warnt, bevor es heiss wird</h2>
+      <p class="sub" style="margin-bottom:0">Ein Widerstand an der Leistungsgrenze wird sehr heiss und altert schnell. LedPreResistor passt darauf auf.</p>
+      <ul class="ticks">
+        <li><strong>Grün, gelb, rot</strong> in der Statuszeile: Auslastung eines normalen ¼-W-Widerstands und geschätzte Erwärmung</li>
+        <li><strong>Ab 50 % Auslastung</strong> wird die nächstgrössere Bauform empfohlen, wie es erfahrene Bastler machen</li>
+        <li><strong>Zu viel Leistung für einen Widerstand?</strong> Das Programm sagt es und schlägt eine Konstantstromquelle vor</li>
+        <li><strong>Resultat kopieren</strong> mit Strg+Umschalt+C, für Notizen oder einen Forumsbeitrag</li>
+        <li>Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs, oder die eigene Durchlassspannung aus dem Datenblatt</li>
+        <li>Komma und Punkt gehen beide; Pfeiltasten und Mausrad ändern die Werte</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.0</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="../img/ledpreresistor-warning.png" width="900" height="799" alt="LedPreResistor mit 9 V, roter LED, 25 mA: 330 Ohm, 148,5 mW, ein Viertelwatt-Widerstand wäre zu 59 Prozent ausgelastet, die Statuszeile warnt gelb und empfiehlt ein halbes Watt" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<section id="so-gehts" class="alt">
+  <div class="wrap">
+    <h2>So geht's</h2>
+    <p class="sub">In drei Schritten vom Datenblatt zum richtigen Widerstand.</p>
+    <ol class="steps">
+      <li><strong>Herunterladen und entpacken</strong>Das ZIP von GitHub laden und irgendwo entpacken, zum Beispiel nach <code>C:\Tools\LedPreResistor</code>. Keine Installation, keine Adminrechte, keine Zusatzpakete.</li>
+      <li><strong>Werte eingeben</strong>Speisespannung, LED-Farbe (oder die Durchlassspannung aus dem Datenblatt), LED-Strom und wie viele LEDs in Reihe geschaltet sind.</li>
+      <li><strong>Resultat ablesen</strong>Normwert mit Farbringen, tatsächlicher Strom, Leistung und empfohlene Bauform. Im Rechenweg steht, wie es ausgerechnet wurde.</li>
+    </ol>
+    <div class="flow" aria-label="Rechnung">
+      <span class="n">U<sub>B</sub> − n · U<sub>F</sub></span><span class="a">÷</span>
+      <span class="n">I</span><span class="a">→</span>
+      <span class="n">R<sub>ideal</sub></span><span class="a">→</span>
+      <span class="n hl">nächster E-Wert</span><span class="a">→</span>
+      <span class="n">I<sub>tats.</sub>, P</span><span class="a">→</span>
+      <span class="n hl">⅛ / ¼ / ½ / 1 W</span>
+    </div>
+    <p class="note" style="margin-top:30px"><strong>Beispiel:</strong> 12 V, eine weisse LED (3,2 V), 20 mA. Berechnet 440 Ω, nächster E12-Wert <strong>470 Ω</strong><span class="bands" aria-label="gelb violett braun gold"><i style="background:#f4c300"></i><i style="background:#8a3fd1"></i><i style="background:#7a4a1d"></i><i style="background:#c9a33a"></i></span>, tatsächlicher Strom 18,72 mA, 164,8 mW im Widerstand. Ein ¼-W-Widerstand wäre zu 66 % ausgelastet, also ½ W nehmen.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap split rev">
+    <div>
+      <h2>Rechnen und dabei lernen</h2>
+      <p class="sub" style="margin-bottom:0">Die eingebaute LED-Info ist eine kurze Anleitung für Bastler, für Version 2.0 neu geschrieben, mit Werten auf dem Stand von 2026.</p>
+      <ul class="ticks">
+        <li>Wie eine LED Licht macht und warum sie einen Vorwiderstand braucht</li>
+        <li>Farben, Wellenlängen und typische Durchlassspannungen</li>
+        <li>Anode oder Kathode? So erkennst du es</li>
+        <li>Mehrere LEDs: in Reihe oder parallel</li>
+        <li>Konstantstrom, Wärme und Lebensdauer, Praxistipps</li>
+        <li>Mit einem kleinen Rechner direkt auf der Seite</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>Die Leuchtdiode – LED-Info</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="../img/led-info.png" width="900" height="900" alt="Die LED-Info «Die Leuchtdiode» im dunklen Design mit leuchtender LED, Inhaltsverzeichnis und dem ersten Kapitel, wie das Licht entsteht" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<section id="faq" class="alt">
+  <div class="wrap">
+    <h2>Fragen und Antworten</h2>
+    <details>
+      <summary>Ist LedPreResistor wirklich kostenlos?</summary>
+      <p>Ja. LedPreResistor ist Open Source unter der MIT-Lizenz. Keine Werbung, kein Konto, keine Bezahlversion. Wenn es dir gefällt, kannst du freiwillig auf <a href="https://ko-fi.com/elospeed">Ko-fi</a> einen Kaffee spendieren.</p>
+    </details>
+    <details>
+      <summary>Warum immer der nächsthöhere Normwert?</summary>
+      <p>Ein kleinerer Wert liesse mehr Strom durch die LED als geplant. Der nächsthöhere Wert hält den Strom auf oder knapp unter deinem Ziel. LedPreResistor zeigt den tatsächlichen Strom mit dem Normwert, so siehst du genau, was du bekommst.</p>
+    </details>
+    <details>
+      <summary>Warum eine Warnung ab 50 % Auslastung?</summary>
+      <p>Ein Widerstand darf bis zu seiner Nennleistung belastet werden, wird dann aber sehr heiss. Mit der halben Nennleistung bleibt er kühl, hält länger, und die Platine leidet nicht. Die angezeigte Temperatur ist eine Schätzung für einen normalen bedrahteten Widerstand in freier Luft.</p>
+    </details>
+    <details>
+      <summary>Kann ich LEDs parallel berechnen?</summary>
+      <p>Gib jeder parallelen LED einen eigenen Widerstand und rechne sie wie eine einzelne LED. Parallele LEDs an einem gemeinsamen Widerstand teilen sich den Strom ungleich auf. Für LEDs in Reihe gibst du die Anzahl ein, und LedPreResistor zieht alle Durchlassspannungen ab.</p>
+    </details>
+    <details>
+      <summary>Windows meldet «Der Computer wurde durch Windows geschützt». Ist das schlimm?</summary>
+      <p>LedPreResistor ist nicht digital signiert, weil Signaturzertifikate jedes Jahr Geld kosten. Auf «Weitere Informationen» und dann «Trotzdem ausführen» klicken. Der ganze Quelltext liegt auf GitHub, zu jedem Release gibt es eine SHA-256-Prüfsumme, und du kannst das Programm mit Lazarus selbst bauen.</p>
+    </details>
+    <details>
+      <summary>Woher kommt LedPreResistor?</summary>
+      <p>Das erste «LED Pre-Resistor» war ein kleines Freeware-Tool von 2004, geschrieben in Delphi 7. Version 2.0 ist komplett neu gebaut, mit Lazarus: eine einzige 64-Bit-EXE, neues Design, korrigierte Rechnung (genau 330 Ω springt nicht mehr auf 390 Ω) und neue Funktionen wie Rechenweg und LED-Vorschau.</p>
+    </details>
+    <details>
+      <summary>Wo melde ich einen Fehler oder eine Idee?</summary>
+      <p>Als <a href="https://github.com/Elospeed/LedPreResistor/issues">Issue auf GitHub</a>. Lesen geht ohne Konto, zum Schreiben braucht es ein kostenloses GitHub-Konto.</p>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="wrap" style="text-align:center">
+    <h2>Bereit für das nächste LED-Projekt?</h2>
+    <p class="sub" style="margin:0 auto 26px">ZIP herunterladen, entpacken und losrechnen.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/latest">⬇ LedPreResistor herunterladen</a>
+      <a class="btn" href="https://github.com/Elospeed/LedPreResistor/blob/main/LIESMICH.md">Anleitung lesen</a>
+    </div>
+    <p class="support">LedPreResistor ist ein Ein-Personen-Hobbyprojekt und bleibt kostenlos. Wenn es dir hilft, kannst du mir auf <a href="https://ko-fi.com/elospeed">Ko-fi einen Kaffee spendieren</a> ☕ oder einfach <a href="https://github.com/Elospeed/LedPreResistor">auf GitHub einen Stern geben</a>. Beides ganz freiwillig.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>© Elospeed · LedPreResistor ist Open Source unter der <a href="https://github.com/Elospeed/LedPreResistor/blob/main/LICENSE">MIT-Lizenz</a> · <a href="https://www.youtube.com/@elospeed">YouTube</a></div>
+    <div>Gebaut mit <a href="https://www.lazarus-ide.org">Lazarus</a> und <a href="https://www.freepascal.org">Free Pascal</a> · Weitere Tools: <a href="https://github.com/Elospeed">github.com/Elospeed</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

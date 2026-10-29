@@ -11,7 +11,7 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 3. **Hauptfenster** – nach Entwurf A «Labor 2»: Eingaben, LED-Vorschau, Schaltplan, Resultatkarten, Statuszeile mit Belastbarkeit (Warnung ab 50 %, geschätzte Erwärmung), `uTheme`. ✔
 4. **Zeichnungen** – leuchtende LED (`uLedView`), Farbringe, Schaltplan mit Werten (`uSchematic`). ✔
 5. **Rechenweg** – aufklappbarer Bereich, der die Rechnung Schritt für Schritt mit den aktuellen Werten erklärt. ✔
-6. **LED-Info** – neu geschriebener Text (die PDF von 2004 wird nicht übernommen).
-6b. **Projektseite** – `site/` wie bei StemMaker, mit Screenshots und Ko-fi-Link.
+6. **LED-Info** – neu geschriebene Seite «Die Leuchtdiode» als Ressource in der EXE (die PDF von 2004 wird nicht übernommen). ✔
+6b. **Projektseite** – `site/` wie bei StemMaker (Englisch/Deutsch, Screenshots), veröffentlicht über GitHub Pages.
 7. **About-Fenster und Sprachen** – Deutsch und Englisch über `.po`-Dateien.
 8. **Testversion** – unter Wine und Windows testen, danach offizielles Release 2.0.
