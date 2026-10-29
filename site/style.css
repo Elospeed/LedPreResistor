@@ -1,0 +1,230 @@
+/* Elospeed LedPreResistor - Projektseite
+   Ein einziges Stylesheet für die englische und die deutsche Seite.
+   Aufbau wie die StemMaker-Seite; Farben wie im Programm (Entwurf «Labor 2»),
+   der Streifen oben zeigt die LED-Farben Rot, Gelb, Grün, Blau, Weiss. */
+
+:root {
+  --bg: #15181c;
+  --bg-2: #1b1f24;
+  --panel: #23272e;
+  --line: #313740;
+  --text: #e6eaee;
+  --muted: #9aa4ad;
+  --red: #ff4d4d;
+  --yellow: #ffd23f;
+  --green: #4cd964;
+  --blue: #4d8dff;
+  --white: #f2f4f7;
+  --link: #5aa9ff;
+  --accent: #ffb347;
+  --radius: 10px;
+  --max: 1120px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--link); }
+a:hover { color: #9ccaff; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+.wrap { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
+
+/* ---- Kopfzeile ---- */
+header.top {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(21, 24, 28, .88);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+header.top .wrap {
+  display: flex; align-items: center; gap: 16px;
+  height: 60px;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text); text-decoration: none; font-weight: 700;
+}
+.brand img { width: 30px; height: 30px; border-radius: 6px; }
+header.top nav { margin-left: auto; display: flex; gap: 18px; align-items: center; }
+header.top nav a { color: var(--muted); text-decoration: none; font-size: 15px; }
+header.top nav a:hover { color: var(--text); }
+header.top nav .lang {
+  border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; color: var(--text);
+}
+@media (max-width: 720px) {
+  header.top nav a.hide-m { display: none; }
+}
+
+/* ---- Streifen in den LED-Farben als Markenzeichen ---- */
+.stripes { display: flex; height: 4px; }
+.stripes i { flex: 1; }
+.stripes i:nth-child(1) { background: var(--red); }
+.stripes i:nth-child(2) { background: var(--yellow); }
+.stripes i:nth-child(3) { background: var(--green); }
+.stripes i:nth-child(4) { background: var(--blue); }
+.stripes i:nth-child(5) { background: var(--white); }
+
+/* ---- Startbereich ---- */
+.hero { padding: 72px 0 40px; text-align: center; }
+.hero h1 {
+  font-size: clamp(34px, 5.5vw, 58px);
+  line-height: 1.1; margin: 0 0 18px; letter-spacing: -.02em;
+}
+.hero h1 .grad {
+  background: linear-gradient(90deg, var(--red), var(--accent) 35%, var(--yellow) 60%, var(--green));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero p.lead {
+  font-size: clamp(18px, 2.2vw, 21px); color: var(--muted);
+  max-width: 760px; margin: 0 auto 30px;
+}
+.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+/* leiser Spenden-Hinweis unter dem Download-Knopf am Seitenende */
+.support { max-width: 560px; margin: 28px auto 0; font-size: 14px; color: var(--muted); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 22px; border-radius: 8px; font-weight: 700; font-size: 16px;
+  text-decoration: none; border: 1px solid var(--line); color: var(--text);
+  background: var(--panel);
+}
+.btn:hover { color: var(--text); border-color: #4a4d52; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #1a1206; }
+.btn.primary:hover { background: #ffc56e; color: #1a1206; }
+.hero .facts {
+  margin: 22px 0 0; padding: 0; list-style: none;
+  display: flex; gap: 8px 22px; justify-content: center; flex-wrap: wrap;
+  color: var(--muted); font-size: 15px;
+}
+.hero .facts li::before { content: "✓ "; color: var(--accent); }
+
+/* ---- Screenshots im Fensterrahmen ---- */
+.shot {
+  margin: 0; background: var(--panel);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+}
+/* Titelleiste wie unter Windows 11: Symbol und Titel links, Minimieren/Maximieren/Schliessen rechts */
+.shot .bar {
+  display: flex; align-items: center; gap: 8px;
+  height: 32px; padding: 0 0 0 10px; background: #202020;
+  font: 12px "Segoe UI", system-ui, sans-serif; color: #e8e8e8;
+}
+.shot.light .bar { background: #f3f3f3; color: #1b1b1b; border-bottom: 1px solid #e5e5e5; }
+.shot .bar img { width: 16px; height: 16px; flex: none; }
+.shot .bar span { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shot .bar i { position: relative; width: 46px; height: 32px; flex: none; }
+.shot .bar i::before, .shot .bar i::after {
+  content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+}
+.shot .bar .min::before { width: 10px; height: 1px; background: currentColor; }
+.shot .bar .max::before { width: 8px; height: 8px; border: 1px solid currentColor; border-radius: 1px; }
+.shot .bar .cls::before, .shot .bar .cls::after { width: 13px; height: 1px; background: currentColor; }
+.shot .bar .cls::before { transform: translate(-50%, -50%) rotate(45deg); }
+.shot .bar .cls::after { transform: translate(-50%, -50%) rotate(-45deg); }
+@media (max-width: 560px) { .shot .bar i { width: 32px; } }
+.shot img { width: 100%; }
+figcaption { color: var(--muted); font-size: 14px; text-align: center; margin-top: 12px; }
+.hero-shot { max-width: 862px; margin: 46px auto 0; }
+
+/* ---- Abschnitte ---- */
+section { padding: 64px 0; }
+section.alt { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+h2 { font-size: clamp(26px, 3.4vw, 36px); margin: 0 0 12px; letter-spacing: -.01em; line-height: 1.2; }
+h3 { font-size: 19px; margin: 0 0 6px; }
+.sub { color: var(--muted); margin: 0 0 34px; max-width: 760px; }
+
+.grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 22px;
+}
+.card p { margin: 0; color: var(--muted); font-size: 16px; }
+.card .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+
+/* Schritte */
+ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: s; display: grid; gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+ol.steps li { counter-increment: s; background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 22px; color: var(--muted); font-size: 16px; }
+ol.steps li::before {
+  content: counter(s); display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%; margin-bottom: 10px;
+  background: var(--text); color: var(--bg); font-weight: 800;
+}
+ol.steps li strong { color: var(--text); display: block; margin-bottom: 4px; }
+
+/* Zwei Spalten: Text + Bild */
+.split { display: grid; gap: 40px; align-items: center; grid-template-columns: 1fr 1.25fr; }
+.split.rev { grid-template-columns: 1.25fr 1fr; }
+.split.rev > :first-child { order: 2; }
+@media (max-width: 860px) {
+  .split, .split.rev { grid-template-columns: 1fr; }
+  .split.rev > :first-child { order: 0; }
+}
+ul.ticks { padding: 0; list-style: none; margin: 18px 0 0; }
+ul.ticks li { padding-left: 26px; position: relative; margin: 8px 0; color: var(--muted); }
+ul.ticks li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+ul.ticks li strong { color: var(--text); }
+
+/* Diagramm */
+.flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: center; margin-top: 10px; }
+.flow .n { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
+.flow .a { color: var(--muted); }
+.flow .n.hl { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+
+/* Tabelle */
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 14px; }
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+
+/* Hinweise */
+.note { border-left: 3px solid var(--accent); background: var(--panel); padding: 14px 18px; border-radius: 0 8px 8px 0; color: var(--muted); font-size: 16px; }
+.note strong { color: var(--text); }
+
+/* FAQ */
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin-bottom: 10px; }
+details summary { cursor: pointer; font-weight: 700; }
+details p { color: var(--muted); margin: 10px 0 0; font-size: 16px; }
+
+/* Fuss */
+footer { padding: 40px 0 50px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; gap: 14px 28px; flex-wrap: wrap; justify-content: space-between; }
+footer a { color: var(--muted); }
+
+code { background: #0f1011; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: .9em; }
+
+/* Kopfzeile auf dem Handy: Name nicht umbrechen */
+.brand { white-space: nowrap; }
+@media (max-width: 420px) {
+  header.top nav { gap: 12px; }
+  .brand { font-size: 15px; }
+}
+
+/* ---- Demnächst (Coming soon) ---- */
+.badge {
+  display: inline-block; margin-bottom: 12px; padding: 4px 12px; border-radius: 999px;
+  background: var(--accent); color: #0d0d0d; font-size: 13px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.soon { margin-top: 26px; }
+.soon p { color: var(--muted); margin: 0; }
+.soon p strong { color: var(--text); }
+.soon ul.ticks { margin-top: 8px; }
+
+/* Beispielrechnung: Farbringe als kleine Balken */
+.bands { display: inline-flex; gap: 4px; vertical-align: middle; margin-left: 6px; }
+.bands i { width: 8px; height: 18px; border-radius: 2px; display: inline-block; }

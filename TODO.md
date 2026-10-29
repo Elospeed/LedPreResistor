@@ -6,11 +6,12 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] LED-Info «Die Leuchtdiode» als Ressource in der EXE, Menü Hilfe (dieser PR)
+- [ ] Projektseite `site/` (Englisch/Deutsch) mit Screenshots und Pages-Workflow, README/LIESMICH veröffentlichungsreif (dieser PR)
 
 ## Als Nächstes
 
-- [ ] Projektseite `site/` (Deutsch/Englisch) mit Screenshots, wie bei StemMaker
+- [ ] Release 2.0 (ZIP mit SHA-256), danach Repo öffentlich und Pages einschalten
+- [ ] Screenshots für die Seite unter echtem Windows neu aufnehmen (jetzt unter Wine)
 - [ ] About-Fenster statt Meldungsfenster
 - [ ] Englische Übersetzung (`src/lang/`, LCLTranslator) und Umschaltung DE | EN
 - [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)

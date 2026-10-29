@@ -9,6 +9,10 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ## Unveröffentlicht
 
+### Projektseite
+- `site/` mit englischer und deutscher Seite, Screenshots, Vorschaubildern für Links und Sitemap; Veröffentlichung über GitHub Pages (`.github/workflows/pages.yml`), Aufbau wie bei StemMaker.
+- README und LIESMICH mit Screenshot, Link zur Seite und Kurzanleitung.
+
 ### LED-Info
 - Neue Seite «Die Leuchtdiode» (`src/info/led-info.html`): Aufbau, Farben und Durchlassspannungen, Vorwiderstand mit kleinem Rechner, Leistung und Erwärmung.
 - Steckt als Ressource in der EXE und öffnet sich über Hilfe → LED-Info (F1) im Standard-Browser. Keine Zusatzdatei, kein Acrobat Reader mehr.
