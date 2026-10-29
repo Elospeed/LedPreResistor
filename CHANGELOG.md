@@ -15,10 +15,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Schaltplan mit allen Werten an den Bauteilen und Farbringen im Widerstand.
 - Vier Resultatkarten: Normwert mit Farbringen, tatsächlicher Strom, Verlustleistung, empfohlene Bauform mit Auslastungsbalken.
 - Aufklappbarer Rechenweg in fünf Schritten mit den aktuellen Zahlen, inklusive geschätzter Erwärmung.
-- Statuszeile grün/gelb/rot mit Erwärmung, Empfehlung und Gesamtleistung; kleiner Ko-fi-Link rechts (kein Spendenfenster).
-- Menü: Resultat kopieren (Strg+Umschalt+C), Eingaben zurücksetzen, Rechenweg ein/aus, LED blinken, Ko-fi, Info.
+- Statuszeile grün/gelb/rot mit Erwärmung, Empfehlung und Gesamtleistung.
+- Menü: Resultat kopieren (Strg+Umschalt+C), Eingaben zurücksetzen, Rechenweg ein/aus, LED blinken, Info.
 - `uFormat`: Anzeige ohne überflüssige Nachkommastellen (4,7 kΩ, 18,72 mA, 164,8 mW), mit Tests.
-- Sponsor-Knopf auf GitHub (`.github/FUNDING.yml`) und Ko-fi-Absatz in README/LIESMICH.
 
 ### Rechenkern
 - `uESeries`: Normreihen E12, E24 und E96, nächsthöherer Normwert über alle Dekaden. Genau 330 Ω bleibt 330 Ω (Fehler der Altversion behoben).

@@ -38,7 +38,7 @@ type
     LabelHeadPreview: TLabel;
     LabelI: TLabel;
     LabelIUnit: TLabel;
-    PaintKofi: TPaintBox;         // Ko-fi-Link unten rechts (selbst gezeichnet)
+    PaintKofi: TPaintBox;         // Ko-fi-Knopf «Kaffee spendieren» unten rechts
     LabelN: TLabel;
     LabelNUnit: TLabel;
     LabelSeries: TLabel;
@@ -84,6 +84,8 @@ type
     procedure LabelBlinkClick(Sender: TObject);
     procedure KofiClick(Sender: TObject);
     procedure PaintKofiPaint(Sender: TObject);
+    procedure PaintKofiMouseEnter(Sender: TObject);
+    procedure PaintKofiMouseLeave(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure MenuBlinkClick(Sender: TObject);
     procedure MenuCopyClick(Sender: TObject);
@@ -107,6 +109,7 @@ type
     FLedOff: TBitmap;        // LED-Bild aus (für das Blinken)
     FLedLit: Boolean;        // LED gerade an (beim Blinken wechselnd)
     FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
+    FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
     FRechenwegOpen: Boolean; // Rechenweg aufgeklappt
     { Farben und Schriften aus uTheme auf alle Bedienelemente anwenden }
@@ -193,7 +196,7 @@ resourcestring
   rsRechenweg = 'Rechenweg';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
-  rsKofi = 'Ko-fi';
+  rsKofi = 'Kaffee spendieren';
   rsStep2 = 'Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**';
   rsStep3 = 'Tatsächlicher Strom: I = %s / %s = **%s**';
   rsStep4 = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
@@ -224,7 +227,7 @@ resourcestring
 implementation
 
 uses
-  Math, Clipbrd, LCLIntf, Dialogs, uTheme, uFormat, uLedView, uSchematic, uRichText;
+  Math, Clipbrd, LCLIntf, Dialogs, uTheme, uFormat, uLedView, uSchematic, uRichText, uKofiButton;
 
 {$R *.lfm}
 
@@ -312,7 +315,8 @@ begin
   // Breite des Ko-fi-Links: Herz + Text + Rand
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
-  PaintKofi.Width := Px(28) + PaintKofi.Canvas.TextWidth(rsKofi);
+  PaintKofi.Canvas.Font.Style := [fsBold];
+  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, Screen.PixelsPerInch);
 end;
 
 procedure TFormMain.FillCombos;
@@ -965,35 +969,32 @@ begin
   OpenURL(KOFI_URL);
 end;
 
-{ Zeichnet den Ko-fi-Link: Herz als Figur (nicht jede Schrift hat ♥) und
-  den Text daneben, beides in der Warnfarbe wie bei StemMaker. }
+{ Ko-fi-Knopf unten rechts, Elospeed-Standard (gezeichnet in uKofiButton) }
 procedure TFormMain.PaintKofiPaint(Sender: TObject);
 var
-  C: TCanvas;     // Zeichenfläche
-  R: TRect;       // Bereich
-  HX, HY: Integer; // Mitte des Herzens
-  D: Integer;     // Durchmesser der Herzbögen
+  R: TRect;  // Bereich des Knopfs
 begin
-  C := PaintKofi.Canvas;
   R := PaintKofi.ClientRect;
-  C.Brush.Color := clrBar;
-  C.FillRect(R);
-  C.Pen.Color := clrBorder;
-  C.Line(R.Left, R.Top, R.Right, R.Top);
-  // Herz aus zwei Kreisen und einem Dreieck
-  D := Px(5);
-  HX := R.Left + Px(8);
-  HY := (R.Top + R.Bottom) div 2 - Px(1);
-  C.Brush.Color := clrWarn;
-  C.Pen.Color := clrWarn;
-  C.Ellipse(HX - D, HY - D div 2, HX + 1, HY + D div 2 + 1);
-  C.Ellipse(HX, HY - D div 2, HX + D + 1, HY + D div 2 + 1);
-  C.Polygon([Point(HX - D, HY + 1), Point(HX + D, HY + 1), Point(HX, HY + D + Px(1))]);
-  C.Font.Name := FONT_UI;
-  C.Font.Size := 9;
-  C.Font.Color := clrWarn;
-  C.Brush.Style := bsClear;
-  C.TextOut(HX + D + Px(5), (R.Top + R.Bottom - C.TextHeight('Ag')) div 2, rsKofi);
+  PaintKofi.Canvas.Font.Name := FONT_UI;
+  PaintKofi.Canvas.Font.Size := 9;
+  PaintKofi.Canvas.Font.Style := [fsBold];
+  DrawKofiButton(PaintKofi.Canvas, R, rsKofi, FKofiHover, clrBar,
+    Screen.PixelsPerInch, Application.Icon);
+  // Trennlinie oben wie bei der übrigen Statuszeile
+  PaintKofi.Canvas.Pen.Color := clrBorder;
+  PaintKofi.Canvas.Line(R.Left, R.Top, R.Right, R.Top);
+end;
+
+procedure TFormMain.PaintKofiMouseEnter(Sender: TObject);
+begin
+  FKofiHover := True;
+  PaintKofi.Invalidate;
+end;
+
+procedure TFormMain.PaintKofiMouseLeave(Sender: TObject);
+begin
+  FKofiHover := False;
+  PaintKofi.Invalidate;
 end;
 
 { ---------- Menü ---------- }

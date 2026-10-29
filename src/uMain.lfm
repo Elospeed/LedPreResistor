@@ -34,13 +34,19 @@ object FormMain: TFormMain
       OnPaint = PaintStatusPaint
     end
     object PaintKofi: TPaintBox
-      Left = 830
+      Left = 750
       Height = 26
+      Hint = 'ko-fi.com/elospeed'
       Top = 0
-      Width = 70
-      Cursor = crHandPoint
+      Width = 146
       Align = alRight
+      BorderSpacing.Right = 4
+      Cursor = crHandPoint
+      ParentShowHint = False
+      ShowHint = True
       OnClick = KofiClick
+      OnMouseEnter = PaintKofiMouseEnter
+      OnMouseLeave = PaintKofiMouseLeave
       OnPaint = PaintKofiPaint
     end
   end
