@@ -662,6 +662,8 @@ var
   Lvl: TLoadLevel;     // Bewertung der Referenz-Bauform
   BarR: TRect;         // Balken der Auslastung
   Ok: Boolean;         // Resultat gültig
+  Ringe: string;       // Farbnamen der Ringe
+  K: Integer;          // Trennstelle für zwei Zeilen
 
   { Kartenrahmen, Titel, grosser Wert und Untertext }
   procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
@@ -718,17 +720,32 @@ begin
   for I := 0 to 3 do
   begin
     R := Types.Rect(X, 0, X + CW[I], PaintCards.Height);
+    { nichts über den Kartenrand hinaus zeichnen (schmales Fenster, 150 %) }
+    C.ClipRect := R;
+    C.Clipping := True;
     case I of
       0:
         if Ok then
         begin
           Card(Format(rsCardStd, [SeriesName(FInput.Series)]), FormatOhm(FRes.R), '', clrTextBright);
           // Widerstand mit Farbringen und Farbnamen darunter
-          DrawResistor(C, Types.Rect(R.Left + Pad, R.Top + Px(56), R.Left + Pad + Px(150), R.Top + Px(80)), FBands);
+          DrawResistor(C, Types.Rect(R.Left + Pad, R.Top + Px(56),
+            R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), R.Top + Px(80)), FBands);
           C.Font.Size := 8;
           C.Font.Color := clrTextSoft;
           C.Brush.Style := bsClear;
-          C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), BandNames(FBands, ' · '));
+          Ringe := BandNames(FBands, ' · ');
+          if C.TextWidth(Ringe) <= R.Right - R.Left - 2 * Pad then
+            C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), Ringe)
+          else
+          begin
+            // zu schmal: nach dem zweiten Ring umbrechen
+            K := Pos(' · ', Ringe);
+            K := Pos(' · ', Ringe, K + 1);
+            if K = 0 then K := Pos(' · ', Ringe);
+            C.TextOut(R.Left + Pad, R.Bottom - Pad - 2 * C.TextHeight('Ag'), Copy(Ringe, 1, K - 1));
+            C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), Copy(Ringe, K + Length(' · '), MaxInt));
+          end;
         end
         else
           Card(Format(rsCardStd, [SeriesName(FInput.Series)]), '–', '', clrTextBright);
@@ -783,6 +800,7 @@ begin
         else
           Card(rsCardRating, '–', '', clrTextBright);
     end;
+    C.Clipping := False;
     Inc(X, CW[I] + Gap);
   end;
 end;
