@@ -7,7 +7,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.0.1 – noch nicht veröffentlicht
+## 2.0.1 – 30. Oktober 2026
 
 ### Anzeigeskalierung (125 / 150 / 200 %)
 - Das Hauptfenster war bei 150 und 200 % höher als ein Full-HD-Bildschirm: Statuszeile und Ko-fi-Knopf lagen unter dem Bildschirmrand, bei 200 % passte nicht einmal die Mindestgrösse. Es wird jetzt auf den freien Bildschirm begrenzt, die Mindestgrösse bleibt kleiner als die Startgrösse (neue Unit `uSkalierung`, gleich wie bei StemMaker).
