@@ -11,11 +11,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Menus,
-  LCLType, Types, uESeries, uColorCode, uCalc;
+  LCLType, Types, uESeries, uColorCode, uCalc, uSkalierung;
 
 const
   { Programmversion für Titelleiste und Info }
-  APP_VER = '2.0';
+  APP_VER = '2.0.1';
 
   { Ko-fi-Seite von Elospeed }
   KOFI_URL = 'https://ko-fi.com/elospeed';
@@ -67,7 +67,7 @@ type
     PaintRechenweg: TPaintBox;    // Rechenweg (Kopfzeile und Schritte)
     PaintSchematic: TPaintBox;    // Schaltplan
     PaintStatus: TPaintBox;       // Statuszeile
-    PanelLeft: TPanel;
+    PanelLeft: TScrollBox;  // rollt, wenn bei 200 % die Höhe nicht reicht
     PanelPreview: TPanel;
     PanelRechenweg: TPanel;
     PanelRight: TPanel;
@@ -129,6 +129,14 @@ type
     procedure UpdateBlink;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
     procedure UpdateRechenwegHeight;
+    { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
+    procedure FormShowPlatz(Sender: TObject);
+    { LED-Vorschau füllt die linke Spalte bis unten; reicht die Höhe nicht,
+      rollt die Spalte (Mindesthöhe der Vorschau) }
+    procedure PanelLeftResize(Sender: TObject);
+    { Rechenweg zuklappen, wenn das Fenster auf einen kleinen Bildschirm
+      begrenzt wurde und die LED-Vorschau sonst verschwindet (200 %) }
+    procedure RechenwegZuBeiPlatzmangel(Data: PtrInt);
     { Fehlertext zum Status der Rechnung }
     function StatusText(S: TCalcStatus): string;
     { Farbnamen der Ringe, z. B. "gelb · violett · braun · gold" }
@@ -264,6 +272,8 @@ begin
   ApplyTheme;
   UpdateRechenwegHeight;
   Recalc;
+  OnShow := @FormShowPlatz;
+  PanelLeft.OnResize := @PanelLeftResize;
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -320,7 +330,10 @@ begin
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
   PaintKofi.Canvas.Font.Style := [fsBold];
-  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, Screen.PixelsPerInch);
+  { das Fenster steht hier noch auf 96 dpi und wird danach umgerechnet:
+    darum mit 96 dpi messen, nicht mit Screen.PixelsPerInch (sonst ist der
+    Rand bei 150 % doppelt skaliert) }
+  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, PixelsPerInch);
 end;
 
 procedure TFormMain.FillCombos;
@@ -653,6 +666,8 @@ var
   Lvl: TLoadLevel;     // Bewertung der Referenz-Bauform
   BarR: TRect;         // Balken der Auslastung
   Ok: Boolean;         // Resultat gültig
+  Ringe: string;       // Farbnamen der Ringe
+  K: Integer;          // Trennstelle für zwei Zeilen
 
   { Kartenrahmen, Titel, grosser Wert und Untertext }
   procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
@@ -709,17 +724,49 @@ begin
   for I := 0 to 3 do
   begin
     R := Types.Rect(X, 0, X + CW[I], PaintCards.Height);
+    { nichts über den Kartenrand hinaus zeichnen (schmales Fenster, 150 %) }
+    C.ClipRect := R;
+    C.Clipping := True;
     case I of
       0:
         if Ok then
         begin
           Card(Format(rsCardStd, [SeriesName(FInput.Series)]), FormatOhm(FRes.R), '', clrTextBright);
           // Widerstand mit Farbringen und Farbnamen darunter
-          DrawResistor(C, Types.Rect(R.Left + Pad, R.Top + Px(56), R.Left + Pad + Px(150), R.Top + Px(80)), FBands);
           C.Font.Size := 8;
           C.Font.Color := clrTextSoft;
           C.Brush.Style := bsClear;
-          C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), BandNames(FBands, ' · '));
+          Ringe := BandNames(FBands, ' · ');
+          K := 0;
+          if C.TextWidth(Ringe) > R.Right - R.Left - 2 * Pad then
+          begin
+            // zu schmal: nach dem zweiten Ring umbrechen
+            K := Pos(' · ', Ringe);
+            K := Pos(' · ', Ringe, K + 1);
+            if K = 0 then K := Pos(' · ', Ringe);
+          end;
+          // Oberkante der Farbnamen (eine oder zwei Zeilen)
+          if K > 0 then
+            BarR.Top := R.Bottom - Pad - 2 * C.TextHeight('Ag')
+          else
+            BarR.Top := R.Bottom - Pad - C.TextHeight('Ag');
+          // Widerstand mit Farbringen, nie über den Farbnamen
+          BarR.Bottom := Min(R.Top + Px(80), BarR.Top - Px(4));
+          // und nie über dem Wert: dann lieber flacher zeichnen
+          BarR.Left := Max(R.Top + Px(58), BarR.Bottom - Px(24));  // hier: Oberkante des Widerstands
+          if BarR.Bottom - BarR.Left >= Px(10) then
+            DrawResistor(C, Types.Rect(R.Left + Pad, BarR.Left,
+              R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), BarR.Bottom), FBands);
+          C.Font.Size := 8;
+          C.Font.Color := clrTextSoft;
+          C.Brush.Style := bsClear;
+          if K = 0 then
+            C.TextOut(R.Left + Pad, BarR.Top, Ringe)
+          else
+          begin
+            C.TextOut(R.Left + Pad, BarR.Top, Copy(Ringe, 1, K - 1));
+            C.TextOut(R.Left + Pad, BarR.Top + C.TextHeight('Ag'), Copy(Ringe, K + Length(' · '), MaxInt));
+          end;
         end
         else
           Card(Format(rsCardStd, [SeriesName(FInput.Series)]), '–', '', clrTextBright);
@@ -774,6 +821,7 @@ begin
         else
           Card(rsCardRating, '–', '', clrTextBright);
     end;
+    C.Clipping := False;
     Inc(X, CW[I] + Gap);
   end;
 end;
@@ -810,12 +858,47 @@ begin
 end;
 
 procedure TFormMain.UpdateRechenwegHeight;
+var
+  NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
 begin
   if FRechenwegOpen then
-    PanelRechenweg.Height := Px(158)
+    NeuH := Px(158)
   else
-    PanelRechenweg.Height := Px(30);
+    NeuH := Px(30);
+  Mehr := NeuH - PanelRechenweg.Height;
+  { Unterkante behalten und nach oben wachsen: nur Height setzen schiebt
+    das Feld unter die Statuszeile (alBottom ordnet nach Top) }
+  PanelRechenweg.SetBounds(PanelRechenweg.Left, PanelRechenweg.Top - Mehr,
+    PanelRechenweg.Width, NeuH);
+  { Die Fensterhöhe bleibt gleich: der Rechenweg nimmt den Platz von
+    Schaltplan und LED-Vorschau (die linke Spalte rollt, wenn es eng wird).
+    Ein Mitwachsen des Fensters lief mit Mindesthöhe und Bildschirmgrenze
+    bei 150-200 % aus dem Ruder (Live-Test 30.10.) }
   MenuRechenweg.Checked := FRechenwegOpen;
+end;
+
+procedure TFormMain.PanelLeftResize(Sender: TObject);
+begin
+  PanelPreview.Height := Max(PanelPreview.Constraints.MinHeight,
+    PanelLeft.ClientHeight - PanelPreview.Top - Px(8));
+end;
+
+procedure TFormMain.FormShowPlatz(Sender: TObject);
+begin
+  OnShow := nil;
+  { erst nach dem Anzeigen: dann ist das Fenster schon auf den Bildschirm
+    begrenzt (uSkalierung) und die Höhen stimmen }
+  Application.QueueAsyncCall(@RechenwegZuBeiPlatzmangel, 0);
+end;
+
+procedure TFormMain.RechenwegZuBeiPlatzmangel(Data: PtrInt);
+begin
+  if FRechenwegOpen and (PaintLed.Height < Px(120)) then
+  begin
+    FRechenwegOpen := False;
+    UpdateRechenwegHeight;
+    PaintRechenweg.Invalidate;
+  end;
 end;
 
 procedure TFormMain.PaintRechenwegPaint(Sender: TObject);

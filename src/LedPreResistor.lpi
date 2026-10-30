@@ -25,7 +25,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.0"/>
+      <RevisionNr Value="1"/>
+      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.0.1"/>
     </VersionInfo>
     <BuildModes>
       <Item Name="Default" Default="True"/>

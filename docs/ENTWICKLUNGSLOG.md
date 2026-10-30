@@ -8,6 +8,22 @@ Neueste Einträge oben.
 
 ---
 
+## Anzeigeskalierung (DPI), 2.0.1 (Oktober 2026)
+
+Regel für alle Elospeed-Programme: jedes Fenster muss bei 100, 125, 150 und 200 % Windows-Skalierung stimmen. Keine festen Pixel in eigenem Code, die nach dem Aufbau gesetzt werden (immer `Scale96ToForm`), kein Fenster höher als der freie Bildschirm, Mindestgrösse kleiner als die Startgrösse. Vor jedem PR mit Änderungen an der Oberfläche: Test unter Wine mit 100 und 150 % und Bildschirmfotos.
+
+| Problem | Lösung |
+|---|---|
+| Das Hauptfenster ist 780 Pixel hoch (Mindesthöhe 700). Lazarus rechnet es bei 150 % auf 1170, bei 200 % auf 1560 Pixel um: auf Full HD unten abgeschnitten, Statuszeile unsichtbar. | Unit `uSkalierung` (aus StemMaker) in der `.lpr`: sie begrenzt jedes Fenster beim Sichtbarwerden auf den freien Bildschirm und hält die Mindestgrösse unter der Startgrösse. |
+| Die LED-Vorschau hatte eine feste Höhe; im begrenzten Fenster fielen «Blinken» und die halbe LED unten weg. | `PanelPreview` unten verankert, `PaintLed` füllt den Rest, die Blink-Zeile hängt unten. |
+| Bei 150/200 % reicht die Höhe trotzdem nicht für Vorschau und offenen Rechenweg. | Nach dem ersten Anzeigen (per `QueueAsyncCall`, erst dann ist das Fenster begrenzt): ist die LED-Vorschau niedriger als 120 Pixel (96 dpi), wird der Rechenweg zugeklappt. |
+| Rechenweg zu- und wieder aufklappen: das Feld rutschte unter die Statuszeile, auch bei 100 %. `alBottom` ordnet nach `Top`, nur `Height` setzen lässt die Oberkante stehen und die Unterkante wandert unter die Statuszeile. | `SetBounds` mit gleicher Unterkante (Top um den Zuwachs verkleinern). Beim Aufklappen wird das Fenster um den Zuwachs höher, `BegrenzeAufBildschirm` begrenzt. `PanelPreview` hat eine Mindesthöhe von 120 px, damit die Blink-Zeile nie über die Überschrift rutscht. |
+| Resultatkarten bei Mindestbreite (820 px): Karte 1 ist nur ~140 px breit, der Widerstand (150 px) und «gelb · violett · braun · gold» ragten in die Nachbarkarte (auf Speedys PC live gefunden). | Widerstand auf die Kartenbreite begrenzt, Farbnamen nach dem zweiten Ring umbrechen, jede Karte mit `ClipRect`/`Clipping` gezeichnet. |
+| Live-Test auf Speedys PC (125–200 %): Rechenweg zu- und aufklappen liess das Fenster jedes Mal wachsen, bis unter die Taskleiste. Bei 200 % mit offenem Rechenweg verschwand «Blinken». Fenster 2–4 px unter der Taskleiste. | Fensterhöhe beim Zu-/Aufklappen nicht mehr ändern: Mitwachsen lief mit Mindesthöhe und Bildschirmgrenze aus dem Ruder (jeder Durchgang eine andere Höhe). Der Rechenweg nimmt Platz von Schaltplan und Vorschau. Linke Spalte ist eine `TScrollBox`, `PanelPreview` füllt sie per `OnResize` bis unten (nicht verankert, sonst rollt die ScrollBox nicht) mit Mindesthöhe 120. `uSkalierung` misst Rahmen und Titelleiste mit `GetWindowRect`. |
+| Ko-fi-Knopf: Breite in `FormCreate` mit `Screen.PixelsPerInch` gerechnet. Das Fenster steht dort noch auf 96 dpi und wird danach umgerechnet, der Rand war so doppelt skaliert. | Mit `PixelsPerInch` des Fensters (im Aufbau 96) messen. `Screen.PixelsPerInch` nur beim Zeichnen benutzen. |
+
+---
+
 ## LED-Info (Oktober 2026)
 
 | Problem | Lösung |
