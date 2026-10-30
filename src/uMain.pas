@@ -128,10 +128,7 @@ type
     { Blink-Timer je nach Häkchen und Frequenz einstellen }
     procedure UpdateBlink;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
-    procedure UpdateRechenwegHeight(FensterMit: Boolean = False);
-  private
-    FZuGeschrumpft: Integer;  // so viel wurde das Fenster beim Zuklappen kleiner (-1 = unbekannt)
-  public
+    procedure UpdateRechenwegHeight;
     { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
     procedure FormShowPlatz(Sender: TObject);
     { LED-Vorschau füllt die linke Spalte bis unten; reicht die Höhe nicht,
@@ -263,7 +260,6 @@ begin
   FLedLit := True;
   FLedDirty := True;
   FRechenwegOpen := True;
-  FZuGeschrumpft := -1;
   FUpdating := True;
   try
     FillCombos;
@@ -861,10 +857,9 @@ begin
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
 end;
 
-procedure TFormMain.UpdateRechenwegHeight(FensterMit: Boolean);
+procedure TFormMain.UpdateRechenwegHeight;
 var
   NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
-  Vorher: Integer;      // Fensterhöhe vor dem Zuklappen
 begin
   if FRechenwegOpen then
     NeuH := Px(158)
@@ -875,29 +870,10 @@ begin
     das Feld unter die Statuszeile (alBottom ordnet nach Top) }
   PanelRechenweg.SetBounds(PanelRechenweg.Left, PanelRechenweg.Top - Mehr,
     PanelRechenweg.Width, NeuH);
-  { von Hand auf-/zugeklappt: Fenster um gleich viel höher bzw. kleiner,
-    damit die LED-Vorschau gleich gross bleibt und das Fenster nicht bei
-    jedem Klick wächst (uSkalierung begrenzt auf den Bildschirm) }
-  if FensterMit and (Mehr <> 0) and Visible and (WindowState = wsNormal) then
-  begin
-    { Beim Zuklappen kann die Mindesthöhe das Verkleinern bremsen. Merken,
-      wie viel das Fenster wirklich kleiner wurde, und beim Aufklappen nur
-      so viel zugeben (sonst wuchs es bei jedem Zu/Auf um 48 px) }
-    if Mehr < 0 then
-    begin
-      Vorher := Height;
-      Height := Height + Mehr;
-      FZuGeschrumpft := Vorher - Height;
-    end
-    else
-    begin
-      if FZuGeschrumpft >= 0 then
-        Mehr := FZuGeschrumpft;
-      Height := Height + Mehr;
-      FZuGeschrumpft := -1;
-    end;
-    BegrenzeAufBildschirm(Self);
-  end;
+  { Die Fensterhöhe bleibt gleich: der Rechenweg nimmt den Platz von
+    Schaltplan und LED-Vorschau (die linke Spalte rollt, wenn es eng wird).
+    Ein Mitwachsen des Fensters lief mit Mindesthöhe und Bildschirmgrenze
+    bei 150-200 % aus dem Ruder (Live-Test 30.10.) }
   MenuRechenweg.Checked := FRechenwegOpen;
 end;
 
@@ -986,7 +962,7 @@ end;
 procedure TFormMain.MenuRechenwegClick(Sender: TObject);
 begin
   FRechenwegOpen := not FRechenwegOpen;
-  UpdateRechenwegHeight(True);
+  UpdateRechenwegHeight;
   PaintRechenweg.Invalidate;
 end;
 
