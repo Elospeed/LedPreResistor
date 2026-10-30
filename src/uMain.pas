@@ -67,7 +67,7 @@ type
     PaintRechenweg: TPaintBox;    // Rechenweg (Kopfzeile und Schritte)
     PaintSchematic: TPaintBox;    // Schaltplan
     PaintStatus: TPaintBox;       // Statuszeile
-    PanelLeft: TPanel;
+    PanelLeft: TScrollBox;  // rollt, wenn bei 200 % die Höhe nicht reicht
     PanelPreview: TPanel;
     PanelRechenweg: TPanel;
     PanelRight: TPanel;
@@ -128,9 +128,12 @@ type
     { Blink-Timer je nach Häkchen und Frequenz einstellen }
     procedure UpdateBlink;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
-    procedure UpdateRechenwegHeight;
+    procedure UpdateRechenwegHeight(FensterMit: Boolean = False);
     { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
     procedure FormShowPlatz(Sender: TObject);
+    { LED-Vorschau füllt die linke Spalte bis unten; reicht die Höhe nicht,
+      rollt die Spalte (Mindesthöhe der Vorschau) }
+    procedure PanelLeftResize(Sender: TObject);
     { Rechenweg zuklappen, wenn das Fenster auf einen kleinen Bildschirm
       begrenzt wurde und die LED-Vorschau sonst verschwindet (200 %) }
     procedure RechenwegZuBeiPlatzmangel(Data: PtrInt);
@@ -270,6 +273,7 @@ begin
   UpdateRechenwegHeight;
   Recalc;
   OnShow := @FormShowPlatz;
+  PanelLeft.OnResize := @PanelLeftResize;
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -729,22 +733,36 @@ begin
         begin
           Card(Format(rsCardStd, [SeriesName(FInput.Series)]), FormatOhm(FRes.R), '', clrTextBright);
           // Widerstand mit Farbringen und Farbnamen darunter
-          DrawResistor(C, Types.Rect(R.Left + Pad, R.Top + Px(56),
-            R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), R.Top + Px(80)), FBands);
           C.Font.Size := 8;
           C.Font.Color := clrTextSoft;
           C.Brush.Style := bsClear;
           Ringe := BandNames(FBands, ' · ');
-          if C.TextWidth(Ringe) <= R.Right - R.Left - 2 * Pad then
-            C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), Ringe)
-          else
+          K := 0;
+          if C.TextWidth(Ringe) > R.Right - R.Left - 2 * Pad then
           begin
             // zu schmal: nach dem zweiten Ring umbrechen
             K := Pos(' · ', Ringe);
             K := Pos(' · ', Ringe, K + 1);
             if K = 0 then K := Pos(' · ', Ringe);
-            C.TextOut(R.Left + Pad, R.Bottom - Pad - 2 * C.TextHeight('Ag'), Copy(Ringe, 1, K - 1));
-            C.TextOut(R.Left + Pad, R.Bottom - Pad - C.TextHeight('Ag'), Copy(Ringe, K + Length(' · '), MaxInt));
+          end;
+          // Oberkante der Farbnamen (eine oder zwei Zeilen)
+          if K > 0 then
+            BarR.Top := R.Bottom - Pad - 2 * C.TextHeight('Ag')
+          else
+            BarR.Top := R.Bottom - Pad - C.TextHeight('Ag');
+          // Widerstand mit Farbringen, nie über den Farbnamen
+          BarR.Bottom := Min(R.Top + Px(80), BarR.Top - Px(4));
+          DrawResistor(C, Types.Rect(R.Left + Pad, BarR.Bottom - Px(24),
+            R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), BarR.Bottom), FBands);
+          C.Font.Size := 8;
+          C.Font.Color := clrTextSoft;
+          C.Brush.Style := bsClear;
+          if K = 0 then
+            C.TextOut(R.Left + Pad, BarR.Top, Ringe)
+          else
+          begin
+            C.TextOut(R.Left + Pad, BarR.Top, Copy(Ringe, 1, K - 1));
+            C.TextOut(R.Left + Pad, BarR.Top + C.TextHeight('Ag'), Copy(Ringe, K + Length(' · '), MaxInt));
           end;
         end
         else
@@ -836,7 +854,7 @@ begin
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
 end;
 
-procedure TFormMain.UpdateRechenwegHeight;
+procedure TFormMain.UpdateRechenwegHeight(FensterMit: Boolean);
 var
   NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
 begin
@@ -849,14 +867,21 @@ begin
     das Feld unter die Statuszeile (alBottom ordnet nach Top) }
   PanelRechenweg.SetBounds(PanelRechenweg.Left, PanelRechenweg.Top - Mehr,
     PanelRechenweg.Width, NeuH);
-  { beim Aufklappen im laufenden Fenster: Fenster höher machen, damit die
-    LED-Vorschau nicht schrumpft (uSkalierung begrenzt auf den Bildschirm) }
-  if (Mehr > 0) and Visible and (WindowState = wsNormal) then
+  { von Hand auf-/zugeklappt: Fenster um gleich viel höher bzw. kleiner,
+    damit die LED-Vorschau gleich gross bleibt und das Fenster nicht bei
+    jedem Klick wächst (uSkalierung begrenzt auf den Bildschirm) }
+  if FensterMit and (Mehr <> 0) and Visible and (WindowState = wsNormal) then
   begin
     Height := Height + Mehr;
     BegrenzeAufBildschirm(Self);
   end;
   MenuRechenweg.Checked := FRechenwegOpen;
+end;
+
+procedure TFormMain.PanelLeftResize(Sender: TObject);
+begin
+  PanelPreview.Height := Max(PanelPreview.Constraints.MinHeight,
+    PanelLeft.ClientHeight - PanelPreview.Top - Px(8));
 end;
 
 procedure TFormMain.FormShowPlatz(Sender: TObject);
@@ -938,7 +963,7 @@ end;
 procedure TFormMain.MenuRechenwegClick(Sender: TObject);
 begin
   FRechenwegOpen := not FRechenwegOpen;
-  UpdateRechenwegHeight;
+  UpdateRechenwegHeight(True);
   PaintRechenweg.Invalidate;
 end;
 

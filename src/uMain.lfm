@@ -74,13 +74,17 @@ object FormMain: TFormMain
       OnPaint = PaintRechenwegPaint
     end
   end
-  object PanelLeft: TPanel
+  object PanelLeft: TScrollBox
     Left = 0
     Height = 580
     Top = 0
     Width = 270
+    HorzScrollBar.Page = 1
+    HorzScrollBar.Visible = False
+    VertScrollBar.Page = 1
+    VertScrollBar.Tracking = True
     Align = alLeft
-    BevelOuter = bvNone
+    BorderStyle = bsNone
     ClientHeight = 580
     ClientWidth = 270
     TabOrder = 2
@@ -255,7 +259,6 @@ object FormMain: TFormMain
       Height = 302
       Top = 270
       Width = 237
-      Anchors = [akTop, akLeft, akBottom]
       Constraints.MinHeight = 120
       BevelOuter = bvNone
       ClientHeight = 302
