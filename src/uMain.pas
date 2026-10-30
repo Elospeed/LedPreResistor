@@ -872,7 +872,9 @@ begin
     jedem Klick wächst (uSkalierung begrenzt auf den Bildschirm) }
   if FensterMit and (Mehr <> 0) and Visible and (WindowState = wsNormal) then
   begin
-    Height := Height + Mehr;
+    { ClientHeight statt Height: Height enthält unter Windows je nach
+      Zeitpunkt das Menü, das Fenster wuchs so bei jedem Zu/Auf um 48 px }
+    ClientHeight := ClientHeight + Mehr;
     BegrenzeAufBildschirm(Self);
   end;
   MenuRechenweg.Checked := FRechenwegOpen;
