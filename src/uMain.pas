@@ -15,7 +15,7 @@ uses
 
 const
   { Programmversion für Titelleiste und Info }
-  APP_VER = '2.0';
+  APP_VER = '2.0.1';
 
   { Ko-fi-Seite von Elospeed }
   KOFI_URL = 'https://ko-fi.com/elospeed';
@@ -129,6 +129,11 @@ type
     procedure UpdateBlink;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
     procedure UpdateRechenwegHeight;
+    { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
+    procedure FormShowPlatz(Sender: TObject);
+    { Rechenweg zuklappen, wenn das Fenster auf einen kleinen Bildschirm
+      begrenzt wurde und die LED-Vorschau sonst verschwindet (150/200 %) }
+    procedure RechenwegZuBeiPlatzmangel(Data: PtrInt);
     { Fehlertext zum Status der Rechnung }
     function StatusText(S: TCalcStatus): string;
     { Farbnamen der Ringe, z. B. "gelb · violett · braun · gold" }
@@ -264,6 +269,7 @@ begin
   ApplyTheme;
   UpdateRechenwegHeight;
   Recalc;
+  OnShow := @FormShowPlatz;
 end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
@@ -320,7 +326,10 @@ begin
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
   PaintKofi.Canvas.Font.Style := [fsBold];
-  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, Screen.PixelsPerInch);
+  { das Fenster steht hier noch auf 96 dpi und wird danach umgerechnet:
+    darum mit 96 dpi messen, nicht mit Screen.PixelsPerInch (sonst ist der
+    Rand bei 150 % doppelt skaliert) }
+  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, PixelsPerInch);
 end;
 
 procedure TFormMain.FillCombos;
@@ -816,6 +825,24 @@ begin
   else
     PanelRechenweg.Height := Px(30);
   MenuRechenweg.Checked := FRechenwegOpen;
+end;
+
+procedure TFormMain.FormShowPlatz(Sender: TObject);
+begin
+  OnShow := nil;
+  { erst nach dem Anzeigen: dann ist das Fenster schon auf den Bildschirm
+    begrenzt (uSkalierung) und die Höhen stimmen }
+  Application.QueueAsyncCall(@RechenwegZuBeiPlatzmangel, 0);
+end;
+
+procedure TFormMain.RechenwegZuBeiPlatzmangel(Data: PtrInt);
+begin
+  if FRechenwegOpen and (PaintLed.Height < Px(200)) then
+  begin
+    FRechenwegOpen := False;
+    UpdateRechenwegHeight;
+    PaintRechenweg.Invalidate;
+  end;
 end;
 
 procedure TFormMain.PaintRechenwegPaint(Sender: TObject);

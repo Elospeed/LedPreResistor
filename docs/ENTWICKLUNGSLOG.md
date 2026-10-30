@@ -8,6 +8,19 @@ Neueste Einträge oben.
 
 ---
 
+## Anzeigeskalierung (DPI), 2.0.1 (Oktober 2026)
+
+Regel für alle Elospeed-Programme: jedes Fenster muss bei 100, 125, 150 und 200 % Windows-Skalierung stimmen. Keine festen Pixel in eigenem Code, die nach dem Aufbau gesetzt werden (immer `Scale96ToForm`), kein Fenster höher als der freie Bildschirm, Mindestgrösse kleiner als die Startgrösse. Vor jedem PR mit Änderungen an der Oberfläche: Test unter Wine mit 100 und 150 % und Bildschirmfotos.
+
+| Problem | Lösung |
+|---|---|
+| Das Hauptfenster ist 780 Pixel hoch (Mindesthöhe 700). Lazarus rechnet es bei 150 % auf 1170, bei 200 % auf 1560 Pixel um: auf Full HD unten abgeschnitten, Statuszeile unsichtbar. | Unit `uSkalierung` (aus StemMaker) in der `.lpr`: sie begrenzt jedes Fenster beim Sichtbarwerden auf den freien Bildschirm und hält die Mindestgrösse unter der Startgrösse. |
+| Die LED-Vorschau hatte eine feste Höhe; im begrenzten Fenster fielen «Blinken» und die halbe LED unten weg. | `PanelPreview` unten verankert, `PaintLed` füllt den Rest, die Blink-Zeile hängt unten. |
+| Bei 150/200 % reicht die Höhe trotzdem nicht für Vorschau und offenen Rechenweg. | Nach dem ersten Anzeigen (per `QueueAsyncCall`, erst dann ist das Fenster begrenzt): ist die LED-Vorschau niedriger als 200 Pixel (96 dpi), wird der Rechenweg zugeklappt. |
+| Ko-fi-Knopf: Breite in `FormCreate` mit `Screen.PixelsPerInch` gerechnet. Das Fenster steht dort noch auf 96 dpi und wird danach umgerechnet, der Rand war so doppelt skaliert. | Mit `PixelsPerInch` des Fensters (im Aufbau 96) messen. `Screen.PixelsPerInch` nur beim Zeichnen benutzen. |
+
+---
+
 ## LED-Info (Oktober 2026)
 
 | Problem | Lösung |

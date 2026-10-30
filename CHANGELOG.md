@@ -7,6 +7,16 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.0.1 – noch nicht veröffentlicht
+
+### Anzeigeskalierung (125 / 150 / 200 %)
+- Das Hauptfenster war bei 150 und 200 % höher als ein Full-HD-Bildschirm: Statuszeile und Ko-fi-Knopf lagen unter dem Bildschirmrand, bei 200 % passte nicht einmal die Mindestgrösse. Es wird jetzt auf den freien Bildschirm begrenzt, die Mindestgrösse bleibt kleiner als die Startgrösse (neue Unit `uSkalierung`, gleich wie bei StemMaker).
+- Die LED-Vorschau wächst und schrumpft mit dem Fenster, «Blinken» bleibt immer sichtbar.
+- Ist das Fenster beim Start zu niedrig für Vorschau und Rechenweg, ist der Rechenweg zugeklappt (Ansicht → Rechenweg klappt ihn auf).
+- Ko-fi-Knopf: Rand bei 150 % nicht mehr doppelt skaliert.
+
+---
+
 ## 2.0 – 29. Oktober 2026
 
 ### Projektseite
