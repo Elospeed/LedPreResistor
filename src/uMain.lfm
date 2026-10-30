@@ -256,6 +256,7 @@ object FormMain: TFormMain
       Top = 270
       Width = 237
       Anchors = [akTop, akLeft, akBottom]
+      Constraints.MinHeight = 120
       BevelOuter = bvNone
       ClientHeight = 302
       ClientWidth = 237

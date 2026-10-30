@@ -11,7 +11,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Menus,
-  LCLType, Types, uESeries, uColorCode, uCalc;
+  LCLType, Types, uESeries, uColorCode, uCalc, uSkalierung;
 
 const
   { Programmversion für Titelleiste und Info }
@@ -132,7 +132,7 @@ type
     { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
     procedure FormShowPlatz(Sender: TObject);
     { Rechenweg zuklappen, wenn das Fenster auf einen kleinen Bildschirm
-      begrenzt wurde und die LED-Vorschau sonst verschwindet (150/200 %) }
+      begrenzt wurde und die LED-Vorschau sonst verschwindet (200 %) }
     procedure RechenwegZuBeiPlatzmangel(Data: PtrInt);
     { Fehlertext zum Status der Rechnung }
     function StatusText(S: TCalcStatus): string;
@@ -819,11 +819,25 @@ begin
 end;
 
 procedure TFormMain.UpdateRechenwegHeight;
+var
+  NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
 begin
   if FRechenwegOpen then
-    PanelRechenweg.Height := Px(158)
+    NeuH := Px(158)
   else
-    PanelRechenweg.Height := Px(30);
+    NeuH := Px(30);
+  Mehr := NeuH - PanelRechenweg.Height;
+  { Unterkante behalten und nach oben wachsen: nur Height setzen schiebt
+    das Feld unter die Statuszeile (alBottom ordnet nach Top) }
+  PanelRechenweg.SetBounds(PanelRechenweg.Left, PanelRechenweg.Top - Mehr,
+    PanelRechenweg.Width, NeuH);
+  { beim Aufklappen im laufenden Fenster: Fenster höher machen, damit die
+    LED-Vorschau nicht schrumpft (uSkalierung begrenzt auf den Bildschirm) }
+  if (Mehr > 0) and Visible and (WindowState = wsNormal) then
+  begin
+    Height := Height + Mehr;
+    BegrenzeAufBildschirm(Self);
+  end;
   MenuRechenweg.Checked := FRechenwegOpen;
 end;
 
@@ -837,7 +851,7 @@ end;
 
 procedure TFormMain.RechenwegZuBeiPlatzmangel(Data: PtrInt);
 begin
-  if FRechenwegOpen and (PaintLed.Height < Px(200)) then
+  if FRechenwegOpen and (PaintLed.Height < Px(120)) then
   begin
     FRechenwegOpen := False;
     UpdateRechenwegHeight;

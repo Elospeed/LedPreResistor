@@ -14,6 +14,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Die LED-Vorschau wächst und schrumpft mit dem Fenster, «Blinken» bleibt immer sichtbar.
 - Ist das Fenster beim Start zu niedrig für Vorschau und Rechenweg, ist der Rechenweg zugeklappt (Ansicht → Rechenweg klappt ihn auf).
 - Ko-fi-Knopf: Rand bei 150 % nicht mehr doppelt skaliert.
+- Rechenweg wieder aufklappen: Er rutschte unter die Statuszeile (auch bei 100 %). Jetzt wächst er nach oben, das Fenster wird dafür höher, soweit der Bildschirm reicht.
 
 ---
 

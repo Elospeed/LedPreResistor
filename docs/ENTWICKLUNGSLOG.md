@@ -16,7 +16,8 @@ Regel für alle Elospeed-Programme: jedes Fenster muss bei 100, 125, 150 und 200
 |---|---|
 | Das Hauptfenster ist 780 Pixel hoch (Mindesthöhe 700). Lazarus rechnet es bei 150 % auf 1170, bei 200 % auf 1560 Pixel um: auf Full HD unten abgeschnitten, Statuszeile unsichtbar. | Unit `uSkalierung` (aus StemMaker) in der `.lpr`: sie begrenzt jedes Fenster beim Sichtbarwerden auf den freien Bildschirm und hält die Mindestgrösse unter der Startgrösse. |
 | Die LED-Vorschau hatte eine feste Höhe; im begrenzten Fenster fielen «Blinken» und die halbe LED unten weg. | `PanelPreview` unten verankert, `PaintLed` füllt den Rest, die Blink-Zeile hängt unten. |
-| Bei 150/200 % reicht die Höhe trotzdem nicht für Vorschau und offenen Rechenweg. | Nach dem ersten Anzeigen (per `QueueAsyncCall`, erst dann ist das Fenster begrenzt): ist die LED-Vorschau niedriger als 200 Pixel (96 dpi), wird der Rechenweg zugeklappt. |
+| Bei 150/200 % reicht die Höhe trotzdem nicht für Vorschau und offenen Rechenweg. | Nach dem ersten Anzeigen (per `QueueAsyncCall`, erst dann ist das Fenster begrenzt): ist die LED-Vorschau niedriger als 120 Pixel (96 dpi), wird der Rechenweg zugeklappt. |
+| Rechenweg zu- und wieder aufklappen: das Feld rutschte unter die Statuszeile, auch bei 100 %. `alBottom` ordnet nach `Top`, nur `Height` setzen lässt die Oberkante stehen und die Unterkante wandert unter die Statuszeile. | `SetBounds` mit gleicher Unterkante (Top um den Zuwachs verkleinern). Beim Aufklappen wird das Fenster um den Zuwachs höher, `BegrenzeAufBildschirm` begrenzt. `PanelPreview` hat eine Mindesthöhe von 120 px, damit die Blink-Zeile nie über die Überschrift rutscht. |
 | Ko-fi-Knopf: Breite in `FormCreate` mit `Screen.PixelsPerInch` gerechnet. Das Fenster steht dort noch auf 96 dpi und wird danach umgerechnet, der Rand war so doppelt skaliert. | Mit `PixelsPerInch` des Fensters (im Aufbau 96) messen. `Screen.PixelsPerInch` nur beim Zeichnen benutzen. |
 
 ---
