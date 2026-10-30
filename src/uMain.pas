@@ -129,6 +129,9 @@ type
     procedure UpdateBlink;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
     procedure UpdateRechenwegHeight(FensterMit: Boolean = False);
+  private
+    FZuGeschrumpft: Integer;  // so viel wurde das Fenster beim Zuklappen kleiner (-1 = unbekannt)
+  public
     { beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen }
     procedure FormShowPlatz(Sender: TObject);
     { LED-Vorschau füllt die linke Spalte bis unten; reicht die Höhe nicht,
@@ -260,6 +263,7 @@ begin
   FLedLit := True;
   FLedDirty := True;
   FRechenwegOpen := True;
+  FZuGeschrumpft := -1;
   FUpdating := True;
   try
     FillCombos;
@@ -857,6 +861,7 @@ end;
 procedure TFormMain.UpdateRechenwegHeight(FensterMit: Boolean);
 var
   NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
+  Vorher: Integer;      // Fensterhöhe vor dem Zuklappen
 begin
   if FRechenwegOpen then
     NeuH := Px(158)
@@ -872,9 +877,22 @@ begin
     jedem Klick wächst (uSkalierung begrenzt auf den Bildschirm) }
   if FensterMit and (Mehr <> 0) and Visible and (WindowState = wsNormal) then
   begin
-    { ClientHeight statt Height: Height enthält unter Windows je nach
-      Zeitpunkt das Menü, das Fenster wuchs so bei jedem Zu/Auf um 48 px }
-    ClientHeight := ClientHeight + Mehr;
+    { Beim Zuklappen kann die Mindesthöhe das Verkleinern bremsen. Merken,
+      wie viel das Fenster wirklich kleiner wurde, und beim Aufklappen nur
+      so viel zugeben (sonst wuchs es bei jedem Zu/Auf um 48 px) }
+    if Mehr < 0 then
+    begin
+      Vorher := Height;
+      Height := Height + Mehr;
+      FZuGeschrumpft := Vorher - Height;
+    end
+    else
+    begin
+      if FZuGeschrumpft >= 0 then
+        Mehr := FZuGeschrumpft;
+      Height := Height + Mehr;
+      FZuGeschrumpft := -1;
+    end;
     BegrenzeAufBildschirm(Self);
   end;
   MenuRechenweg.Checked := FRechenwegOpen;
