@@ -756,8 +756,11 @@ begin
             BarR.Top := R.Bottom - Pad - C.TextHeight('Ag');
           // Widerstand mit Farbringen, nie über den Farbnamen
           BarR.Bottom := Min(R.Top + Px(80), BarR.Top - Px(4));
-          DrawResistor(C, Types.Rect(R.Left + Pad, BarR.Bottom - Px(24),
-            R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), BarR.Bottom), FBands);
+          // und nie über dem Wert: dann lieber flacher zeichnen
+          BarR.Left := Max(R.Top + Px(58), BarR.Bottom - Px(24));  // hier: Oberkante des Widerstands
+          if BarR.Bottom - BarR.Left >= Px(10) then
+            DrawResistor(C, Types.Rect(R.Left + Pad, BarR.Left,
+              R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), BarR.Bottom), FBands);
           C.Font.Size := 8;
           C.Font.Color := clrTextSoft;
           C.Brush.Style := bsClear;
