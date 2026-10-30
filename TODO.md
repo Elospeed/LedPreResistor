@@ -6,7 +6,7 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Release 2.0 vorbereiten: Workflow «Release erstellen», CHANGELOG-Abschnitt 2.0 (dieser PR)
+- [ ] Release 2.0.1 (Anzeigeskalierung): Datum im CHANGELOG, Projektseite auf 2.0.1 (dieser PR), danach Workflow «Release erstellen» mit Version 2.0.1
 
 ## Als Nächstes
 
