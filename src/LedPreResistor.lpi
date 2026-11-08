@@ -14,8 +14,10 @@
       <Icon Value="0"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
-      <Resources Count="1">
+      <Resources Count="3">
         <Resource_0 FileName="info/led-info.html" Type="RCDATA" ResourceName="LEDINFO"/>
+        <Resource_1 FileName="info/led-info-en.html" Type="RCDATA" ResourceName="LEDINFO_EN"/>
+        <Resource_2 FileName="lang/en.po" Type="RCDATA" ResourceName="LANG_EN"/>
       </Resources>
       <UseXPManifest Value="True"/>
       <XPManifest>
@@ -26,7 +28,7 @@
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
       <RevisionNr Value="1"/>
-      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.0.1"/>
+      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.1"/>
     </VersionInfo>
     <BuildModes>
       <Item Name="Default" Default="True"/>
@@ -84,6 +86,10 @@
       </Unit>
       <Unit>
         <Filename Value="uLedInfo.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uLang.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>

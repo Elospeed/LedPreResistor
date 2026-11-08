@@ -8,6 +8,17 @@ Neueste Einträge oben.
 
 ---
 
+## Englische Oberfläche, 2.1 (November 2026)
+
+- **Kein LCLTranslator, sondern `uLang` wie bei StemMaker.** `_()` schlägt den deutschen Text in der Übersetzung nach. Die `resourcestring`s in `uMain.pas` bleiben deutsch und werden beim Anzeigen mit `_()` übersetzt. Vorteil: Umschalten zur Laufzeit ohne Neustart, keine Abhängigkeit von LCLTranslator.
+- **Eine EXE bleibt eine EXE.** `en.po` steckt als RCDATA-Ressource `LANG_EN` in der EXE, die englische LED-Info als `LEDINFO_EN`. Der Build prüft beide mit `grep`.
+- **Beschriftungen aus der LFM** (Menüs, Labels) stehen deutsch im Formular und werden in `ApplyLanguage` zur Laufzeit gesetzt. Neue Beschriftungen immer dort mit eintragen.
+- **Stolperfalle beim Umbau:** Beim automatischen Einpacken in `_()` blieben zuerst alle Stellen wie `Format(rsX, …)` aussen vor (ein `(` direkt davor). Folge: Teile blieben deutsch, und weil `FormCreate` nicht umgebaut war, stürzte das Programm beim Start ab (`MenuLang` noch nicht erzeugt). Gefunden mit einem Protokoll in eine Datei unter Wine.
+- **Ko-fi-Knopf beim Sprachwechsel:** Beim Start setzt `ApplyTheme` die Breite (vor der DPI-Umrechnung, siehe 2.0.1). Beim Umschalten zur Laufzeit wird nur der Unterschied der Textbreite addiert, gemessen auf demselben Canvas. So wird nichts doppelt skaliert (geprüft bei 100 % und 150 %).
+- **Zahlenformat:** Englisch mit Punkt und «66%», Deutsch mit Komma und «66 %». Beim Umschalten werden die Zahlen in den Eingabefeldern umgestellt (3,2 ↔ 3.2); die Eingabe nimmt weiterhin beides an.
+
+---
+
 ## Anzeigeskalierung (DPI), 2.0.1 (Oktober 2026)
 
 Regel für alle Elospeed-Programme: jedes Fenster muss bei 100, 125, 150 und 200 % Windows-Skalierung stimmen. Keine festen Pixel in eigenem Code, die nach dem Aufbau gesetzt werden (immer `Scale96ToForm`), kein Fenster höher als der freie Bildschirm, Mindestgrösse kleiner als die Startgrösse. Vor jedem PR mit Änderungen an der Oberfläche: Test unter Wine mit 100 und 150 % und Bildschirmfotos.

@@ -1,6 +1,7 @@
 { Formatierte Ausgabe der Werte: Volt, Ohm, Milliampere, Leistung, Prozent.
   Keine überflüssigen Nachkommastellen (4,7 kΩ statt 4700,00 Ω).
-  Das Dezimalzeichen ist einstellbar (Komma für Deutsch, Punkt für Englisch). }
+  Dezimalzeichen und Prozent-Abstand sind einstellbar (Komma und "66 %"
+  für Deutsch, Punkt und "66%" für Englisch). }
 unit uFormat;
 
 {$mode objfpc}{$H+}
@@ -10,6 +11,9 @@ interface
 var
   { Dezimalzeichen der Anzeige; Standard Komma }
   DisplayDecimal: Char = ',';
+  { Abstand zwischen Zahl und Prozentzeichen: ' ' auf Deutsch ("66 %"),
+    leer auf Englisch ("66%") }
+  PercentSpace: string = ' ';
 
 { Zahl mit höchstens MaxDec und mindestens MinDec Nachkommastellen,
   gerundet; überzählige Nullen am Ende werden weggelassen. }
@@ -103,7 +107,7 @@ end;
 
 function FormatPercent(X: Double): string;
 begin
-  Result := IntToStr(Round(X * 100)) + ' %';
+  Result := IntToStr(Round(X * 100)) + PercentSpace + '%';
 end;
 
 end.
