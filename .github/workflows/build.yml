@@ -65,6 +65,15 @@ jobs:
             echo "::error::LED-Info (Ressource LEDINFO) fehlt in der EXE"
             exit 1
           fi
+          # englische LED-Info und englische Übersetzung ebenso
+          if ! grep -q "<title>The LED</title>" bin/LedPreResistor.exe; then
+            echo "::error::Englische LED-Info (Ressource LEDINFO_EN) fehlt in der EXE"
+            exit 1
+          fi
+          if ! grep -q 'msgstr "Supply voltage"' bin/LedPreResistor.exe; then
+            echo "::error::Englische Übersetzung (Ressource LANG_EN) fehlt in der EXE"
+            exit 1
+          fi
 
       - name: Tests der Rechenlogik bauen und ausführen
         run: |

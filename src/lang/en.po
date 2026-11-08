@@ -1,0 +1,354 @@
+# Englische Übersetzung von LedPreResistor (gettext, mit Poedit bearbeitbar).
+# Steckt als Ressource LANG_EN in der EXE (siehe src/uLang.pas).
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+#: uMain.pas rsLedRed
+msgid "Rot"
+msgstr "Red"
+
+#: uMain.pas rsLedYellow
+msgid "Gelb"
+msgstr "Yellow"
+
+#: uMain.pas rsLedGreen
+msgid "Grün"
+msgstr "Green"
+
+#: uMain.pas rsLedBlue
+msgid "Blau"
+msgstr "Blue"
+
+#: uMain.pas rsLedWhite
+msgid "Weiss"
+msgstr "White"
+
+#: uMain.pas rsLedInfrared
+msgid "Infrarot"
+msgstr "Infrared"
+
+#: uMain.pas rsLedNameRed
+msgid "rot"
+msgstr "red"
+
+#: uMain.pas rsLedNameYellow
+msgid "gelb"
+msgstr "yellow"
+
+#: uMain.pas rsLedNameGreen
+msgid "grün"
+msgstr "green"
+
+#: uMain.pas rsLedNameBlue
+msgid "blau"
+msgstr "blue"
+
+#: uMain.pas rsLedNameWhite
+msgid "weiss"
+msgstr "white"
+
+#: uMain.pas rsSeriesE12
+msgid "E12 (±10 %)"
+msgstr "E12 (±10%)"
+
+#: uMain.pas rsSeriesE24
+msgid "E24 (±5 %)"
+msgstr "E24 (±5%)"
+
+#: uMain.pas rsSeriesE96
+msgid "E96 (±1 %)"
+msgstr "E96 (±1%)"
+
+#: uMain.pas rsAnodeHint
+msgid "langes Bein"
+msgstr "long leg"
+
+#: uMain.pas rsCathode
+msgid "Kathode −"
+msgstr "Cathode −"
+
+#: uMain.pas rsCathodeHint1
+msgid "kurzes Bein,"
+msgstr "short leg,"
+
+#: uMain.pas rsCathodeHint2
+msgid "flache Seite"
+msgstr "flat side"
+
+#: uMain.pas rsFlat
+msgid "flach"
+msgstr "flat"
+
+#: uMain.pas rsBlack
+msgid "schwarz"
+msgstr "black"
+
+#: uMain.pas rsBrown
+msgid "braun"
+msgstr "brown"
+
+#: uMain.pas rsViolet
+msgid "violett"
+msgstr "violet"
+
+#: uMain.pas rsGrey
+msgid "grau"
+msgstr "grey"
+
+#: uMain.pas rsSilver
+msgid "silber"
+msgstr "silver"
+
+#: uMain.pas rsSchemLed
+msgid "LED %s"
+msgstr "%s LED"
+
+#: uMain.pas rsSchemLedN
+msgid "%d × LED %s"
+msgstr "%d × %s LED"
+
+#: uMain.pas rsCardStd
+msgid "Normwert (%s)"
+msgstr "Standard value (%s)"
+
+#: uMain.pas rsCardCurrent
+msgid "Tatsächlicher Strom"
+msgstr "Actual current"
+
+#: uMain.pas rsCardCurrentSub
+msgid "berechnet %s → %s"
+msgstr "calculated %s → %s"
+
+#: uMain.pas rsCardPower
+msgid "Verlustleistung"
+msgstr "Power dissipation"
+
+#: uMain.pas rsCardPowerSub
+msgid "am Widerstand"
+msgstr "in the resistor"
+
+#: uMain.pas rsCardRating
+msgid "Empfohlene Bauform"
+msgstr "Recommended rating"
+
+#: uMain.pas rsCardRatingSub
+msgid "%s wäre zu %s belastet"
+msgstr "%s would be loaded to %s"
+
+#: uMain.pas rsCardRatingSubOk
+msgid "%s zu %s belastet"
+msgstr "%s loaded to %s"
+
+#: uMain.pas rsCardRatingNoneSub
+msgid "zu viel für einen Vorwiderstand"
+msgstr "too much for a series resistor"
+
+#: uMain.pas rsRechenweg
+msgid "Rechenweg"
+msgstr "Calculation steps"
+
+#: uMain.pas rsStep1
+msgid "Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**"
+msgstr "Voltage across the resistor: U_R = U_B − U_F = %s − %s = **%s**"
+
+#: uMain.pas rsStep1N
+msgid "Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**"
+msgstr "Voltage across the resistor: U_R = U_B − n × U_F = %s − %d × %s = **%s**"
+
+#: uMain.pas rsKofi
+msgid "Kaffee spendieren"
+msgstr "Buy me a coffee"
+
+#: uMain.pas rsStep2
+msgid "Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**"
+msgstr "Ideal resistance: R = U_R / I = %s / %s A = **%s** → next %s value up: **%s**"
+
+#: uMain.pas rsStep3
+msgid "Tatsächlicher Strom: I = %s / %s = **%s**"
+msgstr "Actual current: I = %s / %s = **%s**"
+
+#: uMain.pas rsStep4
+msgid "Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**"
+msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → %s loaded to %s%s → **%s**"
+
+#: uMain.pas rsStep4Over50
+msgid " (> 50 %)"
+msgstr " (> 50%)"
+
+#: uMain.pas rsStep4None
+msgid "Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**"
+msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → more than 0.5 W: **constant current source or larger rating**"
+
+#: uMain.pas rsStep5
+msgid "Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d °C/W ≈ **+%d °C** (bei %s)"
+msgstr "Temperature rise (estimate): ΔT ≈ P × R_t_h = %s × %d °C/W ≈ **+%d °C** (at %s)"
+
+#: uMain.pas rsStatusLoad
+msgid "Auslastung %s"
+msgstr "Load %s"
+
+#: uMain.pas rsStatusWarn
+msgid "%s würde ca. +%d °C warm – %s empfohlen"
+msgstr "%s would heat up by about +%d °C – %s recommended"
+
+#: uMain.pas rsStatusOk
+msgid "%s wird ca. +%d °C warm – reicht"
+msgstr "%s heats up by about +%d °C – fine"
+
+#: uMain.pas rsStatusNone
+msgid "%s würde ca. +%d °C warm – Leistung zu gross für einen Vorwiderstand"
+msgstr "%s would heat up by about +%d °C – too much power for a series resistor"
+
+#: uMain.pas rsStatusTotal
+msgid "Gesamtleistung %s"
+msgstr "Total power %s"
+
+#: uMain.pas rsErrU
+msgid "Bitte eine Speisespannung grösser als 0 eingeben."
+msgstr "Please enter a supply voltage greater than 0."
+
+#: uMain.pas rsErrUd
+msgid "Bitte eine Durchlassspannung grösser als 0 eingeben."
+msgstr "Please enter a forward voltage greater than 0."
+
+#: uMain.pas rsErrI
+msgid "Bitte einen LED-Strom grösser als 0 eingeben."
+msgstr "Please enter an LED current greater than 0."
+
+#: uMain.pas rsErrN
+msgid "Bitte mindestens 1 LED angeben (ganze Zahl)."
+msgstr "Please enter at least 1 LED (whole number)."
+
+#: uMain.pas rsErrUTooLow
+msgid "Die Speisespannung (%s) muss grösser sein als %d × %s = %s."
+msgstr "The supply voltage (%s) must be greater than %d × %s = %s."
+
+#: uMain.pas rsErrNoStd
+msgid "Kein Normwert gefunden."
+msgstr "No standard value found."
+
+#: uMain.pas rsCopyTitle
+msgid "LedPreResistor %s – Vorwiderstand"
+msgstr "LedPreResistor %s – series resistor"
+
+#: uMain.pas rsCopyInput
+msgid "Speisespannung %s, %d × LED %s mit U_F = %s, Strom %s"
+msgstr "Supply voltage %s, %d × %s LED with U_F = %s, current %s"
+
+#: uMain.pas rsCopyStd
+msgid "Vorwiderstand: %s (%s, %s), berechnet %s"
+msgstr "Series resistor: %s (%s, %s), calculated %s"
+
+#: uMain.pas rsCopyCurrent
+msgid "Tatsächlicher Strom: %s"
+msgstr "Actual current: %s"
+
+#: uMain.pas rsCopyPower
+msgid "Leistung Widerstand: %s, LEDs: %s, gesamt: %s"
+msgstr "Power resistor: %s, LEDs: %s, total: %s"
+
+#: uMain.pas rsCopyRating
+msgid "Empfohlene Bauform: %s (%s zu %s ausgelastet)"
+msgstr "Recommended rating: %s (%s loaded to %s)"
+
+#: uMain.pas rsLedInfoFailed
+msgid "Die LED-Info konnte nicht geöffnet werden."
+msgstr "The LED info could not be opened."
+
+#: uMain.pas rsHeadInputs
+msgid "EINGABEN"
+msgstr "INPUTS"
+
+#: uMain.pas rsLabelU
+msgid "Speisespannung"
+msgstr "Supply voltage"
+
+#: uMain.pas rsLabelColor
+msgid "LED-Farbe"
+msgstr "LED colour"
+
+#: uMain.pas rsLabelUd
+msgid "Durchlassspannung"
+msgstr "Forward voltage"
+
+#: uMain.pas rsLabelI
+msgid "LED-Strom"
+msgstr "LED current"
+
+#: uMain.pas rsLabelSeries
+msgid "E-Reihe"
+msgstr "E series"
+
+#: uMain.pas rsLabelN
+msgid "LEDs in Reihe"
+msgstr "LEDs in series"
+
+#: uMain.pas rsUnitN
+msgid "Stk."
+msgstr "pcs"
+
+#: uMain.pas rsHeadPreview
+msgid "LED-VORSCHAU"
+msgstr "LED PREVIEW"
+
+#: uMain.pas rsBlink
+msgid "Blinken"
+msgstr "Blink"
+
+#: uMain.pas rsMenuFile
+msgid "&Datei"
+msgstr "&File"
+
+#: uMain.pas rsMenuCopy
+msgid "Resultat &kopieren"
+msgstr "&Copy result"
+
+#: uMain.pas rsMenuExit
+msgid "&Beenden"
+msgstr "E&xit"
+
+#: uMain.pas rsMenuEdit
+msgid "&Bearbeiten"
+msgstr "&Edit"
+
+#: uMain.pas rsMenuReset
+msgid "Eingaben &zurücksetzen"
+msgstr "&Reset inputs"
+
+#: uMain.pas rsMenuView
+msgid "&Ansicht"
+msgstr "&View"
+
+#: uMain.pas rsMenuRechenweg
+msgid "&Rechenweg"
+msgstr "&Calculation steps"
+
+#: uMain.pas rsMenuBlink
+msgid "LED &blinken"
+msgstr "&Blink LED"
+
+#: uMain.pas rsMenuLang
+msgid "&Sprache (Language)"
+msgstr "&Language (Sprache)"
+
+#: uMain.pas rsMenuHelp
+msgid "&Hilfe"
+msgstr "&Help"
+
+#: uMain.pas rsMenuLedInfo
+msgid "&LED-Info (Die Leuchtdiode) …"
+msgstr "&LED info (The LED) …"
+
+#: uMain.pas rsMenuKofi
+msgid "Einen Kaffee spendieren (Ko-fi) …"
+msgstr "Buy me a coffee (Ko-fi) …"
+
+#: uMain.pas rsMenuAbout
+msgid "Ü&ber LedPreResistor …"
+msgstr "&About LedPreResistor …"
+
+#: uMain.pas rsAbout
+msgid "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004."
+msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware «LED Pre-Resistor»."

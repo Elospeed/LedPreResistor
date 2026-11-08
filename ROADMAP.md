@@ -13,5 +13,5 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 5. **Rechenweg** – aufklappbarer Bereich, der die Rechnung Schritt für Schritt mit den aktuellen Werten erklärt. ✔
 6. **LED-Info** – neu geschriebene Seite «Die Leuchtdiode» als Ressource in der EXE (die PDF von 2004 wird nicht übernommen). ✔
 6b. **Projektseite** – `site/` wie bei StemMaker (Englisch/Deutsch, Screenshots), veröffentlicht über GitHub Pages.
-7. **About-Fenster und Sprachen** – Deutsch und Englisch über `.po`-Dateien.
+7. **About-Fenster und Sprachen** – Deutsch und Englisch über `.po`-Dateien (Sprachen ✔ in 2.1; About-Fenster offen).
 8. **Testversion** – unter Wine und Windows testen, danach offizielles Release 2.0.

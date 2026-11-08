@@ -6,14 +6,13 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Release 2.0.1 (Anzeigeskalierung): Datum im CHANGELOG, Projektseite auf 2.0.1 (dieser PR), danach Workflow «Release erstellen» mit Version 2.0.1
+- [ ] Release 2.1 (Englisch): nach dem Merge Datum im CHANGELOG prüfen, Workflow «Release erstellen» mit Version 2.1
+- [ ] Nach Release 2.1: Eintrag auf AlternativeTo, Ko-fi-Profiltext ergänzen
 
 ## Als Nächstes
 
-- [ ] Nach dem Release: Repo öffentlich und Pages einschalten (Settings → Pages → Source = GitHub Actions)
 - [ ] Screenshots für die Seite unter echtem Windows neu aufnehmen (jetzt unter Wine)
 - [ ] About-Fenster statt Meldungsfenster
-- [ ] Englische Übersetzung (`src/lang/`, LCLTranslator) und Umschaltung DE | EN
 - [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)
 
 ## Offen (Entscheid von Speedy)

@@ -7,6 +7,21 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.1 – 8. November 2026
+
+### Englisch
+- Das Programm gibt es jetzt auf Deutsch und Englisch: Menüs, Beschriftungen, Auswahllisten, Schaltplan, Resultatkarten, Rechenweg, Statuszeile, Fehlermeldungen, Info und die Zusammenfassung beim Kopieren.
+- Sprachwahl wie bei StemMaker: Deutsch bei deutschem Windows, sonst Englisch. Unter Ansicht → Sprache lässt sich jederzeit umschalten, ohne Neustart; die Wahl steht in `LedPreResistor.ini` neben der EXE.
+- Englisch zeigt Zahlen mit Dezimalpunkt (18.72 mA) und Prozent ohne Leerschlag (66%). Eingeben lässt sich weiterhin Komma oder Punkt.
+- LED-Info auf Englisch («The LED», `src/info/led-info-en.html`), F1 öffnet die Seite in der gewählten Sprache.
+- Übersetzung in `src/lang/en.po` (gettext, mit Poedit bearbeitbar), steckt als Ressource in der EXE: weiterhin eine einzige EXE ohne Zusatzdateien.
+- Neue Unit `uLang` mit Tests; der Build prüft, dass englische LED-Info und Übersetzung in der EXE stecken.
+
+### Projektseite
+- Englische Seite mit englischen Screenshots, Hinweis «German only» entfernt; deutsche Seite mit Frage zur englischen Version.
+
+---
+
 ## 2.0.1 – 30. Oktober 2026
 
 ### Anzeigeskalierung (125 / 150 / 200 %)

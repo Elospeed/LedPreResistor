@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.0.1
+# Elospeed LedPreResistor 2.1
 
 **by Elospeed**
 
@@ -6,7 +6,7 @@
 
 **Website:** [elospeed.github.io/LedPreResistor](https://elospeed.github.io/LedPreResistor/) · **Download:** [latest release](https://github.com/Elospeed/LedPreResistor/releases/latest)
 
-![LedPreResistor main window: 12 V, white LED, 20 mA → 470 Ω, ½ W](site/img/ledpreresistor-main.png)
+![LedPreResistor main window: 12 V, white LED, 20 mA → 470 Ω, ½ W](site/img/ledpreresistor-main-en.png)
 
 LedPreResistor calculates the series resistor for one or more LEDs. It is the new edition of the freeware tool *LED Pre-Resistor* (Delphi 7, 2004), rebuilt from scratch in Lazarus: a single 64-bit Windows exe, no installer, no extra packages.
 
@@ -19,13 +19,13 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - **"How it is calculated"** panel that walks through the calculation step by step with your own numbers.
 - Presets for red, yellow, green, blue, white and infrared LEDs, or your own forward voltage from the datasheet.
 - **LED preview**: a 5 mm LED in the chosen colour with anode, cathode and flat side labelled, optionally blinking.
-- **LED info** "Die Leuchtdiode" built in (F1, opens in your browser, also offline).
+- **LED info** "The LED" built in (F1, opens in your browser, also offline).
 - Copy the result with Ctrl+Shift+C. Comma and dot both work as decimal separator.
-- The program is in German for now; an English translation is planned.
+- **English and German**: starts in German on a German Windows and in English everywhere else; View → Language switches at any time (saved in `LedPreResistor.ini` next to the exe).
 
 **Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 
-LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way. The program never asks; there is just a small "Kaffee spendieren" button in the status bar.
+LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way. The program never asks; there is just a small "Buy me a coffee" button in the status bar.
 
 ## Getting started
 

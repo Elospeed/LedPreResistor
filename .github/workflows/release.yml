@@ -73,6 +73,8 @@ jobs:
           lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
           # LED-Info muss als Ressource in der EXE stecken
           grep -q "<title>Die Leuchtdiode</title>" bin/LedPreResistor.exe || { echo "::error::LED-Info fehlt in der EXE"; exit 1; }
+          grep -q "<title>The LED</title>" bin/LedPreResistor.exe || { echo "::error::Englische LED-Info fehlt in der EXE"; exit 1; }
+          grep -q 'msgstr "Supply voltage"' bin/LedPreResistor.exe || { echo "::error::Englische Übersetzung fehlt in der EXE"; exit 1; }
           lazbuild -B --os=win64 --cpu=x86_64 tests/LedPreResistorTests.lpi
           ./bin/LedPreResistorTests.exe
           STRIP=$(find /c/lazarus -iname strip.exe 2>/dev/null | head -n 1 || true)

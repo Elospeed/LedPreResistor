@@ -75,8 +75,16 @@ begin
   DisplayDecimal := '.';
   try
     AssertEquals('4.7 kΩ', FormatOhm(4700));
+    AssertEquals('164.8 mW', FormatPower(8.8 * 8.8 / 470));
   finally
     DisplayDecimal := ',';
+  end;
+  // Englisch: Prozent ohne Leerschlag
+  PercentSpace := '';
+  try
+    AssertEquals('66%', FormatPercent(0.659));
+  finally
+    PercentSpace := ' ';
   end;
 end;
 

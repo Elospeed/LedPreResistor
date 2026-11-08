@@ -131,7 +131,7 @@ Nur LCL-Standard, keine Zusatzpakete: Was es nicht fertig gibt, wird in eigenen 
 | `uSchematic.pas` | Schaltplan-Zeichnung mit Werten |
 | `uTheme.pas` | alle Farben und Schriften an einer Stelle |
 | `uAbout.pas` / `.lfm` | About-Fenster (Elospeed, Version, Lizenz, Link) |
-| `lang/` | Deutsch und Englisch über `.po`-Dateien (LCLTranslator) |
+| `lang/` | Englisch über `en.po` (eigene Unit `uLang` wie bei StemMaker, Übersetzung als Ressource in der EXE) |
 
 **Bekannte Stolperstellen:**
 

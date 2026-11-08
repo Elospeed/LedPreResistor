@@ -11,11 +11,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Menus,
-  LCLType, Types, uESeries, uColorCode, uCalc, uSkalierung;
+  LCLType, Types, uESeries, uColorCode, uCalc, uSkalierung, uLang;
 
 const
   { Programmversion für Titelleiste und Info }
-  APP_VER = '2.0.1';
+  APP_VER = '2.1';
 
   { Ko-fi-Seite von Elospeed }
   KOFI_URL = 'https://ko-fi.com/elospeed';
@@ -114,7 +114,18 @@ type
     FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
     FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
+    KofiCaptionShown: string; // Text des Ko-fi-Knopfs in der aktuellen Sprache
     FRechenwegOpen: Boolean; // Rechenweg aufgeklappt
+    MenuLang: TMenuItem;     // Ansicht → Sprache (zur Laufzeit erzeugt)
+    MenuLangDe: TMenuItem;   // Sprache Deutsch
+    MenuLangEn: TMenuItem;   // Sprache Englisch
+    { Menü Ansicht → Sprache mit Deutsch und English anlegen }
+    procedure CreateLangMenu;
+    { Klick auf eine Sprache im Menü (Tag 0 = Deutsch, 1 = Englisch) }
+    procedure MenuLangClick(Sender: TObject);
+    { alle Beschriftungen in der aktuellen Sprache setzen; Zahlen in den
+      Eingabefeldern bekommen das passende Dezimalzeichen }
+    procedure ApplyLanguage;
     { Farben und Schriften aus uTheme auf alle Bedienelemente anwenden }
     procedure ApplyTheme;
     { Auswahllisten mit den (übersetzbaren) Texten füllen }
@@ -232,6 +243,31 @@ resourcestring
   rsCopyPower = 'Leistung Widerstand: %s, LEDs: %s, gesamt: %s';
   rsCopyRating = 'Empfohlene Bauform: %s (%s zu %s ausgelastet)';
   rsLedInfoFailed = 'Die LED-Info konnte nicht geöffnet werden.';
+  { Beschriftungen, die im Formular (uMain.lfm) deutsch stehen; sie werden
+    in ApplyLanguage zur Laufzeit gesetzt }
+  rsHeadInputs = 'EINGABEN';
+  rsLabelU = 'Speisespannung';
+  rsLabelColor = 'LED-Farbe';
+  rsLabelUd = 'Durchlassspannung';
+  rsLabelI = 'LED-Strom';
+  rsLabelSeries = 'E-Reihe';
+  rsLabelN = 'LEDs in Reihe';
+  rsUnitN = 'Stk.';
+  rsHeadPreview = 'LED-VORSCHAU';
+  rsBlink = 'Blinken';
+  rsMenuFile = '&Datei';
+  rsMenuCopy = 'Resultat &kopieren';
+  rsMenuExit = '&Beenden';
+  rsMenuEdit = '&Bearbeiten';
+  rsMenuReset = 'Eingaben &zurücksetzen';
+  rsMenuView = '&Ansicht';
+  rsMenuRechenweg = '&Rechenweg';
+  rsMenuBlink = 'LED &blinken';
+  rsMenuLang = '&Sprache (Language)';
+  rsMenuHelp = '&Hilfe';
+  rsMenuLedInfo = '&LED-Info (Die Leuchtdiode) …';
+  rsMenuKofi = 'Einen Kaffee spendieren (Ko-fi) …';
+  rsMenuAbout = 'Ü&ber LedPreResistor …';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -254,7 +290,9 @@ end;
 
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
-  Caption := Format(rsCaption, [APP_VER]);
+  // Sprache vor allen Beschriftungen laden (INI, sonst Sprache von Windows)
+  LangLoad(LangStartCode);
+  CreateLangMenu;
   FLedOn := TBitmap.Create;
   FLedOff := TBitmap.Create;
   FLedLit := True;
@@ -269,6 +307,7 @@ begin
   finally
     FUpdating := False;
   end;
+  ApplyLanguage;
   ApplyTheme;
   UpdateRechenwegHeight;
   Recalc;
@@ -333,7 +372,135 @@ begin
   { das Fenster steht hier noch auf 96 dpi und wird danach umgerechnet:
     darum mit 96 dpi messen, nicht mit Screen.PixelsPerInch (sonst ist der
     Rand bei 150 % doppelt skaliert) }
-  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, rsKofi, PixelsPerInch);
+  PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, _(rsKofi), PixelsPerInch);
+end;
+
+procedure TFormMain.CreateLangMenu;
+
+  { einen Eintrag der Sprachliste anlegen }
+  function AddItem(const ACaption: string; ATag: Integer): TMenuItem;
+  begin
+    Result := TMenuItem.Create(Self);
+    Result.Caption := ACaption;   // Sprachnamen bleiben unübersetzt
+    Result.Tag := ATag;
+    Result.RadioItem := True;
+    Result.GroupIndex := 1;
+    Result.OnClick := @MenuLangClick;
+    MenuLang.Add(Result);
+  end;
+
+begin
+  MenuLang := TMenuItem.Create(Self);
+  MenuView.Add(MenuLang);
+  MenuLangDe := AddItem('Deutsch', 0);
+  MenuLangEn := AddItem('English', 1);
+end;
+
+procedure TFormMain.MenuLangClick(Sender: TObject);
+var
+  Code: string;  // gewählte Sprache
+begin
+  if (Sender as TMenuItem).Tag = 1 then Code := 'en' else Code := 'de';
+  if Code = LangCode then Exit;
+  LangLoad(Code);
+  LangSaveChoice(Code);
+  ApplyLanguage;
+end;
+
+procedure TFormMain.ApplyLanguage;
+var
+  OldKofi: string;  // Ko-fi-Text vor dem Wechsel (für die Breite)
+  OldDec: Char;     // Dezimalzeichen vor dem Wechsel
+  Idx: array[0..2] of Integer;  // gewählte Einträge der drei Listen
+
+  { Dezimalzeichen in einem Eingabefeld tauschen }
+  procedure SwapDecimal(E: TEdit);
+  begin
+    E.Text := StringReplace(E.Text, OldDec, DisplayDecimal, [rfReplaceAll]);
+  end;
+
+begin
+  // Zahlen: Komma auf Deutsch, Punkt auf Englisch; Prozent mit/ohne Leerschlag
+  OldDec := DisplayDecimal;
+  if LangCode = 'en' then
+  begin
+    DisplayDecimal := '.';
+    PercentSpace := '';
+  end
+  else
+  begin
+    DisplayDecimal := ',';
+    PercentSpace := ' ';
+  end;
+  OldKofi := KofiCaptionShown;
+  KofiCaptionShown := _(rsKofi);
+
+  Caption := Format(_(rsCaption), [APP_VER]);
+  LabelHeadInputs.Caption := _(rsHeadInputs);
+  LabelU.Caption := _(rsLabelU);
+  LabelColor.Caption := _(rsLabelColor);
+  LabelUd.Caption := _(rsLabelUd);
+  LabelI.Caption := _(rsLabelI);
+  LabelSeries.Caption := _(rsLabelSeries);
+  LabelN.Caption := _(rsLabelN);
+  LabelNUnit.Caption := _(rsUnitN);
+  LabelHeadPreview.Caption := _(rsHeadPreview);
+  LabelBlink.Caption := _(rsBlink);
+  MenuFile.Caption := _(rsMenuFile);
+  MenuCopy.Caption := _(rsMenuCopy);
+  MenuCopy2.Caption := _(rsMenuCopy);
+  MenuExit.Caption := _(rsMenuExit);
+  MenuEdit.Caption := _(rsMenuEdit);
+  MenuReset.Caption := _(rsMenuReset);
+  MenuView.Caption := _(rsMenuView);
+  MenuRechenweg.Caption := _(rsMenuRechenweg);
+  MenuBlink.Caption := _(rsMenuBlink);
+  MenuLang.Caption := _(rsMenuLang);
+  MenuHelp.Caption := _(rsMenuHelp);
+  MenuLedInfo.Caption := _(rsMenuLedInfo);
+  MenuKofi.Caption := _(rsMenuKofi);
+  MenuAbout.Caption := _(rsMenuAbout);
+  MenuLangDe.Checked := LangCode <> 'en';
+  MenuLangEn.Checked := LangCode = 'en';
+
+  // Auswahllisten neu füllen, gewählte Einträge behalten
+  FUpdating := True;
+  try
+    Idx[0] := ComboColor.ItemIndex;
+    Idx[1] := ComboSeries.ItemIndex;
+    Idx[2] := ComboFreq.ItemIndex;
+    FillCombos;
+    ComboColor.ItemIndex := Idx[0];
+    ComboSeries.ItemIndex := Idx[1];
+    ComboFreq.ItemIndex := Idx[2];
+    if OldDec <> DisplayDecimal then
+    begin
+      SwapDecimal(EditU);
+      SwapDecimal(EditUd);
+      SwapDecimal(EditI);
+      SwapDecimal(EditN);
+    end;
+  finally
+    FUpdating := False;
+  end;
+
+  { Ko-fi-Knopf: nur beim Wechsel zur Laufzeit um den Unterschied der
+    Textbreite anpassen. Beim Start setzt ApplyTheme die Breite (dort
+    noch vor der DPI-Umrechnung). So wird nichts doppelt skaliert. }
+  if (OldKofi <> '') and (OldKofi <> KofiCaptionShown) then
+  begin
+    PaintKofi.Canvas.Font.Name := FONT_UI;
+    PaintKofi.Canvas.Font.Size := 9;
+    PaintKofi.Canvas.Font.Style := [fsBold];
+    PaintKofi.Width := PaintKofi.Width + PaintKofi.Canvas.TextWidth(KofiCaptionShown)
+      - PaintKofi.Canvas.TextWidth(OldKofi);
+    PaintKofi.Invalidate;
+  end;
+
+  FLedDirty := True;  // Beschriftung der LED (Anode/Kathode)
+  PaintLed.Invalidate;
+  ComboColor.Invalidate;
+  Recalc;
 end;
 
 procedure TFormMain.FillCombos;
@@ -341,19 +508,19 @@ var
   F: Double;  // Frequenz
 begin
   ComboColor.Items.Clear;
-  ComboColor.Items.Add(rsLedRed);
-  ComboColor.Items.Add(rsLedYellow);
-  ComboColor.Items.Add(rsLedGreen);
-  ComboColor.Items.Add(rsLedBlue);
-  ComboColor.Items.Add(rsLedWhite);
-  ComboColor.Items.Add(rsLedInfrared);
+  ComboColor.Items.Add(_(rsLedRed));
+  ComboColor.Items.Add(_(rsLedYellow));
+  ComboColor.Items.Add(_(rsLedGreen));
+  ComboColor.Items.Add(_(rsLedBlue));
+  ComboColor.Items.Add(_(rsLedWhite));
+  ComboColor.Items.Add(_(rsLedInfrared));
   ComboSeries.Items.Clear;
-  ComboSeries.Items.Add(rsSeriesE12);
-  ComboSeries.Items.Add(rsSeriesE24);
-  ComboSeries.Items.Add(rsSeriesE96);
+  ComboSeries.Items.Add(_(rsSeriesE12));
+  ComboSeries.Items.Add(_(rsSeriesE24));
+  ComboSeries.Items.Add(_(rsSeriesE96));
   ComboFreq.Items.Clear;
   for F in FREQS do
-    ComboFreq.Items.Add(Format(rsFreq, [FormatNum(F, 1, 0)]));
+    ComboFreq.Items.Add(Format(_(rsFreq), [FormatNum(F, 1, 0)]));
 end;
 
 function TFormMain.CurrentLed: TLedColor;
@@ -383,19 +550,19 @@ begin
   for I := 0 to High(B) do
   begin
     case B[I] of
-      bcBlack: N := rsBlack;
-      bcBrown: N := rsBrown;
-      bcRed: N := rsRed;
-      bcOrange: N := rsOrange;
-      bcYellow: N := rsYellow;
-      bcGreen: N := rsGreen;
-      bcBlue: N := rsBlue;
-      bcViolet: N := rsViolet;
-      bcGrey: N := rsGrey;
-      bcWhite: N := rsWhite;
-      bcGold: N := rsGold;
+      bcBlack: N := _(rsBlack);
+      bcBrown: N := _(rsBrown);
+      bcRed: N := _(rsRed);
+      bcOrange: N := _(rsOrange);
+      bcYellow: N := _(rsYellow);
+      bcGreen: N := _(rsGreen);
+      bcBlue: N := _(rsBlue);
+      bcViolet: N := _(rsViolet);
+      bcGrey: N := _(rsGrey);
+      bcWhite: N := _(rsWhite);
+      bcGold: N := _(rsGold);
     else
-      N := rsSilver;
+      N := _(rsSilver);
     end;
     if I > 0 then
       Result := Result + Sep;
@@ -406,13 +573,13 @@ end;
 function TFormMain.StatusText(S: TCalcStatus): string;
 begin
   case S of
-    csInvalidU: Result := rsErrU;
-    csInvalidUd: Result := rsErrUd;
-    csInvalidI: Result := rsErrI;
-    csInvalidN: Result := rsErrN;
-    csUTooLow: Result := Format(rsErrUTooLow, [FormatVolt(FInput.U), FInput.N,
+    csInvalidU: Result := _(rsErrU);
+    csInvalidUd: Result := _(rsErrUd);
+    csInvalidI: Result := _(rsErrI);
+    csInvalidN: Result := _(rsErrN);
+    csUTooLow: Result := Format(_(rsErrUTooLow), [FormatVolt(FInput.U), FInput.N,
       FormatVolt(FInput.Ud), FormatVolt(FInput.N * FInput.Ud)]);
-    csNoStdValue: Result := rsErrNoStd;
+    csNoStdValue: Result := _(rsErrNoStd);
   else
     Result := '';
   end;
@@ -532,12 +699,12 @@ procedure TFormMain.RenderLedBitmaps;
 var
   L: TLedLabels;  // Beschriftung
 begin
-  L.Anode := rsAnode;
-  L.AnodeHint := rsAnodeHint;
-  L.Cathode := rsCathode;
-  L.CathodeHint1 := rsCathodeHint1;
-  L.CathodeHint2 := rsCathodeHint2;
-  L.Flat := rsFlat;
+  L.Anode := _(rsAnode);
+  L.AnodeHint := _(rsAnodeHint);
+  L.Cathode := _(rsCathode);
+  L.CathodeHint1 := _(rsCathodeHint1);
+  L.CathodeHint2 := _(rsCathodeHint2);
+  L.Flat := _(rsFlat);
   RenderLed(FLedOn, PaintLed.Width, PaintLed.Height, LedGlowColor(CurrentLed), clrDeep, 1.0, L, clrTextSoft);
   RenderLed(FLedOff, PaintLed.Width, PaintLed.Height, LedGlowColor(CurrentLed), clrDeep, 0.0, L, clrTextSoft);
   FLedDirty := False;
@@ -613,13 +780,13 @@ begin
     Rectangle(R);
   end;
   case CurrentLed of
-    lcRed: LedName := rsLedNameRed;
-    lcYellow: LedName := rsLedNameYellow;
-    lcGreen: LedName := rsLedNameGreen;
-    lcBlue: LedName := rsLedNameBlue;
-    lcWhite: LedName := rsLedNameWhite;
+    lcRed: LedName := _(rsLedNameRed);
+    lcYellow: LedName := _(rsLedNameYellow);
+    lcGreen: LedName := _(rsLedNameGreen);
+    lcBlue: LedName := _(rsLedNameBlue);
+    lcWhite: LedName := _(rsLedNameWhite);
   else
-    LedName := rsLedNameInfrared;
+    LedName := _(rsLedNameInfrared);
   end;
   Dash := '–';
   V := Default(TSchematicValues);
@@ -627,13 +794,13 @@ begin
   if FInput.U > 0 then V.UBText := 'U_B = ' + FormatVolt(FInput.U) else V.UBText := 'U_B = ' + Dash;
   if FInput.N > 1 then
   begin
-    V.LedText := Format(rsSchemLedN, [FInput.N, LedName]);
-    V.UFText := Format(rsSchemUFN, [FInput.N, FormatVolt(FInput.Ud)]);
+    V.LedText := Format(_(rsSchemLedN), [FInput.N, LedName]);
+    V.UFText := Format(_(rsSchemUFN), [FInput.N, FormatVolt(FInput.Ud)]);
   end
   else
   begin
-    V.LedText := Format(rsSchemLed, [LedName]);
-    V.UFText := Format(rsSchemUF, [FormatVolt(FInput.Ud)]);
+    V.LedText := Format(_(rsSchemLed), [LedName]);
+    V.UFText := Format(_(rsSchemUF), [FormatVolt(FInput.Ud)]);
   end;
   if FRes.Status = csOk then
   begin
@@ -731,7 +898,7 @@ begin
       0:
         if Ok then
         begin
-          Card(Format(rsCardStd, [SeriesName(FInput.Series)]), FormatOhm(FRes.R), '', clrTextBright);
+          Card(Format(_(rsCardStd), [SeriesName(FInput.Series)]), FormatOhm(FRes.R), '', clrTextBright);
           // Widerstand mit Farbringen und Farbnamen darunter
           C.Font.Size := 8;
           C.Font.Color := clrTextSoft;
@@ -769,24 +936,24 @@ begin
           end;
         end
         else
-          Card(Format(rsCardStd, [SeriesName(FInput.Series)]), '–', '', clrTextBright);
+          Card(Format(_(rsCardStd), [SeriesName(FInput.Series)]), '–', '', clrTextBright);
       1:
         if Ok then
-          Card(rsCardCurrent, FormatMilliAmp(FRes.IAct),
-            Format(rsCardCurrentSub, [FormatOhm(FRes.RCalc), FormatMilliAmp(FInput.I)]), clrTextBright)
+          Card(_(rsCardCurrent), FormatMilliAmp(FRes.IAct),
+            Format(_(rsCardCurrentSub), [FormatOhm(FRes.RCalc), FormatMilliAmp(FInput.I)]), clrTextBright)
         else
-          Card(rsCardCurrent, '–', '', clrTextBright);
+          Card(_(rsCardCurrent), '–', '', clrTextBright);
       2:
         if Ok then
-          Card(rsCardPower, FormatPower(FRes.PR), rsCardPowerSub, clrTextBright)
+          Card(_(rsCardPower), FormatPower(FRes.PR), _(rsCardPowerSub), clrTextBright)
         else
-          Card(rsCardPower, '–', '', clrTextBright);
+          Card(_(rsCardPower), '–', '', clrTextBright);
       3:
         if Ok then
         begin
           Lvl := LoadLevelOf(FRes.Load);
           if FRes.RecommendedW = 0 then
-            Card(rsCardRating, rsCardRatingNone, rsCardRatingNoneSub, clrError)
+            Card(_(rsCardRating), _(rsCardRatingNone), _(rsCardRatingNoneSub), clrError)
           else
           begin
             case Lvl of
@@ -796,11 +963,11 @@ begin
               ValueColor := clrError;
             end;
             if Lvl = llOk then
-              Card(rsCardRating, FormatRating(FRes.RecommendedW),
-                Format(rsCardRatingSubOk, [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor)
+              Card(_(rsCardRating), FormatRating(FRes.RecommendedW),
+                Format(_(rsCardRatingSubOk), [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor)
             else
-              Card(rsCardRating, FormatRating(FRes.RecommendedW),
-                Format(rsCardRatingSub, [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor);
+              Card(_(rsCardRating), FormatRating(FRes.RecommendedW),
+                Format(_(rsCardRatingSub), [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor);
           end;
           // Balken: Auslastung der ¼-W-Bauform, Markierung bei 50 %
           BarR := Types.Rect(R.Left + Pad, R.Bottom - Pad - Px(6), R.Right - Pad, R.Bottom - Pad);
@@ -819,7 +986,7 @@ begin
           C.Line((BarR.Left + BarR.Right) div 2, BarR.Top - Px(2), (BarR.Left + BarR.Right) div 2, BarR.Bottom + Px(2));
         end
         else
-          Card(rsCardRating, '–', '', clrTextBright);
+          Card(_(rsCardRating), '–', '', clrTextBright);
     end;
     C.Clipping := False;
     Inc(X, CW[I] + Gap);
@@ -841,19 +1008,19 @@ begin
   end;
   SetLength(Result, 5);
   if FInput.N > 1 then
-    Result[0] := Format(rsStep1N, [FormatVolt(FInput.U), FInput.N, FormatVolt(FInput.Ud), FormatVolt(FRes.UR)])
+    Result[0] := Format(_(rsStep1N), [FormatVolt(FInput.U), FInput.N, FormatVolt(FInput.Ud), FormatVolt(FRes.UR)])
   else
-    Result[0] := Format(rsStep1, [FormatVolt(FInput.U), FormatVolt(FInput.Ud), FormatVolt(FRes.UR)]);
-  Result[1] := Format(rsStep2, [FormatVolt(FRes.UR), FormatNum(FInput.I, 4, 3),
+    Result[0] := Format(_(rsStep1), [FormatVolt(FInput.U), FormatVolt(FInput.Ud), FormatVolt(FRes.UR)]);
+  Result[1] := Format(_(rsStep2), [FormatVolt(FRes.UR), FormatNum(FInput.I, 4, 3),
     FormatOhm(FRes.RCalc), SeriesName(FInput.Series), FormatOhm(FRes.R)]);
-  Result[2] := Format(rsStep3, [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
-  if FRes.Load > LOAD_WARN then Over := rsStep4Over50 else Over := '';
+  Result[2] := Format(_(rsStep3), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
+  if FRes.Load > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
   if FRes.RecommendedW = 0 then
-    Result[3] := Format(rsStep4None, [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
+    Result[3] := Format(_(rsStep4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
   else
-    Result[3] := Format(rsStep4, [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
+    Result[3] := Format(_(rsStep4), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
       FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
-  Result[4] := Format(rsStep5, [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT),
+  Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT),
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
 end;
 
@@ -930,7 +1097,7 @@ begin
     C.Polygon([Point(R.Left + Px(12), Mid - Px(4)), Point(R.Left + Px(17), Mid), Point(R.Left + Px(12), Mid + Px(4))]);
   C.Brush.Style := bsClear;
   C.Font.Color := clrText;
-  C.TextOut(R.Left + Px(24), R.Top + (HeadH - C.TextHeight('Ag')) div 2, rsRechenweg);
+  C.TextOut(R.Left + Px(24), R.Top + (HeadH - C.TextHeight('Ag')) div 2, _(rsRechenweg));
   if not FRechenwegOpen then Exit;
   C.Line(R.Left, R.Top + HeadH, R.Right, R.Top + HeadH);
 
@@ -1007,15 +1174,15 @@ begin
     else
       begin Fore := clrError; Back := clrErrorBack; Sym := 1; end;
     end;
-    ChipText := Format(rsStatusLoad, [FormatPercent(FRes.Load)]);
+    ChipText := Format(_(rsStatusLoad), [FormatPercent(FRes.Load)]);
     if FRes.RecommendedW = 0 then
-      Txt := Format(rsStatusNone, [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
+      Txt := Format(_(rsStatusNone), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
     else if Lvl = llOk then
-      Txt := Format(rsStatusOk, [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
+      Txt := Format(_(rsStatusOk), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
     else
-      Txt := Format(rsStatusWarn, [FormatRating(RATING_REFERENCE), Round(FRes.TempRise),
+      Txt := Format(_(rsStatusWarn), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise),
         FormatRating(FRes.RecommendedW)]);
-    Txt := Txt + '   ·   ' + Format(rsStatusTotal, [FormatPower(FRes.PTotal)]);
+    Txt := Txt + '   ·   ' + Format(_(rsStatusTotal), [FormatPower(FRes.PTotal)]);
   end;
   // Hinweis-Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz)
   IconW := Px(14);
@@ -1065,7 +1232,7 @@ begin
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
   PaintKofi.Canvas.Font.Style := [fsBold];
-  DrawKofiButton(PaintKofi.Canvas, R, rsKofi, FKofiHover, clrBar,
+  DrawKofiButton(PaintKofi.Canvas, R, _(rsKofi), FKofiHover, clrBar,
     Screen.PixelsPerInch, Application.Icon);
   // Trennlinie oben wie bei der übrigen Statuszeile
   PaintKofi.Canvas.Pen.Color := clrBorder;
@@ -1097,15 +1264,15 @@ begin
   LedName := ComboColor.Text;
   SL := TStringList.Create;
   try
-    SL.Add(Format(rsCopyTitle, [APP_VER]));
-    SL.Add(StringReplace(Format(rsCopyInput, [FormatVolt(FInput.U), FInput.N, LedName,
+    SL.Add(Format(_(rsCopyTitle), [APP_VER]));
+    SL.Add(StringReplace(Format(_(rsCopyInput), [FormatVolt(FInput.U), FInput.N, LedName,
       FormatVolt(FInput.Ud), FormatMilliAmp(FInput.I)]), '_', '', [rfReplaceAll]));
-    SL.Add(Format(rsCopyStd, [FormatOhm(FRes.R), SeriesName(FInput.Series),
+    SL.Add(Format(_(rsCopyStd), [FormatOhm(FRes.R), SeriesName(FInput.Series),
       BandNames(FBands, '-'), FormatOhm(FRes.RCalc)]));
-    SL.Add(Format(rsCopyCurrent, [FormatMilliAmp(FRes.IAct)]));
-    SL.Add(Format(rsCopyPower, [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
+    SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FRes.IAct)]));
+    SL.Add(Format(_(rsCopyPower), [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
     if FRes.RecommendedW > 0 then
-      SL.Add(Format(rsCopyRating, [FormatRating(FRes.RecommendedW), FormatRating(RATING_REFERENCE),
+      SL.Add(Format(_(rsCopyRating), [FormatRating(FRes.RecommendedW), FormatRating(RATING_REFERENCE),
         FormatPercent(FRes.Load)]));
     Result := TrimRight(SL.Text);
   finally
@@ -1143,13 +1310,13 @@ end;
 
 procedure TFormMain.MenuAboutClick(Sender: TObject);
 begin
-  MessageDlg(Format(rsAbout, [APP_VER]), mtInformation, [mbOK], 0);
+  MessageDlg(Format(_(rsAbout), [APP_VER]), mtInformation, [mbOK], 0);
 end;
 
 procedure TFormMain.MenuLedInfoClick(Sender: TObject);
 begin
   if not ShowLedInfo then
-    MessageDlg(rsLedInfoFailed, mtError, [mbOK], 0);
+    MessageDlg(_(rsLedInfoFailed), mtError, [mbOK], 0);
 end;
 
 end.
