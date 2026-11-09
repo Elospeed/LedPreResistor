@@ -15,3 +15,9 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 6b. **Projektseite** – `site/` wie bei StemMaker (Englisch/Deutsch, Screenshots), veröffentlicht über GitHub Pages.
 7. **About-Fenster und Sprachen** – Deutsch und Englisch über `.po`-Dateien (Sprachen ✔ in 2.1; About-Fenster offen).
 8. **Testversion** – unter Wine und Windows testen, danach offizielles Release 2.0.
+
+## 2.2 – Linux
+
+1. **Linux-Build** – nativ mit Lazarus/GTK2, tar.gz mit Startmenü-Eintrag, Build und Release in GitHub Actions. ✔
+2. **Test in der Linux-VM**, danach Release 2.2 mit ZIP (Windows) und tar.gz (Linux).
+3. **Projektseite** – Windows- und Linux-Download nebeneinander.

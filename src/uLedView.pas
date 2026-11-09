@@ -32,7 +32,7 @@ procedure RenderLed(Bmp: TBitmap; W, H: Integer; LedColor, Back: TColor;
 implementation
 
 uses
-  Math, IntfGraphics, GraphType, FPImage, LCLType, LCLIntf;
+  Math, IntfGraphics, GraphType, FPImage, LCLType, LCLIntf, uTheme;
 
 const
   BASE_W = 200;   // Breite der Vorlage
@@ -228,12 +228,23 @@ begin
   OX := (W - BASE_W / Scale) / 2;
   OY := (H - BASE_H / Scale) / 2;
 
+  {$IFDEF WINDOWS}
   Img := TLazIntfImage.Create(0, 0);
+  {$ELSE}
+  // Linux (GTK2): Das Pixelformat muss zum Fenstersystem passen, sonst
+  // scheitert CreateBitmaps ("Incompatible BitsPerPixel"). Darum das Bild
+  // von einer 24-Bit-Bitmap holen und am Ende zurückschreiben.
+  Bmp.PixelFormat := pf24bit;
+  Bmp.SetSize(W, H);
+  Img := Bmp.CreateIntfImage;
+  {$ENDIF}
   try
+    {$IFDEF WINDOWS}
     // 24 Bit ohne Alphakanal: Text, den GDI danach ins Bild schreibt, hätte
     // sonst Alpha 0 und wäre unter Windows unsichtbar
     Desc.Init_BPP24_B8G8R8_BIO_TTB(W, H);
     Img.DataDescription := Desc;
+    {$ENDIF}
     for PY := 0 to H - 1 do
       for PX := 0 to W - 1 do
       begin
@@ -253,10 +264,14 @@ begin
           Round(Acc.G / (SS * SS) * $FFFF),
           Round(Acc.B / (SS * SS) * $FFFF));
       end;
+    {$IFDEF WINDOWS}
     // ohne Maske: sonst zeichnet Windows Teile des Bilds (und die
     // Beschriftung) durchsichtig
     Img.CreateBitmaps(ImgH, MaskH, True);
     Bmp.Handle := ImgH;
+    {$ELSE}
+    Bmp.LoadFromIntfImage(Img);
+    {$ENDIF}
   finally
     Img.Free;
   end;
@@ -265,7 +280,7 @@ begin
   with Bmp.Canvas do
   begin
     Brush.Style := bsClear;
-    Font.Name := 'Segoe UI';
+    Font.Name := FONT_UI;
     Font.Color := LabelColor;
     Font.Height := -Max(9, Round(13 / Scale));
     Font.Style := [fsBold];

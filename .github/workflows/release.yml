@@ -9,7 +9,10 @@
 # 1. Prüfen: Version passt zu APP_VER, lpi und CHANGELOG, Tag gibt es noch nicht.
 # 2. EXE bauen (wie build.yml), Tests laufen lassen, EXE verkleinern.
 # 3. Release-ZIP zusammenstellen: EXE, LIESMICH, README, Lizenz.
-# 4. Release v<Version> anlegen, Text = CHANGELOG-Abschnitt + SHA-256, ZIP dran.
+# 4. Linux-Version bauen (Job "linux"): tar.gz mit Programm, Startmenü-Eintrag,
+#    Symbol, Anleitung.
+# 5. Release v<Version> anlegen, Text = CHANGELOG-Abschnitt + SHA-256,
+#    ZIP (Windows) und tar.gz (Linux) dran.
 
 name: Release erstellen
 
@@ -31,7 +34,51 @@ env:
   LAZARUS_VERSION: "3.8"
 
 jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Version prüfen
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -e
+          VERSION=$(printf '%s' "$VERSION" | tr -d ' \r')
+          VERSION="${VERSION#v}"
+          APP=$(sed -n "s/^ *APP_VER *= *'\(.*\)';.*/\1/p" src/uMain.pas | head -n 1 | tr -d '\r')
+          [ "$APP" = "$VERSION" ] || { echo "::error::src/uMain.pas hat APP_VER '$APP', nicht '$VERSION'"; exit 1; }
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Lazarus installieren
+        # gleicher gepinnter Commit wie im Windows-Job (= Tag v3.4.1)
+        uses: gcarreno/setup-lazarus@3ee9d77e0c771b37c1069f218cb68bd5ce7c30fe # v3.4.1
+        with:
+          lazarus-version: ${{ env.LAZARUS_VERSION }}
+          with-cache: false
+
+      - name: Linux-Programm bauen, testen und packen
+        run: |
+          set -e
+          lazbuild -B --ws=gtk2 src/LedPreResistor.lpi
+          grep -q "<title>Die Leuchtdiode</title>" bin/LedPreResistor || { echo "::error::LED-Info fehlt"; exit 1; }
+          grep -q "<title>The LED</title>" bin/LedPreResistor || { echo "::error::Englische LED-Info fehlt"; exit 1; }
+          grep -q 'msgstr "Supply voltage"' bin/LedPreResistor || { echo "::error::Englische Übersetzung fehlt"; exit 1; }
+          lazbuild -B tests/LedPreResistorTests.lpi
+          ./bin/LedPreResistorTests
+          strip bin/LedPreResistor
+          linux/pakete-bauen.sh "$VERSION" ausgabe-linux
+
+      - name: Linux-Paket an den Release-Job geben
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-paket
+          path: ausgabe-linux/
+          retention-days: 1
+
   release:
+    needs: linux
     runs-on: windows-latest
     defaults:
       run:
@@ -98,12 +145,23 @@ jobs:
           echo "EXESHA=$EXESHA" >> "$GITHUB_ENV"
           echo "ZIPSHA=$ZIPSHA" >> "$GITHUB_ENV"
 
+      - name: Linux-Paket holen
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-paket
+          path: ausgabe-linux
+
       - name: Release anlegen und ZIP hochladen
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
           set -e
+          TARNAME="LedPreResistor-$VERSION-linux-x86_64.tar.gz"
+          [ -f "ausgabe-linux/$TARNAME" ] || { echo "::error::Linux-Paket $TARNAME fehlt"; exit 1; }
+          TARSHA=$(sha256sum "ausgabe-linux/$TARNAME" | cut -d' ' -f1)
+          echo "TARNAME=$TARNAME" >> "$GITHUB_ENV"
+          echo "TARSHA=$TARSHA" >> "$GITHUB_ENV"
           # Release-Text: der CHANGELOG-Abschnitt dieser Version (ohne Überschrift)
           python - "$VERSION" > notizen.md <<'PY'
           import sys
@@ -123,15 +181,19 @@ jobs:
           PY
           {
             echo
-            echo "ZIP entpacken und \`LedPreResistor.exe\` starten, keine Installation. / Unzip and start \`LedPreResistor.exe\`, nothing to install."
+            echo "**Windows:** ZIP entpacken und \`LedPreResistor.exe\` starten, keine Installation. / Unzip and start \`LedPreResistor.exe\`, nothing to install."
+            echo
+            echo "**Linux:** \`$TARNAME\` entpacken und \`./LedPreResistor\` starten (braucht GTK2), \`./install.sh\` legt einen Startmenü-Eintrag an. / Unpack and run \`./LedPreResistor\` (needs GTK2), \`./install.sh\` adds a menu entry."
             echo
             echo "Alle Änderungen / All changes: [CHANGELOG](https://github.com/$REPO/blob/main/CHANGELOG.md)"
             echo
             echo "SHA-256 \`LedPreResistor-$VERSION.zip\`: \`$ZIPSHA\`"
             echo
             echo "SHA-256 \`LedPreResistor.exe\`: \`$EXESHA\`"
+            echo
+            echo "SHA-256 \`$TARNAME\`: \`$TARSHA\`"
           } >> notizen.md
-          gh release create "v$VERSION" "ausgabe/LedPreResistor-$VERSION.zip" --repo "$REPO" \
+          gh release create "v$VERSION" "ausgabe/LedPreResistor-$VERSION.zip" "ausgabe-linux/$TARNAME" --repo "$REPO" \
             --target "$GITHUB_SHA" --title "LedPreResistor $VERSION" --notes-file notizen.md --latest
 
       - name: Zusammenfassung
@@ -141,4 +203,5 @@ jobs:
             echo
             echo "- ZIP: \`LedPreResistor-$VERSION.zip\`, SHA-256 \`$ZIPSHA\`"
             echo "- EXE: SHA-256 \`$EXESHA\`"
+            echo "- Linux: \`$TARNAME\`, SHA-256 \`$TARSHA\`"
           } >> "$GITHUB_STEP_SUMMARY"

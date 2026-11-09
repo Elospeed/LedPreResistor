@@ -9,4 +9,6 @@ Ideen, die (noch) nicht eingeplant sind. Wird eine davon umgesetzt, wandert sie 
 | **Parallelschaltung mehrerer LEDs** | Jede LED bzw. jeder Strang bekommt einen eigenen Vorwiderstand (nie mehrere LEDs parallel an einem Widerstand). Anzeige: Anzahl Stränge, Gesamtstrom, Gesamtleistung. |
 | Weitere Normreihen (E6, E48, E192) | Tabellen in `uESeries` ergänzen; E48/E192 ebenfalls mit 5 Ringen. |
 | Rückwärtsrechnung | Vorhandenen Widerstand eingeben und Strom durch die LED anzeigen. |
+| AppImage für Linux | Eine Datei, die GTK2 selbst mitbringt (für Systeme ohne GTK2). Braucht linuxdeploy/appimagetool im Build. Erst, wenn jemand nach dem tar.gz danach fragt. |
+| Linux: Flatpak / Paketquellen | Flathub, AUR. Später, falls Nachfrage. |
 | Konstantstromquelle statt Widerstand | Hinweis, ab welcher Leistung ein Widerstand unsinnig wird. |

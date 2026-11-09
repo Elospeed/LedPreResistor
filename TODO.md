@@ -6,8 +6,8 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Release 2.1 (Englisch): nach dem Merge Datum im CHANGELOG prüfen, Workflow «Release erstellen» mit Version 2.1
-- [ ] Nach Release 2.1: Eintrag auf AlternativeTo, Ko-fi-Profiltext ergänzen
+- [ ] Linux-Version 2.2: Test in der Linux-VM, danach Release 2.2 (Datum im CHANGELOG prüfen, Workflow «Release erstellen» mit Version 2.2)
+- [ ] Nach Release 2.2: Projektseite (EN/DE) mit Windows- und Linux-Download nebeneinander, Antwort auf mikrocontroller.net («Linux-Version ist da»), Portale (Linux-Eintrag)
 
 ## Als Nächstes
 

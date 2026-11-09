@@ -8,6 +8,19 @@ Neueste Einträge oben.
 
 ---
 
+## Linux-Version, 2.2 (November 2026)
+
+- **Nativ statt Wine.** Der Quelltext ist reines LCL; `lazbuild -B --ws=gtk2` baut ihn unter Linux ohne Änderungen am Aufbau. Ressourcen (LED-Info, `en.po`) stecken auch im Linux-Programm (FPC bettet die `.res` ins ELF ein), `FindResource`/`TResourceStream` funktionieren gleich.
+- **Absturz beim Start: «Failed to create handles».** Ursache: `uLedView` baut das LED-Bild in einem `TLazIntfImage` mit fest 24 Bit (`Init_BPP24_B8G8R8_BIO_TTB`) und ruft `CreateBitmaps`. GTK2 nimmt dieses Format nicht an («Incompatible BitsPerPixel»). Lösung unter Linux: das Bild von einer 24-Bit-`TBitmap` holen (`CreateIntfImage`) und mit `LoadFromIntfImage` zurückschreiben, wie es `uKofiButton` schon macht. Windows bleibt unverändert (dort war 24 Bit nötig, damit GDI-Text sichtbar bleibt). Gefunden mit `gdb` und Haltepunkt auf `fpc_raiseexception`.
+- **Weiss auf weiss in Eingabefeldern (Ubuntu/Yaru):** GTK2-Themes mit eigener Zeichen-Engine übergehen `TEdit.Color`; die helle Schrift war unsichtbar. Unter Xvfb ohne Theme fiel das nicht auf. Lösung: unter Linux bei `TEdit` weder `Color` noch helle Schrift setzen (`Font.Color := clDefault`). Nachstellen: `apt install yaru-theme-gtk`, `~/.gtkrc-2.0` mit `gtk-theme-name="Yaru"`.
+- **Schriften:** Segoe UI und Consolas gibt es unter Linux meist nicht. `uTheme` nimmt dort `Sans` und `Monospace` (fontconfig wählt z. B. DejaVu).
+- **Einstellungen:** Programmordner sind unter Linux oft schreibgeschützt (`/opt`, `~/.local/bin` ist zwar beschreibbar, AppImages nicht). Darum `~/.config/LedPreResistor/LedPreResistor.ini` (`$XDG_CONFIG_HOME`). `GetAppConfigDir` ist ungeeignet: es nimmt den Anwendungstitel mit Leerzeichen («Elospeed LedPreResistor»).
+- **Skalierung unter Linux:** LCL/GTK2 nimmt die Bildschirm-DPI von GDK (`Xft.dpi` bzw. die DPI des X-Servers). Getestet unter Xvfb mit 96 und 144 dpi (`-dpi 144`): Fenster wird auf den Bildschirm begrenzt, alles wächst mit.
+- **Startprüfung im Build:** Eine LCL-Fehlermeldung beim Start beendet das Programm nicht. Der Build sucht darum unter Xvfb ein Fenster mit dem Titel «Elospeed LedPreResistor» (= Fehlermeldung) und verlangt das Hauptfenster «LedPreResistor · Elospeed …».
+- **glibc:** Das Programm braucht glibc 2.34 oder neuer (Ubuntu 22.04, Debian 12, Fedora 35 und neuer).
+
+---
+
 ## Englische Oberfläche, 2.1 (November 2026)
 
 - **Kein LCLTranslator, sondern `uLang` wie bei StemMaker.** `_()` schlägt den deutschen Text in der Übersetzung nach. Die `resourcestring`s in `uMain.pas` bleiben deutsch und werden beim Anzeigen mit `_()` übersetzt. Vorteil: Umschalten zur Laufzeit ohne Neustart, keine Abhängigkeit von LCLTranslator.

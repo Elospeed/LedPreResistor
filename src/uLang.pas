@@ -18,8 +18,9 @@
         msgstr "Supply voltage"
 
   DIE SPRACHWAHL
-  Beim ersten Start: Deutsch bei deutschem Windows, sonst Englisch. Wählt
-  man im Menü eine Sprache, steht sie in LedPreResistor.ini neben der EXE.
+  Beim ersten Start: Deutsch bei deutschem Windows (Linux: LANG=de...),
+  sonst Englisch. Wählt man im Menü eine Sprache, steht sie in
+  LedPreResistor.ini neben der EXE (Linux: ~/.config/LedPreResistor/).
   Logik stützt sich nie auf übersetzten Text, nur auf den Sprachcode. }
 unit uLang;
 
@@ -248,9 +249,21 @@ begin
   {$ENDIF}
 end;
 
+{ Windows: INI neben der EXE (portabel). Linux: Programme liegen oft in
+  schreibgeschützten Ordnern (z. B. /opt, /usr/bin), darum dort im
+  Einstellungsordner des Benutzers: ~/.config/LedPreResistor/ }
 function IniFileName: string;
 begin
+  {$IFDEF WINDOWS}
   Result := ExtractFilePath(ParamStr(0)) + INI_NAME;
+  {$ELSE}
+  // nicht GetAppConfigDir: das nähme den Fenstertitel mit Leerzeichen
+  Result := GetEnvironmentVariable('XDG_CONFIG_HOME');
+  if Result = '' then
+    Result := IncludeTrailingPathDelimiter(GetUserDir) + '.config';
+  Result := IncludeTrailingPathDelimiter(Result) + 'LedPreResistor' +
+    PathDelim + INI_NAME;
+  {$ENDIF}
 end;
 
 function LangStartCode: string;
@@ -275,9 +288,10 @@ end;
 
 procedure LangSaveChoice(const Code: string);
 var
-  Ini: TIniFile;  // Einstellungen neben der EXE
+  Ini: TIniFile;  // Einstellungen (Windows: neben der EXE)
 begin
   try
+    ForceDirectories(ExtractFilePath(IniFileName));  // Linux: ~/.config/...
     Ini := TIniFile.Create(IniFileName);
     try
       Ini.WriteString(INI_SECTION, INI_KEY, Code);
