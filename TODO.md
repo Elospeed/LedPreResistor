@@ -17,3 +17,4 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 ## Offen (Entscheid von Speedy)
 
 - [ ] Programmname: bleibt «LedPreResistor»?
+- [ ] Blinkschaltung-Rechner (NE555 und Multivibrator mit 2 Transistoren) als neuer Reiter: Konzept liegt vor, Umfang noch offen
