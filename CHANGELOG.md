@@ -18,6 +18,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Behoben für Linux: Absturz beim Start («Failed to create handles»), weil die LED-Vorschau ein Pixelformat nutzte, das GTK2 nicht annimmt. Schriften: unter Linux die Standardschriften des Systems statt Segoe UI / Consolas.
 - Jeder Build baut und prüft jetzt auch die Linux-Version (startet sie unter Xvfb), das Release enthält ZIP (Windows) und tar.gz (Linux).
 
+### Projektseite
+- Download für Windows und Linux nebeneinander, Frage «Gibt es eine Linux-Version?», Linux in Titel und Beschreibung.
+
 ### Sonstiges
 - Versionsinfo der EXE: Unterversion stand seit 2.1 auf 0 (zeigte 2.0.1), jetzt richtig 2.2.
 
