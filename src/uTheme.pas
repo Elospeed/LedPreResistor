@@ -11,9 +11,16 @@ uses
   Graphics, uCalc, uColorCode;
 
 const
-  { Schriften: Segoe UI für Text; Zahlen in den Eingabefeldern in Consolas }
+  { Schriften: Segoe UI für Text; Zahlen in den Eingabefeldern in Consolas.
+    Unter Linux gibt es beide meist nicht: dort die Standardschriften des
+    Systems (fontconfig wählt z. B. DejaVu Sans / DejaVu Sans Mono). }
+  {$IFDEF WINDOWS}
   FONT_UI = 'Segoe UI';
   FONT_MONO = 'Consolas';
+  {$ELSE}
+  FONT_UI = 'Sans';
+  FONT_MONO = 'Monospace';
+  {$ENDIF}
 
 var
   { Flächen }

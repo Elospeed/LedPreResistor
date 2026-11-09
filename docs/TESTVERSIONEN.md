@@ -8,8 +8,8 @@ Der Workflow steht in [`.github/workflows/build.yml`](../.github/workflows/build
 
 ## Wie es abläuft
 
-1. Jeder Pull Request und jeder Push auf `main` baut `LedPreResistor.exe` auf Windows. Schlägt der Build fehl, ist der PR rot.
-2. Die fertige EXE hängt als **Artefakt** am Build-Lauf unter *Actions* (nur mit GitHub-Login, 14 Tage), samt `SHA256SUMS.txt`.
+1. Jeder Pull Request und jeder Push auf `main` baut `LedPreResistor.exe` auf Windows und die Linux-Version (`LedPreResistor-<Version>-linux-x86_64.tar.gz`) auf Linux. Die Linux-Version wird dabei unter Xvfb gestartet (Bildschirmfoto im Artefakt). Schlägt etwas fehl, ist der PR rot.
+2. Die fertige EXE und das Linux-Paket hängen als **Artefakte** am Build-Lauf unter *Actions* (nur mit GitHub-Login, 14 Tage), samt Prüfsummen.
 3. Wer testet, bekommt die EXE als **ZIP mit Anleitung** im privaten Projektordner. Vorher wird die Prüfsumme kontrolliert und das Programm kurz unter Wine gestartet.
 
 Alte Vor-Releases mit Tag `test-...` löscht der Job `aufraeumen` im Workflow automatisch.
@@ -21,6 +21,8 @@ Alte Vor-Releases mit Tag `test-...` löscht der Job `aufraeumen` im Workflow au
 3. Referenzrechnung eintippen: 12 V, weisse LED (3,2 V), 20 mA, E12 → 470 Ω, 18,72 mA, 164,8 mW, Empfehlung ½ W.
 
 Die EXE ist nicht signiert. Windows SmartScreen warnt deshalb: «Weitere Informationen» → «Trotzdem ausführen».
+
+**Linux:** `sha256sum -c SHA256SUMS-Linux.txt`, tar.gz entpacken, `./LedPreResistor` starten. Zusätzlich prüfen: Sprachwechsel (landet in `~/.config/LedPreResistor/`), F1 öffnet die LED-Info im Browser, `./install.sh` legt den Startmenü-Eintrag an.
 
 ## Gut zu wissen
 

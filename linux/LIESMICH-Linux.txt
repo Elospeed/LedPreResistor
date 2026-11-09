@@ -1,0 +1,26 @@
+Elospeed LedPreResistor für Linux
+=================================
+
+Vorwiderstand für LEDs berechnen. Freie Software (MIT-Lizenz).
+Projektseite: https://elospeed.github.io/LedPreResistor/de/
+
+Starten
+-------
+Archiv entpacken und im Ordner ./LedPreResistor starten.
+Keine Installation nötig.
+
+Benötigt GTK2 (auf den meisten Systemen schon da). Falls das Programm
+nicht startet, GTK2 nachinstallieren:
+  Debian/Ubuntu/Mint:  sudo apt install libgtk2.0-0
+                       (Ubuntu 24.04 und neuer: libgtk2.0-0t64)
+  Fedora:              sudo dnf install gtk2
+  Arch:                sudo pacman -S gtk2
+
+Ins Startmenü aufnehmen (optional, ohne root)
+---------------------------------------------
+  ./install.sh              richtet Programm, Symbol und Menüeintrag ein
+  ./install.sh --entfernen  entfernt alles wieder
+
+Einstellungen
+-------------
+Die gewählte Sprache steht in ~/.config/LedPreResistor/LedPreResistor.ini.

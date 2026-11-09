@@ -7,6 +7,21 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.2 – 9. November 2026
+
+### Linux
+- Eigene Linux-Version (x86_64), nativ mit Lazarus/GTK2 gebaut, kein Wine nötig: `LedPreResistor-2.2-linux-x86_64.tar.gz` entpacken und `./LedPreResistor` starten.
+- `install.sh` im Paket nimmt das Programm ohne root ins Startmenü auf (`~/.local`), `install.sh --entfernen` entfernt es wieder.
+- Unter Linux steht die Sprachwahl in `~/.config/LedPreResistor/LedPreResistor.ini` (Programmordner sind dort oft schreibgeschützt). Unter Windows bleibt sie neben der EXE.
+- Startsprache unter Linux nach `LANG` (de… → Deutsch, sonst Englisch).
+- Behoben für Linux: Absturz beim Start («Failed to create handles»), weil die LED-Vorschau ein Pixelformat nutzte, das GTK2 nicht annimmt. Schriften: unter Linux die Standardschriften des Systems statt Segoe UI / Consolas.
+- Jeder Build baut und prüft jetzt auch die Linux-Version (startet sie unter Xvfb), das Release enthält ZIP (Windows) und tar.gz (Linux).
+
+### Sonstiges
+- Versionsinfo der EXE: Unterversion stand seit 2.1 auf 0 (zeigte 2.0.1), jetzt richtig 2.2.
+
+---
+
 ## 2.1 – 8. November 2026
 
 ### Englisch

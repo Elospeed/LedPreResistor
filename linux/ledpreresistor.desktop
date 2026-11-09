@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=LedPreResistor
+GenericName=LED Resistor Calculator
+GenericName[de]=Vorwiderstand für LEDs
+Comment=Calculate the series resistor for LEDs
+Comment[de]=Vorwiderstand für LEDs berechnen
+Exec=LedPreResistor
+Icon=ledpreresistor
+Terminal=false
+Categories=Education;Electronics;Engineering;
+Keywords=LED;resistor;calculator;electronics;Vorwiderstand;

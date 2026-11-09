@@ -1,4 +1,4 @@
-{ Elospeed LedPreResistor 2.1 – Projektdatei.
+{ Elospeed LedPreResistor 2.2 – Projektdatei.
   Berechnet den Vorwiderstand für eine oder mehrere LEDs.
   Lizenz: MIT (siehe LICENSE im Hauptordner). }
 program LedPreResistor;

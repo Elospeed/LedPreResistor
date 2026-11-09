@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.1
+# Elospeed LedPreResistor 2.2
 
 **von Elospeed**
 
@@ -8,7 +8,7 @@
 
 ![Hauptfenster von LedPreResistor: 12 V, weisse LED, 20 mA → 470 Ω, ½ W](site/img/ledpreresistor-main.png)
 
-LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist die Neuauflage der Freeware *LED Pre-Resistor* (Delphi 7, 2004), komplett neu gebaut in Lazarus: eine einzelne 64-Bit-Windows-EXE, ohne Installation, ohne Zusatzpakete.
+LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist die Neuauflage der Freeware *LED Pre-Resistor* (Delphi 7, 2004), komplett neu gebaut in Lazarus: eine einzelne 64-Bit-Windows-EXE, ohne Installation, ohne Zusatzpakete. Seit 2.2 gibt es auch eine eigene **Linux**-Version.
 
 **Was es kann**
 
@@ -21,7 +21,7 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet, auf Wunsch blinkend.
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
 - Resultat kopieren mit Strg+Umschalt+C. Komma und Punkt als Dezimalzeichen.
-- **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; unter Ansicht → Sprache lässt sich jederzeit umschalten (gespeichert in `LedPreResistor.ini` neben der EXE).
+- **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; unter Ansicht → Sprache lässt sich jederzeit umschalten (gespeichert in `LedPreResistor.ini` neben der EXE, unter Linux in `~/.config/LedPreResistor/`).
 
 **Beispiel:** 12 V, eine weisse LED (3,2 V), 20 mA → berechnet 440 Ω, **470 Ω** (E12, gelb-violett-braun-gold), tatsächlich 18,72 mA, 164,8 mW im Widerstand → ½-W-Widerstand nehmen.
 
@@ -33,15 +33,23 @@ LedPreResistor ist ein Ein-Personen-Hobbyprojekt. Wenn es dir hilft, kannst du m
 2. `LedPreResistor.exe` starten. Nichts zu installieren. Windows SmartScreen warnt evtl., weil die EXE nicht signiert ist: «Weitere Informationen» → «Trotzdem ausführen».
 3. Optional: Prüfsumme mit der in den Release-Notizen vergleichen (`certutil -hashfile LedPreResistor.exe SHA256`).
 
+**Linux** (x86_64, nativ mit GTK2 gebaut):
+
+1. `LedPreResistor-<Version>-linux-x86_64.tar.gz` vom [neuesten Release](https://github.com/Elospeed/LedPreResistor/releases/latest) herunterladen und entpacken.
+2. Im entpackten Ordner `./LedPreResistor` starten. Braucht GTK2, das auf den meisten Systemen schon da ist (sonst: `sudo apt install libgtk2.0-0`, `sudo dnf install gtk2` oder `sudo pacman -S gtk2`).
+3. Optional: `./install.sh` nimmt das Programm ins Startmenü auf (ohne root, nach `~/.local`), `./install.sh --entfernen` entfernt es wieder.
+
 ## Bauen
 
 Lazarus 3.8 (FPC 3.2.2), nur LCL:
 
 ```
-lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi
+lazbuild -B --os=win64 --cpu=x86_64 --ws=win32 src/LedPreResistor.lpi   # Windows
+lazbuild -B --ws=gtk2 src/LedPreResistor.lpi                            # Linux
+linux/pakete-bauen.sh <Version> ausgabe                                 # Linux-tar.gz
 ```
 
-Jeder Pull Request und jeder Push auf `main` wird von GitHub Actions automatisch gebaut (`.github/workflows/build.yml`).
+Jeder Pull Request und jeder Push auf `main` wird von GitHub Actions automatisch für Windows und Linux gebaut (`.github/workflows/build.yml`).
 
 ## Aufbau des Repositorys
 
@@ -56,6 +64,7 @@ Jeder Pull Request und jeder Push auf `main` wird von GitHub Actions automatisch
 | `docs/TESTVERSIONEN.md` | Wo die Testversionen liegen und wie man testet |
 | `docs/legacy/` | Originaler Delphi-7-Quellcode von 2004, nur als Referenz |
 | `docs/design/` | Gewählter Entwurf (HTML-Datei im Browser öffnen) |
+| `linux/` | Linux-Paket: Startmenü-Eintrag, Installationsskript, Anleitung, `pakete-bauen.sh` |
 | `site/` | Projektseite (GitHub Pages, Englisch und Deutsch) |
 
 ## Lizenz

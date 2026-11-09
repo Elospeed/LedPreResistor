@@ -2,7 +2,8 @@
 #
 # Was passiert wann:
 # - Jeder Pull Request und jeder Push auf main baut die EXE auf einem
-#   Windows-Rechner von GitHub. Fehler im Quelltext fallen so sofort auf.
+#   Windows-Rechner von GitHub und die Linux-Version (tar.gz) auf einem
+#   Linux-Rechner. Fehler im Quelltext fallen so sofort auf.
 # - Die EXE landet nur als Workflow-Artefakt beim Build-Lauf (privat, nur mit
 #   GitHub-Login, 14 Tage). Testversionen werden NICHT als Vor-Release
 #   veröffentlicht, sondern gehen als ZIP mit Anleitung privat an die Tester.
@@ -107,6 +108,75 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LedPreResistor-Win64-${{ github.sha }}
+          path: ausgabe/
+          retention-days: 14
+
+  linux:
+    # Linux-Version (GTK2): gleicher Quelltext, nativ gebaut. Ergebnis nur als
+    # Workflow-Artefakt (tar.gz), keine Vor-Releases.
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Lazarus installieren
+        # gleicher gepinnter Commit wie im Windows-Job (= Tag v3.4.1)
+        uses: gcarreno/setup-lazarus@3ee9d77e0c771b37c1069f218cb68bd5ce7c30fe # v3.4.1
+        with:
+          lazarus-version: ${{ env.LAZARUS_VERSION }}
+          with-cache: false
+
+      - name: Programm bauen
+        run: |
+          set -e
+          lazbuild -B --ws=gtk2 src/LedPreResistor.lpi
+          # LED-Info und Übersetzung müssen als Ressource im Programm stecken
+          grep -q "<title>Die Leuchtdiode</title>" bin/LedPreResistor || { echo "::error::LED-Info fehlt im Linux-Programm"; exit 1; }
+          grep -q "<title>The LED</title>" bin/LedPreResistor || { echo "::error::Englische LED-Info fehlt im Linux-Programm"; exit 1; }
+          grep -q 'msgstr "Supply voltage"' bin/LedPreResistor || { echo "::error::Englische Übersetzung fehlt im Linux-Programm"; exit 1; }
+          strip bin/LedPreResistor
+          ls -l bin/LedPreResistor
+
+      - name: Tests der Rechenlogik unter Linux
+        run: |
+          set -e
+          lazbuild -B tests/LedPreResistorTests.lpi
+          ./bin/LedPreResistorTests
+
+      - name: Startet das Programm? (Xvfb, Bildschirmfoto)
+        run: |
+          set -e
+          sudo apt-get install -y -q xvfb imagemagick xdotool > /dev/null
+          mkdir -p ausgabe
+          # 5 s laufen lassen. Fehler beim Start: Programm beendet sich, oder LCL
+          # zeigt eine Fehlermeldung mit dem Titel "Elospeed LedPreResistor"
+          # (das Hauptfenster heisst "LedPreResistor · Elospeed <Version>").
+          xvfb-run -a -s "-screen 0 1280x1000x24" bash -c '
+            ./bin/LedPreResistor & PID=$!
+            sleep 5
+            import -window root ausgabe/Bildschirm-Linux.png
+            kill -0 $PID || { echo "::error::Programm ist beim Start beendet"; exit 1; }
+            if xdotool search --name "^Elospeed LedPreResistor$" > /dev/null; then
+              echo "::error::Fehlermeldung beim Start (siehe Bildschirm-Linux.png)"; kill $PID; exit 1
+            fi
+            xdotool search --onlyvisible --name "LedPreResistor · Elospeed" > /dev/null || { echo "::error::Hauptfenster fehlt"; kill $PID; exit 1; }
+            kill $PID'
+
+      - name: Paket packen
+        run: |
+          set -e
+          VERSION=$(sed -n "s/^ *APP_VER *= *'\(.*\)';.*/\1/p" src/uMain.pas | head -n 1 | tr -d '\r')
+          linux/pakete-bauen.sh "$VERSION" ausgabe
+          cd ausgabe
+          sha256sum *.tar.gz > SHA256SUMS-Linux.txt
+          cat SHA256SUMS-Linux.txt
+
+      - name: Paket als Workflow-Artefakt ablegen
+        uses: actions/upload-artifact@v4
+        with:
+          name: LedPreResistor-Linux-${{ github.sha }}
           path: ausgabe/
           retention-days: 14
 

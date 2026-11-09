@@ -15,7 +15,7 @@ uses
 
 const
   { Programmversion für Titelleiste und Info }
-  APP_VER = '2.1';
+  APP_VER = '2.2';
 
   { Ko-fi-Seite von Elospeed }
   KOFI_URL = 'https://ko-fi.com/elospeed';
