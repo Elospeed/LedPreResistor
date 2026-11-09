@@ -209,6 +209,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <a href="#berechnung">Series resistor</a>
   <a href="#rechner">Calculator</a>
   <a href="#mehrere">Several LEDs</a>
+  <a href="#blinken">Blinking circuits</a>
   <a href="#konstantstrom">Constant current</a>
   <a href="#waerme">Heat &amp; lifetime</a>
   <a href="#geschichte">History</a>
@@ -417,6 +418,28 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>Even LEDs from the same batch have slightly different forward voltages. On top of that, U<sub>F</sub> drops as the temperature rises (about −2 mV/K). If several LEDs share one resistor, the “weakest” one draws the most current, gets warmer, draws even more and fails first.</p>
     </div>
   </div>
+</section>
+
+<section id="blinken">
+  <div class="eyebrow">Circuits</div>
+  <h2>Blinking circuits</h2>
+  <p>The “Blink circuit” tab calculates two classic hobby circuits, and the preview blinks with the calculated times. With “from frequency” you enter frequency and duty cycle and get matching resistors from the E12 series.</p>
+  <div class="cols">
+    <div>
+      <h3>NE555 astable</h3>
+      <p>The capacitor charges through R1 + R2 and discharges through R2. That gives the times:</p>
+      <p class="mono">t<sub>H</sub> = 0.693 · (R1 + R2) · C<br>t<sub>L</sub> = 0.693 · R2 · C</p>
+      <p>The duty cycle is therefore always above 50 %. With a diode (1N4148) across R2, C charges through R1 only: <span class="mono">t<sub>H</sub> = 0.693 · R1 · C</span>, which also allows short flashes. R1 should be at least 1 kΩ, the supply 4.5–16 V. The output delivers about U − 1.7 V when high and at most 200 mA.</p>
+      <p class="mono">R1 = 1 kΩ, R2 = 68 kΩ, C = 10 µF: 1.05 Hz, 50.4 %</p>
+    </div>
+    <div>
+      <h3>Astable multivibrator</h3>
+      <p>Two transistors (BC547) switch each other over through the capacitors; the LEDs with their series resistors sit in the collector circuits. Each LED is lit for about <span class="mono">0.69 · R<sub>B</sub> · C</span>; the program calculates the factor more precisely from the supply and the LED voltage.</p>
+      <p>For the transistors to switch fully, the base current must be at least twice I<sub>C</sub> / β (β = 100 assumed). Above 6 V the base-emitter junction is overloaded in reverse when switching: a 1N4148 diode in series with the base protects it.</p>
+      <p class="mono">R<sub>B</sub> = 33 kΩ, C = 22 µF: about 1 Hz</p>
+    </div>
+  </div>
+  <p class="note"><strong>Visible blinking:</strong> Above about 25 Hz the eye no longer sees blinking, the LED just looks dimmer. The preview then shows steady light with correspondingly lower brightness.</p>
 </section>
 
 <section id="konstantstrom">

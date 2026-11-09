@@ -8,6 +8,15 @@ Neueste Einträge oben.
 
 ---
 
+## Blinkschaltung, 2.3 (November 2026)
+
+- **Multivibrator genauer als 0,69 · R · C.** Die Lehrbuchformel nimmt an, dass der Kollektor bis zur vollen Versorgung springt. Mit LED im Kollektorkreis springt er nur um ΔU = U − U_F − 0,2 V. Darum rechnet `uBlink` den Faktor k = ln((U − 0,6 + ΔU) / (U − 0,6)); bei kleiner LED-Spannung und hoher Versorgung geht k gegen ln 2 (Test `MultivibratorFaktorLehrbuch`).
+- **Sperrspannung an der Basis.** Beim Umschalten liegt an der gesperrten Basis etwa −(ΔU − 0,6) V. Der BC547 verträgt nur rund 6 V (U_EB0); darüber Warnung mit Hinweis auf eine 1N4148 in Reihe zur Basis.
+- **NE555 rückwärts ohne Diode:** R1 = (2D − 1) · S wird bei Tastgrad ≤ 50 % null oder negativ. Statt eines unsinnigen Werts kommt der Hinweis, die Diode zu nehmen.
+- **Vorschau über 25 Hz:** Ein Timer kann so schnell nicht sauber blinken, und das Auge sieht es ohnehin nicht. Die LED zeigt dann Dauerlicht mit der Helligkeit des Tastgrads (mindestens 15 %).
+- **Platz bei 100 %:** Der zweite Reiter brauchte mehr Höhe; der Rechenweg klappte im Blinkmodus sonst automatisch zu. Fensterhöhe darum 820 (96 dpi), die Eingaben im Blinkmodus enger gesetzt.
+- **Screenshots unter Wine:** `wine reg add` startet einen eigenen wineserver ohne Display; danach `wineserver -k; wineserver -w`, sonst bleibt das Fenster schwarz. Mehrere Aufnahmen nur nacheinander.
+
 ## Linux-Version, 2.2 (November 2026)
 
 - **Nativ statt Wine.** Der Quelltext ist reines LCL; `lazbuild -B --ws=gtk2` baut ihn unter Linux ohne Änderungen am Aufbau. Ressourcen (LED-Info, `en.po`) stecken auch im Linux-Programm (FPC bettet die `.res` ins ELF ein), `FindResource`/`TResourceStream` funktionieren gleich.

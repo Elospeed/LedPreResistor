@@ -21,3 +21,10 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 1. **Linux-Build** – nativ mit Lazarus/GTK2, tar.gz mit Startmenü-Eintrag, Build und Release in GitHub Actions. ✔
 2. **Test in der Linux-VM**, danach Release 2.2 mit ZIP (Windows) und tar.gz (Linux).
 3. **Projektseite** – Windows- und Linux-Download nebeneinander.
+
+## 2.3 – Blinkschaltung
+
+1. **Rechenkern** `uBlink` – NE555 astabil (mit/ohne Diode) und Multivibrator mit 2 × BC547, vorwärts und rückwärts, mit Tests. ✔
+2. **Reiter «Blinkschaltung»** – Schaltplan (`uBlinkSchematic`), Karten, Rechenweg, Prüfungen, blinkende Vorschau, Englisch. ✔
+3. **LED-Info-Kapitel** «Blinkschaltungen». ✔
+4. **Testversion** unter Wine (100 % und 150 %) und Windows, danach Release 2.3.

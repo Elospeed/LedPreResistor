@@ -6,6 +6,7 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
+- [ ] Version 2.3: Reiter «Blinkschaltung» (NE555 und Multivibrator) – PR offen, danach Testversion und Release
 - [ ] Nach Release 2.2: Elospeed-Homepage (Linux erwähnen), Antwort auf mikrocontroller.net («Linux-Version ist da»), Portale (Linux-Eintrag), Statistik
 
 ## Als Nächstes
@@ -17,4 +18,3 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 ## Offen (Entscheid von Speedy)
 
 - [ ] Programmname: bleibt «LedPreResistor»?
-- [ ] Blinkschaltung-Rechner (NE555 und Multivibrator mit 2 Transistoren) als neuer Reiter: Konzept liegt vor, Umfang noch offen

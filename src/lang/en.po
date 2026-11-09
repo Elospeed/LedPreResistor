@@ -352,3 +352,359 @@ msgstr "&About LedPreResistor …"
 #: uMain.pas rsAbout
 msgid "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004."
 msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware «LED Pre-Resistor»."
+
+#: uMain.pas rsTabResistor
+msgid "Vorwiderstand"
+msgstr "Series resistor"
+
+#: uMain.pas rsTabBlink
+msgid "Blinkschaltung"
+msgstr "Blink circuit"
+
+#: uMain.pas rsMenuModeR
+msgid "&Vorwiderstand"
+msgstr "&Series resistor"
+
+#: uMain.pas rsMenuModeB
+msgid "Blink&schaltung"
+msgstr "&Blink circuit"
+
+#: uMain.pas rsHeadCircuit
+msgid "SCHALTUNG"
+msgstr "CIRCUIT"
+
+#: uMain.pas rsHeadTiming
+msgid "ZEITGLIED"
+msgstr "TIMING"
+
+#: uMain.pas rsHeadLed
+msgid "LED AM AUSGANG"
+msgstr "LED AT OUTPUT"
+
+#: uMain.pas rsHeadLeds
+msgid "LEDS"
+msgstr "LEDS"
+
+#: uMain.pas rsCircuit555
+msgid "NE555 (astabil)"
+msgstr "NE555 (astable)"
+
+#: uMain.pas rsCircuitMulti
+msgid "Multivibrator (2 Transistoren)"
+msgstr "Multivibrator (2 transistors)"
+
+#: uMain.pas rsModeParts
+msgid "aus Bauteilen"
+msgstr "from parts"
+
+#: uMain.pas rsModeFreq
+msgid "aus Frequenz"
+msgstr "from frequency"
+
+#: uMain.pas rsLabelFreq
+msgid "Frequenz"
+msgstr "Frequency"
+
+#: uMain.pas rsLabelDuty
+msgid "LED an"
+msgstr "LED on"
+
+#: uMain.pas rsDiode
+msgid "Diode über R2 (unter 50 % an)"
+msgstr "Diode across R2 (under 50% on)"
+
+#: uMain.pas rsLabelConn
+msgid "Anschluss am Ausgang"
+msgstr "Connection at output"
+
+#: uMain.pas rsConnGnd
+msgid "nach Masse (leuchtet bei High)"
+msgstr "to ground (lit when High)"
+
+#: uMain.pas rsConnVcc
+msgid "nach +Ub (leuchtet bei Low)"
+msgstr "to +Ub (lit when Low)"
+
+#: uMain.pas rsConnBoth
+msgid "beide (Wechselblinker)"
+msgstr "both (alternating blinker)"
+
+#: uMain.pas rsLed1
+msgid "LED 1"
+msgstr "LED 1"
+
+#: uMain.pas rsLed2
+msgid "LED 2"
+msgstr "LED 2"
+
+#: uMain.pas rsBlinkInfo
+msgid "%s · an %s, aus %s"
+msgstr "%s · on %s, off %s"
+
+#: uMain.pas rsBlinkInfoMulti
+msgid "%s · LED 1: %s, LED 2: %s"
+msgstr "%s · LED 1: %s, LED 2: %s"
+
+#: uMain.pas rsBlinkInfoFast
+msgid "%s: zu schnell fürs Auge, wirkt wie Dauerlicht (%s hell)"
+msgstr "%s: too fast for the eye, looks like steady light (%s brightness)"
+
+#: uMain.pas rsBlinkInfoInvalid
+msgid "blinkt, sobald die Werte stimmen"
+msgstr "blinks as soon as the values are valid"
+
+#: uMain.pas rsBCardFreq
+msgid "Blinkfrequenz"
+msgstr "Blink frequency"
+
+#: uMain.pas rsBCardFreqSub
+msgid "Periode %s"
+msgstr "Period %s"
+
+#: uMain.pas rsBCardFreqSubAlt
+msgid "Wechselblinker, Periode %s"
+msgstr "Alternating blinker, period %s"
+
+#: uMain.pas rsBCardFreqFast
+msgid "wirkt wie Dauerlicht"
+msgstr "looks like steady light"
+
+#: uMain.pas rsBCardTimes
+msgid "LED an / aus"
+msgstr "LED on / off"
+
+#: uMain.pas rsBCardTimesMulti
+msgid "LED 1 / LED 2 an"
+msgstr "LED 1 / LED 2 on"
+
+#: uMain.pas rsBCardDuty
+msgid "Tastgrad (LED an)"
+msgstr "Duty cycle (LED on)"
+
+#: uMain.pas rsBCardDutySub
+msgid "ohne Diode immer über 50 %"
+msgstr "always above 50% without diode"
+
+#: uMain.pas rsBCardDutySubDiode
+msgid "mit Diode über R2"
+msgstr "with diode across R2"
+
+#: uMain.pas rsBCardDutySubVcc
+msgid "LED leuchtet bei Low"
+msgstr "LED lights when Low"
+
+#: uMain.pas rsBCardBase
+msgid "Basisstrom"
+msgstr "Base current"
+
+#: uMain.pas rsBCardBaseSub
+msgid "%s-fach übersteuert (β = %d)"
+msgstr "%s× overdriven (β = %d)"
+
+#: uMain.pas rsBCardRv
+msgid "Vorwiderstand (%s)"
+msgstr "Series resistor (%s)"
+
+#: uMain.pas rsBCardRvSub
+msgid "%s · %s → %s"
+msgstr "%s · %s → %s"
+
+#: uMain.pas rsErrBR1
+msgid "Bitte R1 grösser als 0 eingeben."
+msgstr "Please enter R1 greater than 0."
+
+#: uMain.pas rsErrBR2
+msgid "Bitte R2 grösser als 0 eingeben."
+msgstr "Please enter R2 greater than 0."
+
+#: uMain.pas rsErrBRB1
+msgid "Bitte RB1 grösser als 0 eingeben."
+msgstr "Please enter RB1 greater than 0."
+
+#: uMain.pas rsErrBRB2
+msgid "Bitte RB2 grösser als 0 eingeben."
+msgstr "Please enter RB2 greater than 0."
+
+#: uMain.pas rsErrBC
+msgid "Bitte einen Kondensator grösser als 0 eingeben."
+msgstr "Please enter a capacitor greater than 0."
+
+#: uMain.pas rsErrBF
+msgid "Bitte eine Frequenz grösser als 0 eingeben."
+msgstr "Please enter a frequency greater than 0."
+
+#: uMain.pas rsErrBDuty
+msgid "Bitte für «LED an» einen Wert zwischen 0 und 100 % eingeben."
+msgstr "Please enter a value between 0 and 100% for «LED on»."
+
+#: uMain.pas rsErrBDiode
+msgid "Ohne Diode ist der Ausgang immer mehr als die Hälfte der Zeit High: Diode über R2 einschalten oder mehr als 50 % wählen."
+msgstr "Without a diode the output is always High for more than half the time: switch on the diode across R2 or choose more than 50%."
+
+#: uMain.pas rsErrBUTooLow
+msgid "Die Speisespannung reicht nicht: am Ausgang bleibt %s, die LED braucht %s."
+msgstr "The supply voltage is not enough: %s is left at the output, the LED needs %s."
+
+#: uMain.pas rsChipSupply
+msgid "NE555: 4,5–16 V"
+msgstr "NE555: 4.5–16 V"
+
+#: uMain.pas rsWarnSupply
+msgid "Speisespannung %s liegt ausserhalb 4,5–16 V: die CMOS-Version (TLC555, ICM7555) nehmen"
+msgstr "Supply voltage %s is outside 4.5–16 V: use the CMOS version (TLC555, ICM7555)"
+
+#: uMain.pas rsChipBase
+msgid "Basis −%s"
+msgstr "Base −%s"
+
+#: uMain.pas rsWarnBase
+msgid "Basis wird mit ca. −%s gesperrt, der BC547 verträgt 6 V: Diode 1N4148 vor jede Basis oder Ub senken"
+msgstr "Base is reverse-biased to about −%s, the BC547 tolerates 6 V: put a 1N4148 diode in front of each base or lower Ub"
+
+#: uMain.pas rsChipSat
+msgid "Basisstrom knapp"
+msgstr "Base current low"
+
+#: uMain.pas rsWarnSat
+msgid "Der Transistor schaltet nicht sicher durch: RB kleiner und dafür C grösser wählen"
+msgstr "The transistor does not switch fully on: choose a smaller RB and a larger C"
+
+#: uMain.pas rsChipR1
+msgid "R1 unter 1 kΩ"
+msgstr "R1 below 1 kΩ"
+
+#: uMain.pas rsWarnR1
+msgid "R1 sollte mindestens 1 kΩ haben, sonst wird der Entladetransistor (Pin 7) überlastet"
+msgstr "R1 should be at least 1 kΩ, otherwise the discharge transistor (pin 7) is overloaded"
+
+#: uMain.pas rsChipOut
+msgid "Ausgang über 200 mA"
+msgstr "Output over 200 mA"
+
+#: uMain.pas rsWarnOut
+msgid "Mehr als 200 mA ist zu viel für den Ausgang des NE555: Transistor nachschalten"
+msgstr "More than 200 mA is too much for the NE555 output: add a transistor"
+
+#: uMain.pas rsChipRHigh
+msgid "R über 1 MΩ"
+msgstr "R over 1 MΩ"
+
+#: uMain.pas rsWarnRHigh
+msgid "Ein Zeitwiderstand über 1 MΩ: der Leckstrom des Elkos verfälscht die Zeit, lieber C grösser wählen"
+msgstr "A timing resistor over 1 MΩ: the leakage current of the electrolytic capacitor distorts the timing, better choose a larger C"
+
+#: uMain.pas rsChipFast
+msgid "über 25 Hz"
+msgstr "over 25 Hz"
+
+#: uMain.pas rsWarnFast
+msgid "So schnell sieht das Auge kein Blinken mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)"
+msgstr "At this speed the eye no longer sees blinking: the LED looks like a steady light with less brightness (PWM)"
+
+#: uMain.pas rsChipOk555
+msgid "NE555 passt"
+msgstr "NE555 fits"
+
+#: uMain.pas rsChipOkMulti
+msgid "Transistoren schalten sicher"
+msgstr "Transistors switch fully"
+
+#: uMain.pas rsOkTolerance
+msgid "Elkos haben oft ±20 % Toleranz: die echte Frequenz kann entsprechend abweichen"
+msgstr "Electrolytic capacitors often have ±20% tolerance: the real frequency can differ accordingly"
+
+#: uMain.pas rsMoreHints
+msgid " (+%d weitere)"
+msgstr " (+%d more)"
+
+#: uMain.pas rsBStep555High
+msgid "Ausgang High (Laden über R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0,693 · %s · %s = **%s**"
+msgstr "Output High (charging via R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0.693 · %s · %s = **%s**"
+
+#: uMain.pas rsBStep555HighD
+msgid "Ausgang High (Laden über R1, Diode überbrückt R2): t_H = ln 2 · R1 · C = 0,693 · %s · %s = **%s**"
+msgstr "Output High (charging via R1, diode bypasses R2): t_H = ln 2 · R1 · C = 0.693 · %s · %s = **%s**"
+
+#: uMain.pas rsBStep555Low
+msgid "Ausgang Low (Entladen über R2): t_L = ln 2 · R2 · C = 0,693 · %s · %s = **%s**"
+msgstr "Output Low (discharging via R2): t_L = ln 2 · R2 · C = 0.693 · %s · %s = **%s**"
+
+#: uMain.pas rsBStep555Rev1
+msgid "Aus f und C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**"
+msgstr "From f and C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0.693 · %s · %s) = **%s**"
+
+#: uMain.pas rsBStep555Rev1D
+msgid "Aus f und C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**"
+msgstr "From f and C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0.693 · %s · %s) = **%s**"
+
+#: uMain.pas rsBStep555Rev2
+msgid "Aufteilen für %s High: R1 = %s → **%s**, R2 = %s → **%s** (nächste %s-Werte)"
+msgstr "Split for %s High: R1 = %s → **%s**, R2 = %s → **%s** (nearest %s values)"
+
+#: uMain.pas rsBStepFreq
+msgid "Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED an: **%s**"
+msgstr "Frequency: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED on: **%s**"
+
+#: uMain.pas rsBStepFreqRev
+msgid "Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED an: **%s**"
+msgstr "With the standard values: t_H = %s, t_L = %s → f = **%s** · LED on: **%s**"
+
+#: uMain.pas rsBStepOut
+msgid "Ausgang High: U_O_U_T ≈ U_B − 1,7 V = %s − 1,7 V = **%s** (Spannungsabfall im NE555)"
+msgstr "Output High: U_O_U_T ≈ U_B − 1.7 V = %s − 1.7 V = **%s** (voltage drop in the NE555)"
+
+#: uMain.pas rsBStepOutVcc
+msgid "LED nach +U_B: sie leuchtet, wenn der Ausgang Low ist (≈ 0,1 V); an LED und R bleiben %s − 0,1 V"
+msgstr "LED to +U_B: it lights when the output is Low (≈ 0.1 V); LED and R get %s − 0.1 V"
+
+#: uMain.pas rsBStepRv
+msgid "Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
+msgstr "Series resistor: R = (%s − %s) / %s = %s → next %s value above: **%s** → I = **%s**"
+
+#: uMain.pas rsBStepRvBoth
+msgid "Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**"
+msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B) **%s** → I = **%s** / **%s**"
+
+#: uMain.pas rsBStepMultiK
+msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**"
+msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → k = ln((U_B − 0.6 V + ΔU) / (U_B − 0.6 V)) = **%s**"
+
+#: uMain.pas rsBStepMultiT
+msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
+msgstr "LED 1 on (T2 off): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 on: t_2 = k · R_B_1 · C = **%s**"
+
+#: uMain.pas rsBStepMultiRev
+msgid "Aus f = %s und %s LED 1 an: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nächste %s-Werte)"
+msgstr "From f = %s and %s LED 1 on: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nearest %s values)"
+
+#: uMain.pas rsBStepMultiF
+msgid "Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**"
+msgstr "Frequency: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 on: **%s**"
+
+#: uMain.pas rsBStepMultiBase
+msgid "Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
+msgstr "Base current: I_B = (U_B − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
+
+#: uMain.pas rsBStepMultiRv
+msgid "Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
+msgstr "Series resistor: R = (U_B − U_F − 0.2 V) / I = %s / %s = %s → next %s value above: **%s** → I = **%s**"
+
+#: uMain.pas rsBCopyTitle
+msgid "LedPreResistor %s – Blinkschaltung (%s)"
+msgstr "LedPreResistor %s – blink circuit (%s)"
+
+#: uMain.pas rsBCopyInput
+msgid "Speisespannung %s, LED %s mit U_F = %s, Strom %s"
+msgstr "Supply voltage %s, LED %s with U_F = %s, current %s"
+
+#: uMain.pas rsBCopyParts
+msgid "Bauteile: %s = %s, %s = %s, C = %s"
+msgstr "Parts: %s = %s, %s = %s, C = %s"
+
+#: uMain.pas rsBCopyTimes
+msgid "LED an %s, aus %s, Frequenz %s, Tastgrad %s"
+msgstr "LED on %s, off %s, frequency %s, duty cycle %s"
+
+#: uMain.pas rsBCopyRv
+msgid "Vorwiderstand: %s"
+msgstr "Series resistor: %s"

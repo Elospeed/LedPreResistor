@@ -209,6 +209,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <a href="#berechnung">Vorwiderstand</a>
   <a href="#rechner">Rechner</a>
   <a href="#mehrere">Mehrere LEDs</a>
+  <a href="#blinken">Blinkschaltungen</a>
   <a href="#konstantstrom">Konstantstrom</a>
   <a href="#waerme">Wärme &amp; Lebensdauer</a>
   <a href="#geschichte">Entwicklung</a>
@@ -417,6 +418,28 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>Auch LEDs aus derselben Charge haben leicht unterschiedliche Durchlassspannungen. Zudem sinkt U<sub>F</sub> mit steigender Temperatur (etwa −2 mV/K). Hängen mehrere LEDs an einem gemeinsamen Widerstand, zieht die «schwächste» den meisten Strom, wird wärmer, zieht noch mehr und fällt zuerst aus.</p>
     </div>
   </div>
+</section>
+
+<section id="blinken">
+  <div class="eyebrow">Schaltungen</div>
+  <h2>Blinkschaltungen</h2>
+  <p>Im Reiter «Blinkschaltung» rechnet das Programm zwei klassische Bastelschaltungen. Die Vorschau blinkt dabei mit den berechneten Zeiten. Mit «aus Frequenz» gibst du Frequenz und Tastgrad vor und erhältst passende Widerstände aus der E12-Reihe.</p>
+  <div class="cols">
+    <div>
+      <h3>NE555 astabil</h3>
+      <p>Der Kondensator lädt über R1 + R2 und entlädt über R2. Daraus folgen die Zeiten:</p>
+      <p class="mono">t<sub>H</sub> = 0,693 · (R1 + R2) · C<br>t<sub>L</sub> = 0,693 · R2 · C</p>
+      <p>Der Tastgrad liegt deshalb immer über 50 %. Mit einer Diode (1N4148) parallel zu R2 lädt C nur über R1: <span class="mono">t<sub>H</sub> = 0,693 · R1 · C</span>, damit sind auch kurze Blitze möglich. R1 sollte mindestens 1 kΩ haben, die Versorgung 4,5–16 V. Der Ausgang liefert High etwa U − 1,7 V und höchstens 200 mA.</p>
+      <p class="mono">R1 = 1 kΩ, R2 = 68 kΩ, C = 10 µF: 1,05 Hz, 50,4 %</p>
+    </div>
+    <div>
+      <h3>Astabiler Multivibrator</h3>
+      <p>Zwei Transistoren (BC547) schalten sich über die Kondensatoren gegenseitig um, die LEDs sitzen mit ihrem Vorwiderstand im Kollektorkreis. Jede LED leuchtet etwa <span class="mono">0,69 · R<sub>B</sub> · C</span>; das Programm rechnet den Faktor genauer aus der Versorgung und der LED-Spannung.</p>
+      <p>Damit die Transistoren sicher durchschalten, muss der Basisstrom mindestens das Doppelte von I<sub>C</sub> / β sein (β = 100 angenommen). Über 6 V wird die Basis-Emitter-Strecke beim Umschalten in Sperrrichtung überlastet: Eine Diode 1N4148 in Reihe zur Basis schützt sie.</p>
+      <p class="mono">R<sub>B</sub> = 33 kΩ, C = 22 µF: etwa 1 Hz</p>
+    </div>
+  </div>
+  <p class="note"><strong>Sichtbar blinken:</strong> Über etwa 25 Hz sieht das Auge kein Blinken mehr, die LED wirkt nur dunkler. Die Vorschau zeigt dann Dauerlicht mit entsprechend geringerer Helligkeit.</p>
 </section>
 
 <section id="konstantstrom">
