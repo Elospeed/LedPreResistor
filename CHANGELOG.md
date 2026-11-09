@@ -14,6 +14,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - `install.sh` im Paket nimmt das Programm ohne root ins Startmenü auf (`~/.local`), `install.sh --entfernen` entfernt es wieder.
 - Unter Linux steht die Sprachwahl in `~/.config/LedPreResistor/LedPreResistor.ini` (Programmordner sind dort oft schreibgeschützt). Unter Windows bleibt sie neben der EXE.
 - Startsprache unter Linux nach `LANG` (de… → Deutsch, sonst Englisch).
+- Eingabefelder unter Linux in den Farben des System-Themes: Ubuntu (Yaru) zeichnet die Felder weiss und übergeht die dunkle Farbe, die Werte waren weiss auf weiss unsichtbar (gefunden beim Test unter Ubuntu 24.04).
 - Behoben für Linux: Absturz beim Start («Failed to create handles»), weil die LED-Vorschau ein Pixelformat nutzte, das GTK2 nicht annimmt. Schriften: unter Linux die Standardschriften des Systems statt Segoe UI / Consolas.
 - Jeder Build baut und prüft jetzt auch die Linux-Version (startet sie unter Xvfb), das Release enthält ZIP (Windows) und tar.gz (Linux).
 

@@ -340,8 +340,16 @@ begin
     C := PanelLeft.Controls[I];
     if C is TEdit then
     begin
+      {$IFDEF WINDOWS}
       TEdit(C).Color := clrDeep;
       TEdit(C).Font.Color := clrTextBright;
+      {$ELSE}
+      // Linux (GTK2): Viele Themes (z. B. Yaru bei Ubuntu) zeichnen den
+      // Feldhintergrund selbst und übergehen die eigene Farbe; helle Schrift
+      // stünde dann weiss auf weiss. Darum dort Farben des Themes nehmen
+      // (clDefault, nicht die helle Schrift des Fensters erben).
+      TEdit(C).Font.Color := clDefault;
+      {$ENDIF}
       TEdit(C).Font.Name := FONT_MONO;
       TEdit(C).Font.Size := 10;
     end
