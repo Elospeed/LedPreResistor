@@ -49,3 +49,16 @@ Eigenes, webbasiertes Projekt (nicht Teil von LedPreResistor), aufgebaut wie das
 | Interaktive Übungen | Die Rechner aus LedPreResistor (Vorwiderstand, Blinkschaltung) als Übungen im Browser: Werte ändern, Ergebnis vorhersagen, Schaltplan und LED reagieren |
 | Technik | Statische Webseite (GitHub Pages), Deutsch und Englisch, offline nutzbar; Rechenkerne als JavaScript nachgebaut (Referenzwerte aus den Unit-Tests von `uCalc` und `uBlink`) |
 | Status | nur Idee, kein Termin |
+
+## Fernes Projekt: Schaltungssammlung
+
+Eigenes Tool im Stil der bekannten «300 Schaltungen»-Bücher: viele kurze Praxisschaltungen, jede auf einer Seite knapp erklärt und zum Nachbauen gedacht.
+
+| Teil | Notiz |
+|---|---|
+| Inhalt | Pro Schaltung: Schaltplan, kurze Beschreibung, Funktionsweise, Stückliste, Hinweise zum Aufbau und typische Fehler |
+| Rechner | Wo sinnvoll, die Werte direkt anpassen (Vorwiderstand, Zeitglied, Teiler …), wie die Reiter in LedPreResistor |
+| Ordnung | Nach Bereichen (Stromversorgung, LED/Licht, Timer, Audio, Messen, Schalten …), Suche und Stichworte |
+| Verbindung | Mit dem Lerntool Elektronik verknüpft: Die Lektionen erklären die Grundlagen, die Sammlung zeigt die Anwendung |
+| Recht | Nur eigene oder frei lizenzierte Schaltungen, Zeichnungen und Texte. Keine Inhalte aus den Elektor-Büchern übernehmen (Urheberrecht). |
+| Status | nur Idee, kein Termin |
