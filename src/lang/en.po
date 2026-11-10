@@ -708,3 +708,6 @@ msgstr "LED on %s, off %s, frequency %s, duty cycle %s"
 #: uMain.pas rsBCopyRv
 msgid "Vorwiderstand: %s"
 msgstr "Series resistor: %s"
+
+msgid "Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte."
+msgstr "Note: take the forward voltage and current from the datasheet of the LED you use; the presets are only typical values."

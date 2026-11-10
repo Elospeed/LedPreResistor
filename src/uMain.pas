@@ -283,6 +283,7 @@ resourcestring
   rsCardRatingNone = '> 1 W';
   rsCardRatingNoneSub = 'zu viel für einen Vorwiderstand';
   rsRechenweg = 'Rechenweg';
+  rsHintDatasheet = 'Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
   rsKofi = 'Kaffee spendieren';
@@ -1451,6 +1452,8 @@ var
   I, Y: Integer;         // Zähler und Zeile
   Mid: Integer;          // Mitte der Kopfzeile
   Ok: Boolean;           // Rechnung gültig
+  HintText: string;          // Hinweis zum Datenblatt
+  HintX: Integer;        // frühester Anfang des Hinweises
 begin
   C := PaintRechenweg.Canvas;
   R := PaintRechenweg.ClientRect;
@@ -1473,6 +1476,18 @@ begin
   C.Brush.Style := bsClear;
   C.Font.Color := clrText;
   C.TextOut(R.Left + Px(24), R.Top + (HeadH - C.TextHeight('Ag')) div 2, _(rsRechenweg));
+  // Hinweis rechts in der Kopfzeile, auch zugeklappt sichtbar: Vorgaben sind
+  // nur Richtwerte. Schrift wird kleiner, wenn der Platz nicht reicht.
+  HintText := _(rsHintDatasheet);
+  HintX := R.Left + Px(24) + C.TextWidth(_(rsRechenweg)) + Px(24);
+  C.Font.Color := clrTextSoft;
+  while (C.Font.Size > 7) and (C.TextWidth(HintText) > R.Right - Px(12) - HintX) do
+    C.Font.Size := C.Font.Size - 1;
+  if C.TextWidth(HintText) <= R.Right - Px(12) - HintX then
+    C.TextOut(R.Right - Px(12) - C.TextWidth(HintText),
+      R.Top + (HeadH - C.TextHeight('Ag')) div 2, HintText);
+  C.Font.Size := 9;
+  C.Font.Color := clrText;
   if not FRechenwegOpen then Exit;
   C.Line(R.Left, R.Top + HeadH, R.Right, R.Top + HeadH);
 
