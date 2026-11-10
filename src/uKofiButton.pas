@@ -1,5 +1,5 @@
 { Ko-fi-Knopf «Kaffee spendieren» – in allen Elospeed-Programmen gleich.
-  Variante E (Wahl Speedy 29.10.2026): dunkle Pille, vorne das Symbol des
+  Variante E (gewählt am 29.10.2026): dunkle Pille, vorne das Symbol des
   Programms (16 px), rotes Herz, weisser fetter Text.
   Übernommen aus StemMaker (src/ustatusdraw.pas, KofiButtonWidth und
   DrawKofiButton), damit der Knopf überall genau gleich aussieht.
