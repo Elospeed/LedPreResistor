@@ -37,3 +37,15 @@ Typische Hobby-Schaltungen rund um LEDs, die LedPreResistor später berechnen k�
 | Farbe | WS2812-Strips | Strombedarf pro Meter, Netzteilgrösse, Einspeisepunkte |
 | Hilfen | Solar-Gartenlicht / Joule Thief | Hinweise und Richtwerte |
 | Hilfen | Power-LEDs: Leistung und Kühlung | Verlustleistung, nötiger Kühlkörper (K/W) |
+
+## Fernes Projekt: Lerntool Elektronik
+
+Eigenes, webbasiertes Projekt (nicht Teil von LedPreResistor), aufgebaut wie das Englisch-Lernprojekt: Lektionen, Fragen mit Erklärungen, Fortschritt pro Lektion.
+
+| Teil | Notiz |
+|---|---|
+| Lektionen | Aufbauend von Spannung, Strom und Ohmschem Gesetz über Reihen-/Parallelschaltung, Leistung und Normreihen bis zu LED, Diode, Transistor als Schalter, Kondensator/RC-Zeit und NE555 |
+| Fragen | Multiple Choice und Rechenaufgaben mit eigener Zahleneingabe; nach jeder Antwort eine Erklärung mit Rechenweg (wie der «Rechenweg» in LedPreResistor) |
+| Interaktive Übungen | Die Rechner aus LedPreResistor (Vorwiderstand, Blinkschaltung) als Übungen im Browser: Werte ändern, Ergebnis vorhersagen, Schaltplan und LED reagieren |
+| Technik | Statische Webseite (GitHub Pages), Deutsch und Englisch, offline nutzbar; Rechenkerne als JavaScript nachgebaut (Referenzwerte aus den Unit-Tests von `uCalc` und `uBlink`) |
+| Status | nur Idee, kein Termin |
