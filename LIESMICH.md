@@ -18,7 +18,7 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - **Farbringe** des Widerstands (4 Ringe, bei E96 5 Ringe) und ein **Schaltplan** mit allen Werten an den Bauteilen.
 - Aufklappbarer Bereich **«Rechenweg»**: zeigt die Rechnung Schritt für Schritt mit den eigenen Zahlen.
 - Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs oder eigene Durchlassspannung aus dem Datenblatt.
-- **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet, auf Wunsch blinkend.
+- **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet.
 - Reiter **«Blinkschaltung»** (seit 2.3): NE555 astabil (wahlweise mit Diode über R2) oder Multivibrator mit zwei Transistoren (BC547). Rechnet aus den Bauteilen Frequenz, Ein-/Auszeit und den Vorwiderstand der LED oder umgekehrt aus Wunschfrequenz und Tastgrad die Widerstände. Die Vorschau blinkt im berechneten Takt, dazu Schaltplan, Rechenweg und Prüfungen (Spannungsbereich, Ausgangsstrom, Sättigung der Transistoren, Sperrspannung an der Basis).
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
 - Resultat kopieren mit Strg+Umschalt+C. Komma und Punkt als Dezimalzeichen.

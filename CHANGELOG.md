@@ -19,6 +19,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Rechenweg mit fünf Schritten und Statuszeile mit Prüfungen: NE555-Versorgung 4,5–16 V, R1 mindestens 1 kΩ, Ausgangsstrom bis 200 mA, Sperrspannung an der Basis über 6 V (Diode 1N4148 empfohlen), Sättigung der Transistoren, zu schnelles Blinken.
 - LED-Info: neues Kapitel «Blinkschaltungen» (Deutsch und Englisch).
 - Hinweis rechts in der Kopfzeile «Rechenweg» (auch zugeklappt): Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.
+- Im Reiter «Vorwiderstand» leuchtet die LED-Vorschau jetzt dauernd: «Blinken» mit fester Frequenz (und «Ansicht → LED blinken») ist entfallen, geblinkt wird mit echten Zeiten im Reiter «Blinkschaltung». Die LED-Vorschau ist dadurch etwas grösser.
 - Pfeiltasten und Mausrad springen bei Widerständen durch die E12-Reihe, bei Kondensatoren durch die E6-Reihe.
 
 ---

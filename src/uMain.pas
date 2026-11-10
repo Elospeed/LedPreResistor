@@ -24,7 +24,6 @@ type
 
   { TFormMain – das Hauptfenster }
   TFormMain = class(TForm)
-    CheckBlink: TCheckBox;        // LED blinken lassen
     CheckDiode: TCheckBox;        // NE555: Diode über R2
     ComboCircuit: TComboBox;      // Blinkschaltung: NE555 oder Multivibrator
     ComboConn: TComboBox;         // NE555: Anschluss der LED
@@ -48,13 +47,11 @@ type
     PaintMode: TPaintBox;         // Umschalter «aus Bauteilen / aus Frequenz»
     PaintTabs: TPaintBox;         // Reiter «Vorwiderstand | Blinkschaltung»
     ComboColor: TComboBox;        // LED-Farbe
-    ComboFreq: TComboBox;         // Blinkfrequenz
     ComboSeries: TComboBox;       // E-Reihe
     EditI: TEdit;                 // LED-Strom in mA
     EditN: TEdit;                 // Anzahl LEDs in Reihe
     EditU: TEdit;                 // Speisespannung in V
     EditUd: TEdit;                // Durchlassspannung in V
-    LabelBlink: TLabel;
     LabelColor: TLabel;
     LabelHeadInputs: TLabel;
     LabelHeadPreview: TLabel;
@@ -70,7 +67,6 @@ type
     LabelUUnit: TLabel;
     MainMenu: TMainMenu;
     MenuAbout: TMenuItem;
-    MenuBlink: TMenuItem;
     MenuCopy: TMenuItem;
     MenuCopy2: TMenuItem;
     MenuEdit: TMenuItem;
@@ -95,7 +91,6 @@ type
     PanelRight: TPanel;
     PanelStatus: TPanel;
     TimerBlink: TTimer;           // schaltet die LED beim Blinken um
-    procedure BlinkChange(Sender: TObject);
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
@@ -115,14 +110,12 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure InputChange(Sender: TObject);
-    procedure LabelBlinkClick(Sender: TObject);
     procedure KofiClick(Sender: TObject);
     procedure PaintKofiPaint(Sender: TObject);
     procedure PaintKofiMouseEnter(Sender: TObject);
     procedure PaintKofiMouseLeave(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure MenuLedInfoClick(Sender: TObject);
-    procedure MenuBlinkClick(Sender: TObject);
     procedure MenuCopyClick(Sender: TObject);
     procedure MenuExitClick(Sender: TObject);
     procedure MenuRechenwegClick(Sender: TObject);
@@ -249,7 +242,6 @@ resourcestring
   rsSeriesE12 = 'E12 (±10 %)';
   rsSeriesE24 = 'E24 (±5 %)';
   rsSeriesE96 = 'E96 (±1 %)';
-  rsFreq = '%s Hz';
   rsAnode = 'Anode +';
   rsAnodeHint = 'langes Bein';
   rsCathode = 'Kathode −';
@@ -322,7 +314,6 @@ resourcestring
   rsLabelN = 'LEDs in Reihe';
   rsUnitN = 'Stk.';
   rsHeadPreview = 'LED-VORSCHAU';
-  rsBlink = 'Blinken';
   rsMenuFile = '&Datei';
   rsMenuCopy = 'Resultat &kopieren';
   rsMenuExit = '&Beenden';
@@ -330,7 +321,6 @@ resourcestring
   rsMenuReset = 'Eingaben &zurücksetzen';
   rsMenuView = '&Ansicht';
   rsMenuRechenweg = '&Rechenweg';
-  rsMenuBlink = 'LED &blinken';
   rsMenuLang = '&Sprache (Language)';
   rsMenuHelp = '&Hilfe';
   rsMenuLedInfo = '&LED-Info (Die Leuchtdiode) …';
@@ -440,7 +430,6 @@ uses
 
 const
   { Blinkfrequenzen in Hz für die Auswahlliste }
-  FREQS: array[0..3] of Double = (0.5, 1, 2, 5);
 
   { Einstellung für den zuletzt gewählten Reiter }
   INI_SECTION_VIEW = 'Ansicht';
@@ -558,7 +547,6 @@ begin
     FillCombos;
     ComboColor.ItemIndex := Ord(lcWhite);
     ComboSeries.ItemIndex := Ord(esE12);
-    ComboFreq.ItemIndex := 1;  // 1 Hz
     ComboCircuit.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_CIRCUIT, 0), 0, Ord(High(TBlinkCircuit)));
     ComboConn.ItemIndex := Ord(cnGnd);
     LoadTimingTexts;
@@ -639,9 +627,6 @@ begin
   LabelT3Unit.Font.Color := clrTextDim;
   LabelBlinkInfo.Font.Color := clrTextSoft;
   LabelBlinkInfo.Font.Size := 8;
-  LabelBlink.Font.Color := clrText;
-  ComboFreq.Color := clrDeep;
-  ComboFreq.Font.Color := clrTextBright;
   // Breite des Ko-fi-Links: Herz + Text + Rand
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
@@ -725,7 +710,6 @@ begin
   LabelN.Caption := _(rsLabelN);
   LabelNUnit.Caption := _(rsUnitN);
   LabelHeadPreview.Caption := _(rsHeadPreview);
-  LabelBlink.Caption := _(rsBlink);
   MenuFile.Caption := _(rsMenuFile);
   MenuCopy.Caption := _(rsMenuCopy);
   MenuCopy2.Caption := _(rsMenuCopy);
@@ -734,7 +718,6 @@ begin
   MenuReset.Caption := _(rsMenuReset);
   MenuView.Caption := _(rsMenuView);
   MenuRechenweg.Caption := _(rsMenuRechenweg);
-  MenuBlink.Caption := _(rsMenuBlink);
   MenuLang.Caption := _(rsMenuLang);
   MenuHelp.Caption := _(rsMenuHelp);
   MenuLedInfo.Caption := _(rsMenuLedInfo);
@@ -758,13 +741,11 @@ begin
   try
     Idx[0] := ComboColor.ItemIndex;
     Idx[1] := ComboSeries.ItemIndex;
-    Idx[2] := ComboFreq.ItemIndex;
     Idx[3] := ComboCircuit.ItemIndex;
     Idx[4] := ComboConn.ItemIndex;
     FillCombos;
     ComboColor.ItemIndex := Idx[0];
     ComboSeries.ItemIndex := Idx[1];
-    ComboFreq.ItemIndex := Idx[2];
     ComboCircuit.ItemIndex := Idx[3];
     ComboConn.ItemIndex := Idx[4];
     if OldDec <> DisplayDecimal then
@@ -805,8 +786,6 @@ begin
 end;
 
 procedure TFormMain.FillCombos;
-var
-  F: Double;  // Frequenz
 begin
   ComboColor.Items.Clear;
   ComboColor.Items.Add(_(rsLedRed));
@@ -819,9 +798,6 @@ begin
   ComboSeries.Items.Add(_(rsSeriesE12));
   ComboSeries.Items.Add(_(rsSeriesE24));
   ComboSeries.Items.Add(_(rsSeriesE96));
-  ComboFreq.Items.Clear;
-  for F in FREQS do
-    ComboFreq.Items.Add(Format(_(rsFreq), [FormatNum(F, 1, 0)]));
   ComboCircuit.Items.Clear;
   ComboCircuit.Items.Add(_(rsCircuit555));
   ComboCircuit.Items.Add(_(rsCircuitMulti));
@@ -1049,7 +1025,6 @@ end;
 
 procedure TFormMain.UpdateBlink;
 var
-  F: Double;      // Frequenz in Hz
   Level: Double;  // Helligkeit der leuchtenden LED
 begin
   if FMode = 1 then
@@ -1093,31 +1068,10 @@ begin
     FOnLevel := 1.0;
     FLedDirty := True;
   end;
-  if (ComboFreq.ItemIndex >= 0) and (ComboFreq.ItemIndex <= High(FREQS)) then
-    F := FREQS[ComboFreq.ItemIndex]
-  else
-    F := 1;
-  // eine Periode = an + aus, darum halbe Periodendauer
-  TimerBlink.Interval := Round(500 / F);
-  TimerBlink.Enabled := CheckBlink.Checked;
-  MenuBlink.Checked := CheckBlink.Checked;
+  // Vorwiderstand: LED leuchtet dauernd, geblinkt wird nur im Reiter Blinkschaltung
+  TimerBlink.Enabled := False;
   FLedLit := True;
   PaintLed.Invalidate;
-end;
-
-procedure TFormMain.BlinkChange(Sender: TObject);
-begin
-  UpdateBlink;
-end;
-
-procedure TFormMain.LabelBlinkClick(Sender: TObject);
-begin
-  CheckBlink.Checked := not CheckBlink.Checked;
-end;
-
-procedure TFormMain.MenuBlinkClick(Sender: TObject);
-begin
-  CheckBlink.Checked := not CheckBlink.Checked;
 end;
 
 procedure TFormMain.TimerBlinkTimer(Sender: TObject);
@@ -1756,11 +1710,12 @@ begin
   FMode := M;
   MenuModeR.Checked := M = 0;
   MenuModeB.Checked := M = 1;
-  MenuBlink.Enabled := M = 0;
-  CheckBlink.Visible := M = 0;
-  LabelBlink.Visible := M = 0;
-  ComboFreq.Visible := M = 0;
   LabelBlinkInfo.Visible := M = 1;
+  // Platz unter der LED nur im Blinkmodus (Takt-Angabe)
+  if M = 1 then
+    PaintLed.BorderSpacing.Bottom := Px(36)
+  else
+    PaintLed.BorderSpacing.Bottom := 0;
   if M = 1 then
     LabelHeadInputs.Caption := _(rsHeadCircuit)
   else

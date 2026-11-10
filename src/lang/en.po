@@ -293,9 +293,6 @@ msgstr "pcs"
 msgid "LED-VORSCHAU"
 msgstr "LED PREVIEW"
 
-#: uMain.pas rsBlink
-msgid "Blinken"
-msgstr "Blink"
 
 #: uMain.pas rsMenuFile
 msgid "&Datei"
@@ -325,9 +322,6 @@ msgstr "&View"
 msgid "&Rechenweg"
 msgstr "&Calculation steps"
 
-#: uMain.pas rsMenuBlink
-msgid "LED &blinken"
-msgstr "&Blink LED"
 
 #: uMain.pas rsMenuLang
 msgid "&Sprache (Language)"
