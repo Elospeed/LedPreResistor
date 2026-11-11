@@ -38,6 +38,21 @@ function FormatRating(W: Double): string;
 { Anteil als ganze Prozent, z. B. 0.659 -> "66 %" }
 function FormatPercent(X: Double): string;
 
+{ Anteil mit einer Nachkommastelle, z. B. 0.5036 -> "50,4 %" }
+function FormatPercent1(X: Double): string;
+
+{ Zeit: ab 0,1 s in s ("0,48 s", "1,25 s", "12,3 s"), darunter in ms ("47,1 ms") }
+function FormatSeconds(T: Double): string;
+
+{ Frequenz mit drei gültigen Stellen: "1,05 Hz", "0,25 Hz", "12,3 Hz", "1,2 kHz" }
+function FormatFreq(F: Double): string;
+
+{ Kondensator mit Vorsatz: "10 µF", "100 nF", "4,7 nF", "220 pF" }
+function FormatCap(C: Double): string;
+
+{ Zahl mit N gültigen Stellen (ohne Einheit), z. B. (1,0531; 3) -> "1,05" }
+function FormatSig(V: Double; N: Integer): string;
+
 implementation
 
 uses
@@ -108,6 +123,48 @@ end;
 function FormatPercent(X: Double): string;
 begin
   Result := IntToStr(Round(X * 100)) + PercentSpace + '%';
+end;
+
+function FormatPercent1(X: Double): string;
+begin
+  Result := FormatNum(X * 100, 1, 0) + PercentSpace + '%';
+end;
+
+function FormatSig(V: Double; N: Integer): string;
+var
+  Dec: Integer;  // Nachkommastellen für N gültige Stellen
+begin
+  if V = 0 then
+    Exit('0');
+  Dec := N - 1 - Floor(Log10(Abs(V)));
+  if Dec < 0 then Dec := 0;
+  Result := FormatNum(V, Dec, 0);
+end;
+
+function FormatSeconds(T: Double): string;
+begin
+  if T >= 0.1 then
+    Result := FormatSig(T, 3) + ' s'
+  else
+    Result := FormatSig(T * 1000, 3) + ' ms';
+end;
+
+function FormatFreq(F: Double): string;
+begin
+  if F >= 1000 then
+    Result := FormatSig(F / 1000, 3) + ' kHz'
+  else
+    Result := FormatSig(F, 3) + ' Hz';
+end;
+
+function FormatCap(C: Double): string;
+begin
+  if C >= 1e-6 * 0.9999 then
+    Result := FormatSig(C * 1e6, 3) + ' µF'
+  else if C >= 1e-9 * 0.9999 then
+    Result := FormatSig(C * 1e9, 3) + ' nF'
+  else
+    Result := FormatSig(C * 1e12, 3) + ' pF';
 end;
 
 end.

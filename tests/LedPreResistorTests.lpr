@@ -7,7 +7,7 @@ program LedPreResistorTests;
 
 uses
   Classes, SysUtils, fpcunit, testregistry,
-  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang;
+  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink;
 
 type
   { Gibt jeden Test mit Ergebnis auf der Konsole aus }

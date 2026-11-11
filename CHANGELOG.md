@@ -7,6 +7,23 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.3 – Unveröffentlicht
+
+### Blinkschaltung
+- Neuer Reiter «Blinkschaltung» (Ansicht → Blinkschaltung, Strg+2; zurück mit Strg+1). Der gewählte Reiter und die Schaltung bleiben beim nächsten Start erhalten.
+- NE555 astabil: aus R1, R2 und C die Zeiten t_H und t_L, Frequenz und Tastgrad; wahlweise mit Diode über R2 (dann auch Tastgrad unter 50 %). LED gegen Masse, gegen +U oder beide (Wechselblinker).
+- Multivibrator mit zwei BC547: aus den Basiswiderständen und Kondensatoren die Leuchtzeit jeder LED, dazu Basisstrom und Übersteuerung.
+- Rückwärts «aus Frequenz»: Wunschfrequenz und Tastgrad eingeben, das Programm schlägt Widerstände aus der E12-Reihe vor und rechnet mit diesen weiter.
+- Vorwiderstand der LEDs mit der Spannung am Ausgang (NE555: U − 1,7 V, Multivibrator: U − 0,2 V), Farbringe und Schaltplan mit allen Werten.
+- Die LED-Vorschau blinkt mit den berechneten Zeiten (beim Multivibrator zwei LEDs im Wechsel). Über 25 Hz zeigt sie Dauerlicht mit passender Helligkeit.
+- Rechenweg mit fünf Schritten und Statuszeile mit Prüfungen: NE555-Versorgung 4,5–16 V, R1 mindestens 1 kΩ, Ausgangsstrom bis 200 mA, Sperrspannung an der Basis über 6 V (Diode 1N4148 empfohlen), Sättigung der Transistoren, zu schnelles Blinken.
+- LED-Info: neues Kapitel «Blinkschaltungen» (Deutsch und Englisch).
+- Hinweis rechts in der Kopfzeile «Rechenweg» (auch zugeklappt): Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.
+- Im Reiter «Vorwiderstand» leuchtet die LED-Vorschau jetzt dauernd: «Blinken» mit fester Frequenz (und «Ansicht → LED blinken») ist entfallen, geblinkt wird mit echten Zeiten im Reiter «Blinkschaltung». Die LED-Vorschau ist dadurch etwas grösser.
+- Pfeiltasten und Mausrad springen bei Widerständen durch die E12-Reihe, bei Kondensatoren durch die E6-Reihe.
+
+---
+
 ## 2.2 – 9. November 2026
 
 ### Linux

@@ -8,6 +8,15 @@ Neueste Einträge oben.
 
 ---
 
+## Blinkschaltung, 2.3 (November 2026)
+
+- **Multivibrator genauer als 0,69 · R · C.** Die Lehrbuchformel nimmt an, dass der Kollektor bis zur vollen Versorgung springt. Mit LED im Kollektorkreis springt er nur um ΔU = U − U_F − 0,2 V. Darum rechnet `uBlink` den Faktor k = ln((U − 0,6 + ΔU) / (U − 0,6)); bei kleiner LED-Spannung und hoher Versorgung geht k gegen ln 2 (Test `MultivibratorFaktorLehrbuch`).
+- **Sperrspannung an der Basis.** Beim Umschalten liegt an der gesperrten Basis etwa −(ΔU − 0,6) V. Der BC547 verträgt nur rund 6 V (U_EB0); darüber Warnung mit Hinweis auf eine 1N4148 in Reihe zur Basis.
+- **NE555 rückwärts ohne Diode:** R1 = (2D − 1) · S wird bei Tastgrad ≤ 50 % null oder negativ. Statt eines unsinnigen Werts kommt der Hinweis, die Diode zu nehmen.
+- **Vorschau über 25 Hz:** Ein Timer kann so schnell nicht sauber blinken, und das Auge sieht es ohnehin nicht. Die LED zeigt dann Dauerlicht mit der Helligkeit des Tastgrads (mindestens 15 %).
+- **Platz bei 100 %:** Der zweite Reiter brauchte mehr Höhe; der Rechenweg klappte im Blinkmodus sonst automatisch zu. Fensterhöhe darum 820 (96 dpi), die Eingaben im Blinkmodus enger gesetzt.
+- **Screenshots unter Wine:** `wine reg add` startet einen eigenen wineserver ohne Display; danach `wineserver -k; wineserver -w`, sonst bleibt das Fenster schwarz. Mehrere Aufnahmen nur nacheinander.
+
 ## Linux-Version, 2.2 (November 2026)
 
 - **Nativ statt Wine.** Der Quelltext ist reines LCL; `lazbuild -B --ws=gtk2` baut ihn unter Linux ohne Änderungen am Aufbau. Ressourcen (LED-Info, `en.po`) stecken auch im Linux-Programm (FPC bettet die `.res` ins ELF ein), `FindResource`/`TResourceStream` funktionieren gleich.
@@ -42,8 +51,8 @@ Regel für alle Elospeed-Programme: jedes Fenster muss bei 100, 125, 150 und 200
 | Die LED-Vorschau hatte eine feste Höhe; im begrenzten Fenster fielen «Blinken» und die halbe LED unten weg. | `PanelPreview` unten verankert, `PaintLed` füllt den Rest, die Blink-Zeile hängt unten. |
 | Bei 150/200 % reicht die Höhe trotzdem nicht für Vorschau und offenen Rechenweg. | Nach dem ersten Anzeigen (per `QueueAsyncCall`, erst dann ist das Fenster begrenzt): ist die LED-Vorschau niedriger als 120 Pixel (96 dpi), wird der Rechenweg zugeklappt. |
 | Rechenweg zu- und wieder aufklappen: das Feld rutschte unter die Statuszeile, auch bei 100 %. `alBottom` ordnet nach `Top`, nur `Height` setzen lässt die Oberkante stehen und die Unterkante wandert unter die Statuszeile. | `SetBounds` mit gleicher Unterkante (Top um den Zuwachs verkleinern). Beim Aufklappen wird das Fenster um den Zuwachs höher, `BegrenzeAufBildschirm` begrenzt. `PanelPreview` hat eine Mindesthöhe von 120 px, damit die Blink-Zeile nie über die Überschrift rutscht. |
-| Resultatkarten bei Mindestbreite (820 px): Karte 1 ist nur ~140 px breit, der Widerstand (150 px) und «gelb · violett · braun · gold» ragten in die Nachbarkarte (auf Speedys PC live gefunden). | Widerstand auf die Kartenbreite begrenzt, Farbnamen nach dem zweiten Ring umbrechen, jede Karte mit `ClipRect`/`Clipping` gezeichnet. |
-| Live-Test auf Speedys PC (125–200 %): Rechenweg zu- und aufklappen liess das Fenster jedes Mal wachsen, bis unter die Taskleiste. Bei 200 % mit offenem Rechenweg verschwand «Blinken». Fenster 2–4 px unter der Taskleiste. | Fensterhöhe beim Zu-/Aufklappen nicht mehr ändern: Mitwachsen lief mit Mindesthöhe und Bildschirmgrenze aus dem Ruder (jeder Durchgang eine andere Höhe). Der Rechenweg nimmt Platz von Schaltplan und Vorschau. Linke Spalte ist eine `TScrollBox`, `PanelPreview` füllt sie per `OnResize` bis unten (nicht verankert, sonst rollt die ScrollBox nicht) mit Mindesthöhe 120. `uSkalierung` misst Rahmen und Titelleiste mit `GetWindowRect`. |
+| Resultatkarten bei Mindestbreite (820 px): Karte 1 ist nur ~140 px breit, der Widerstand (150 px) und «gelb · violett · braun · gold» ragten in die Nachbarkarte (beim Test unter Windows gefunden). | Widerstand auf die Kartenbreite begrenzt, Farbnamen nach dem zweiten Ring umbrechen, jede Karte mit `ClipRect`/`Clipping` gezeichnet. |
+| Test unter Windows (125–200 %): Rechenweg zu- und aufklappen liess das Fenster jedes Mal wachsen, bis unter die Taskleiste. Bei 200 % mit offenem Rechenweg verschwand «Blinken». Fenster 2–4 px unter der Taskleiste. | Fensterhöhe beim Zu-/Aufklappen nicht mehr ändern: Mitwachsen lief mit Mindesthöhe und Bildschirmgrenze aus dem Ruder (jeder Durchgang eine andere Höhe). Der Rechenweg nimmt Platz von Schaltplan und Vorschau. Linke Spalte ist eine `TScrollBox`, `PanelPreview` füllt sie per `OnResize` bis unten (nicht verankert, sonst rollt die ScrollBox nicht) mit Mindesthöhe 120. `uSkalierung` misst Rahmen und Titelleiste mit `GetWindowRect`. |
 | Ko-fi-Knopf: Breite in `FormCreate` mit `Screen.PixelsPerInch` gerechnet. Das Fenster steht dort noch auf 96 dpi und wird danach umgerechnet, der Rand war so doppelt skaliert. | Mit `PixelsPerInch` des Fensters (im Aufbau 96) messen. `Screen.PixelsPerInch` nur beim Zeichnen benutzen. |
 
 ---

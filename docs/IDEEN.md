@@ -27,7 +27,7 @@ Typische Hobby-Schaltungen rund um LEDs, die LedPreResistor später berechnen k�
 | Schalten | Optokoppler-Eingang | Vorwiderstand der IR-LED, CTR-Hinweis |
 | Netz/AC | LED an 230 V mit Kondensatornetzteil (X2) | Kapazität aus dem Strom; deutlicher Sicherheitshinweis |
 | Netz/AC | LED an Wechselspannung mit Antiparallel-Diode | Vorwiderstand mit Spitzenspannung, Sperrspannung der LED |
-| Blinken/Effekte | ⭐ NE555-Blinker, astabile Kippstufe mit 2 Transistoren | Konzept liegt vor (siehe TODO, Entscheid offen) |
+| Blinken/Effekte | ⭐ NE555-Blinker, astabile Kippstufe mit 2 Transistoren | umgesetzt in 2.3 (Reiter «Blinkschaltung») |
 | Blinken/Effekte | Lauflicht mit CD4017 + NE555 | Takt, Schrittzeit, Vorwiderstände |
 | Blinken/Effekte | Fading/Atmen, PWM-Dimmung | mittlerer Strom und Helligkeit aus dem Tastgrad |
 | Anzeigen | 7-Segment-Anzeige (Widerstand pro Segment, Multiplex) | Segmentwiderstände, Spitzenstrom beim Multiplexen |

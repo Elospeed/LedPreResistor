@@ -187,4 +187,4 @@ Das Repo folgt der üblichen Elospeed-Struktur, Arbeitsname `Elospeed/LedPreResi
 - [ ] LED-Zeichnung und Schaltplan-Zeichnung umsetzen
 - [ ] Rechenweg-Bereich
 - [ ] About-Fenster und Sprachumschaltung DE/EN
-- [ ] Erste Testversion bauen, unter Wine starten, als ZIP mit Anleitung an Speedy
+- [ ] Erste Testversion bauen, unter Wine starten, als ZIP mit Anleitung an die Tester

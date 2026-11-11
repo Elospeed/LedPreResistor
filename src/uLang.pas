@@ -52,6 +52,10 @@ function LangStartCode: string;
   z. B. wenn die EXE in einem schreibgeschützten Ordner liegt) }
 procedure LangSaveChoice(const Code: string);
 
+{ Pfad der Einstellungsdatei (Windows: neben der EXE, Linux:
+  ~/.config/LedPreResistor/); auch für andere Einstellungen als die Sprache }
+function IniFileName: string;
+
 { Übersetzung aus einem Text im .po-Format lesen; für die Tests offen }
 procedure LangLoadFromPo(PoLines: TStrings; const Code: string);
 

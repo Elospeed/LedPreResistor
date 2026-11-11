@@ -19,6 +19,7 @@ type
     procedure Leistung;
     procedure BauformUndProzent;
     procedure PunktAlsDezimalzeichen;
+    procedure BlinkWerte;
   end;
 
 implementation
@@ -88,6 +89,23 @@ begin
   end;
 end;
 
+procedure TTestFormat.BlinkWerte;
+begin
+  AssertEquals('0', FormatSig(0, 3));
+  AssertEquals('1,05', FormatSig(1.0512, 3));
+  AssertEquals('476', FormatSig(476.2, 3));
+  AssertEquals('0,476 s', FormatSeconds(0.4762));
+  AssertEquals('1,25 s', FormatSeconds(1.2534));
+  AssertEquals('52,3 ms', FormatSeconds(0.05234));
+  AssertEquals('1,05 Hz', FormatFreq(1.0512));
+  AssertEquals('2,4 kHz', FormatFreq(2400));
+  AssertEquals('22 µF', FormatCap(22e-6));
+  AssertEquals('100 nF', FormatCap(100e-9));
+  AssertEquals('470 pF', FormatCap(470e-12));
+  AssertEquals('50,4 %', FormatPercent1(0.5036));
+end;
+
 initialization
   RegisterTest(TTestFormat);
+
 end.
