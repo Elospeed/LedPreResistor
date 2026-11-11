@@ -1951,7 +1951,8 @@ begin
       if Is555 then
       begin
         Put(CheckDiode, 16, Y, 0);
-        Put(LabelDiode, 36, Y + 2, 0);
+        LabelDiode.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        Put(LabelDiode, 36, Y + 2, 217);
         Tab(CheckDiode);
         Inc(Y, 26);
       end
