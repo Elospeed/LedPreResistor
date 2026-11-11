@@ -21,6 +21,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Hinweis rechts in der Kopfzeile «Rechenweg» (auch zugeklappt): Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.
 - Im Reiter «Vorwiderstand» leuchtet die LED-Vorschau jetzt dauernd: «Blinken» mit fester Frequenz (und «Ansicht → LED blinken») ist entfallen, geblinkt wird mit echten Zeiten im Reiter «Blinkschaltung». Die LED-Vorschau ist dadurch etwas grösser.
 - Pfeiltasten und Mausrad springen bei Widerständen durch die E12-Reihe, bei Kondensatoren durch die E6-Reihe.
+- Eingabefelder nehmen nur Zahlen an: Buchstaben werden ignoriert, Punkt und Komma werden zum Dezimalzeichen der Sprache, nur eines pro Feld.
 
 ---
 

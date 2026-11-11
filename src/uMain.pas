@@ -105,6 +105,7 @@ type
     procedure ComboDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditKeyPress(Sender: TObject; var Key: Char);
     procedure EditMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
@@ -1007,6 +1008,27 @@ begin
   E.Text := FormatNum(V, 2, 0);
   E.SelStart := Length(E.Text);
   Key := 0;
+end;
+
+{ Nur Ziffern und ein Dezimalzeichen zulassen. Punkt und Komma werden zum
+  Dezimalzeichen der Sprache; die Anzahl LEDs nimmt nur Ziffern an.
+  Steuerzeichen (Rücktaste, Kopieren, Einfügen) bleiben erlaubt. }
+procedure TFormMain.EditKeyPress(Sender: TObject; var Key: Char);
+var
+  E: TEdit;  // Eingabefeld
+begin
+  if (Key < ' ') or (Key in ['0'..'9']) then Exit;
+  E := Sender as TEdit;
+  if (Key in [',', '.']) and (E <> EditN) then
+  begin
+    // nur ein Dezimalzeichen; ein markiertes darf ersetzt werden
+    if (Pos(DisplayDecimal, E.Text) = 0) or (Pos(DisplayDecimal, E.SelText) > 0) then
+      Key := DisplayDecimal
+    else
+      Key := #0;
+    Exit;
+  end;
+  Key := #0;
 end;
 
 procedure TFormMain.EditMouseWheel(Sender: TObject; Shift: TShiftState;
