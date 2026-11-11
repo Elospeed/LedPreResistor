@@ -136,7 +136,8 @@ type
     FLedOn: TBitmap;         // LED-Bild leuchtend (zwischengespeichert)
     FLedOff: TBitmap;        // LED-Bild aus (für das Blinken)
     FLedLit: Boolean;        // LED gerade an (beim Blinken wechselnd)
-    FBlinkStart: QWord;      // Startzeit des Blinkens in ms (GetTickCount64)
+    FBlinkStart: LongWord;   // Startzeit des Blinkens in ms (BlinkClockMs)
+    FFineTimer: Boolean;     // feine Timer-Auflösung ist eingeschaltet
     FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
     FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
@@ -157,6 +158,7 @@ type
     MenuLangDe: TMenuItem;   // Sprache Deutsch
     MenuLangEn: TMenuItem;   // Sprache Englisch
     { Menü Ansicht → Sprache mit Deutsch und English anlegen }
+    procedure SetFineTimer(AOn: Boolean);
     procedure CreateLangMenu;
     { Klick auf eine Sprache im Menü (Tag 0 = Deutsch, 1 = Englisch) }
     procedure MenuLangClick(Sender: TObject);
@@ -426,16 +428,34 @@ implementation
 
 uses
   Math, Clipbrd, LCLIntf, Dialogs, IniFiles, uTheme, uFormat, uLedView, uSchematic, uRichText,
-  uLedInfo, uKofiButton, uBlinkSchematic;
+  uLedInfo, uKofiButton, uBlinkSchematic{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
 
 const
   { Kürzeste An- oder Aus-Zeit, die die Vorschau noch sauber blinken kann.
-    Der Timer läuft unter Windows in Schritten von etwa 16 ms, darunter
-    ruckelt das Blinken sichtbar. Kürzere Zeiten zeigt die Vorschau als
-    gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
-  BLINK_ANIM_MIN_PHASE = 0.08;
+    Beim Blinken läuft der Timer mit feiner Auflösung (1 ms statt etwa
+    16 ms) und meldet sich etwa alle 10 ms. Der Bildschirm zeigt bei 60 Hz
+    ein Bild alle 16,7 ms; eine Phase muss mindestens etwa ein Bild lang
+    sein. Ab 20 ms (bei 50 % Tastgrad 25 Hz) blinkt die Vorschau echt.
+    Kürzere Zeiten zeigt sie als gedimmtes Dauerlicht mit der Helligkeit
+    des Tastgrads, sonst entstünden Schwebungen mit der Bildwiederholung. }
+  BLINK_ANIM_MIN_PHASE = 0.02;
+
+{ Laufende Zeit in ms mit feiner Auflösung. GetTickCount64 springt unter
+  Windows nur in Schritten von etwa 16 ms, timeGetTime ist bei
+  eingeschalteter feiner Auflösung auf 1 ms genau. Gerechnet wird nur mit
+  Differenzen in 32 Bit, darum stört der Überlauf nach 49 Tagen nicht. }
+function BlinkClockMs: LongWord;
+begin
+  {$IFDEF WINDOWS}
+  Result := timeGetTime;
+  {$ELSE}
+  Result := LongWord(GetTickCount64);
+  {$ENDIF}
+end;
+
+const
 
   { Einstellung für den zuletzt gewählten Reiter }
   INI_SECTION_VIEW = 'Ansicht';
@@ -571,6 +591,7 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
+  SetFineTimer(False);
   FLedOn.Free;
   FLedOff.Free;
 end;
@@ -1080,9 +1101,10 @@ begin
       // Der Timer fragt oft nach und rechnet an/aus aus der Zeit seit dem
       // Start. So summieren sich Verspätungen einzelner Timer-Meldungen
       // nicht auf, der Takt bleibt gleichmässig.
-      FBlinkStart := GetTickCount64;
+      FBlinkStart := BlinkClockMs;
       TimerBlink.Interval := 10;
       TimerBlink.Enabled := True;
+      SetFineTimer(True);
       if FBInput.Circuit = bcMulti then
         LabelBlinkInfo.Caption := Format(_(rsBlinkInfoMulti), [FormatFreq(FBRes.F),
           FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1)])
@@ -1095,6 +1117,8 @@ begin
       FOnLevel := Level;
       FLedDirty := True;
     end;
+    if not TimerBlink.Enabled then
+      SetFineTimer(False);
     FLedLit := True;
     PaintLed.Invalidate;
     Exit;
@@ -1106,8 +1130,23 @@ begin
   end;
   // Vorwiderstand: LED leuchtet dauernd, geblinkt wird nur im Reiter Blinkschaltung
   TimerBlink.Enabled := False;
+  SetFineTimer(False);
   FLedLit := True;
   PaintLed.Invalidate;
+end;
+
+{ Feine Timer-Auflösung (1 ms) nur während die Vorschau blinkt. Ohne sie
+  kommen Timer-Meldungen unter Windows nur etwa alle 16 ms. }
+procedure TFormMain.SetFineTimer(AOn: Boolean);
+begin
+  if AOn = FFineTimer then Exit;
+  FFineTimer := AOn;
+  {$IFDEF WINDOWS}
+  if AOn then
+    timeBeginPeriod(1)
+  else
+    timeEndPeriod(1);
+  {$ENDIF}
 end;
 
 procedure TFormMain.TimerBlinkTimer(Sender: TObject);
@@ -1118,11 +1157,12 @@ begin
   if FMode <> 1 then
   begin
     TimerBlink.Enabled := False;
+    SetFineTimer(False);
     Exit;
   end;
   OnMs := Max(1, Round(FBRes.TOn1 * 1000));
   PeriodMs := OnMs + Max(1, Round(FBRes.TOff1 * 1000));
-  Lit := (GetTickCount64 - FBlinkStart) mod PeriodMs < OnMs;
+  Lit := QWord(LongWord(BlinkClockMs - FBlinkStart)) mod PeriodMs < OnMs;
   if Lit = FLedLit then Exit;  // nur beim Umschalten neu zeichnen
   FLedLit := Lit;
   PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
