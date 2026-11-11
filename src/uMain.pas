@@ -352,6 +352,7 @@ resourcestring
   rsBlinkInfoMulti = '%s · LED 1: %s, LED 2: %s';
   rsBlinkInfoFast = '%s: zu schnell fürs Auge, wirkt wie Dauerlicht (%s hell)';
   rsBlinkInfoInvalid = 'blinkt, sobald die Werte stimmen';
+  rsBlinkInfoSmooth = '%s · Vorschau gedimmt, zu schnell zum Anzeigen';
   rsBCardFreq = 'Blinkfrequenz';
   rsBCardFreqSub = 'Periode %s';
   rsBCardFreqSubAlt = 'Wechselblinker, Periode %s';
@@ -429,7 +430,11 @@ uses
 {$R *.lfm}
 
 const
-  { Blinkfrequenzen in Hz für die Auswahlliste }
+  { Kürzeste An- oder Aus-Zeit, die die Vorschau noch sauber blinken kann.
+    Der Timer läuft unter Windows in Schritten von etwa 16 ms, darunter
+    ruckelt das Blinken sichtbar. Kürzere Zeiten zeigt die Vorschau als
+    gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
+  BLINK_ANIM_MIN_PHASE = 0.08;
 
   { Einstellung für den zuletzt gewählten Reiter }
   INI_SECTION_VIEW = 'Ansicht';
@@ -1009,6 +1014,8 @@ begin
 end;
 
 procedure TFormMain.PaintLedPaint(Sender: TObject);
+var
+  Y: Integer;  // Zeile der Frequenzanzeige
 begin
   if FLedDirty or (FLedOn.Width <> PaintLed.Width) or (FLedOn.Height <> PaintLed.Height) then
     RenderLedBitmaps;
@@ -1016,6 +1023,23 @@ begin
     PaintLed.Canvas.Draw(0, 0, FLedOn)
   else
     PaintLed.Canvas.Draw(0, 0, FLedOff);
+  // Blinkschaltung: Frequenz gross oben links in der Vorschau
+  if (FMode = 1) and (FBRes.Status = bsOk) then
+    with PaintLed.Canvas do
+    begin
+      Brush.Style := bsClear;
+      Font.Name := FONT_UI;
+      Font.Style := [];
+      Font.Size := 8;
+      Font.Color := clrTextDim;
+      TextOut(Px(8), Px(6), _(rsBCardFreq));
+      Y := Px(6) + TextHeight('Ag');
+      Font.Size := 14;
+      Font.Style := [fsBold];
+      Font.Color := clrAccent;
+      TextOut(Px(8), Y, FormatFreq(FBRes.F));
+      Font.Style := [];
+    end;
 end;
 
 procedure TFormMain.PaintLedResize(Sender: TObject);
@@ -1042,6 +1066,13 @@ begin
       // Dauerlicht mit der mittleren Helligkeit
       Level := Max(0.15, FBRes.Duty1);
       LabelBlinkInfo.Caption := Format(_(rsBlinkInfoFast), [FormatFreq(FBRes.F), FormatPercent(FBRes.Duty1)]);
+    end
+    else if Min(FBRes.TOn1, FBRes.TOff1) < BLINK_ANIM_MIN_PHASE then
+    begin
+      // sichtbar blinkend, aber zu schnell für eine ruhige Anzeige
+      TimerBlink.Enabled := False;
+      Level := Max(0.15, FBRes.Duty1);
+      LabelBlinkInfo.Caption := Format(_(rsBlinkInfoSmooth), [FormatFreq(FBRes.F)]);
     end
     else
     begin

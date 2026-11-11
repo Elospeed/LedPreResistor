@@ -705,3 +705,6 @@ msgstr "Series resistor: %s"
 
 msgid "Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte."
 msgstr "Note: take the forward voltage and current from the datasheet of the LED you use; the presets are only typical values."
+
+msgid "%s · Vorschau gedimmt, zu schnell zum Anzeigen"
+msgstr "%s · preview dimmed, too fast to show"
