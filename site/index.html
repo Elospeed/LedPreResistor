@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LedPreResistor – free LED series resistor calculator for Windows and Linux</title>
-<meta name="description" content="Elospeed LedPreResistor calculates the series resistor for one or more LEDs: E12/E24/E96 standard value, colour bands, real current, power and the right resistor size, with a step-by-step explanation. Free, open source, for Windows and Linux.">
-<meta name="keywords" content="LED resistor calculator, series resistor, LED current limiting resistor, E12, E24, E96, resistor colour code, electronics, Windows, Linux, free, open source">
+<meta name="description" content="Elospeed LedPreResistor calculates the series resistor for one or more LEDs: E12/E24/E96 standard value, colour bands, real current, power and the right resistor size, with a step-by-step explanation, plus a blink circuit calculator for the NE555 and the two-transistor multivibrator. Free, open source, for Windows and Linux.">
+<meta name="keywords" content="LED resistor calculator, series resistor, LED current limiting resistor, E12, E24, E96, resistor colour code, NE555 blinker, astable multivibrator, LED flasher, electronics, Windows, Linux, free, open source">
 <meta name="author" content="Elospeed">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://elospeed.github.io/LedPreResistor/">
@@ -41,10 +41,10 @@
   "name": "Elospeed LedPreResistor",
   "operatingSystem": "Windows 10, Windows 11 (64-bit), Linux (x86_64)",
   "applicationCategory": "UtilitiesApplication",
-  "description": "Calculates the series resistor for one or more LEDs in series: next standard value from E12, E24 or E96, colour bands, real current, power and recommended resistor size, with a step-by-step explanation.",
+  "description": "Calculates the series resistor for one or more LEDs in series: next standard value from E12, E24 or E96, colour bands, real current, power and recommended resistor size, with a step-by-step explanation. Also calculates LED blink circuits with the NE555 or a two-transistor multivibrator.",
   "url": "https://elospeed.github.io/LedPreResistor/",
   "downloadUrl": "https://github.com/Elospeed/LedPreResistor/releases/latest",
-  "softwareVersion": "2.2",
+  "softwareVersion": "2.3",
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
@@ -60,6 +60,7 @@
     <a class="brand" href="./"><img src="img/icon-192.png" alt="" width="30" height="30">Elospeed LedPreResistor</a>
     <nav>
       <a class="hide-m" href="#features">Features</a>
+      <a class="hide-m" href="#blink">Blink circuits</a>
       <a class="hide-m" href="#how">How it works</a>
       <a class="hide-m" href="#faq">FAQ</a>
       <a class="hide-m" href="https://github.com/Elospeed/LedPreResistor">GitHub</a>
@@ -77,8 +78,8 @@
     <h1>The right resistor<br>for <span class="grad">every LED</span></h1>
     <p class="lead">Enter the supply voltage, pick the LED colour and the current. LedPreResistor finds the next standard resistor, shows its colour bands, the real current and the power, and tells you which resistor size to use. Every step of the calculation is shown with your own numbers. One small program for Windows and Linux, free and open source.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.2/LedPreResistor-2.2.zip">⬇ Download for Windows</a>
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.2/LedPreResistor-2.2-linux-x86_64.tar.gz">⬇ Download for Linux</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3.zip">⬇ Download for Windows</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3-linux-x86_64.tar.gz">⬇ Download for Linux</a>
       <a class="btn" href="https://github.com/Elospeed/LedPreResistor">View source on GitHub</a>
     </div>
     <ul class="facts">
@@ -87,10 +88,11 @@
       <li>One EXE, no installation</li>
       <li>Works offline</li>
       <li>E12, E24 and E96</li>
+      <li>Blink circuits: NE555 and multivibrator</li>
     </ul>
     <figure class="shot hero-shot">
-      <div class="bar"><img src="img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.2</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
-      <img src="img/ledpreresistor-main-en.png" width="900" height="799" alt="LedPreResistor main window: 12 V supply, white LED, 20 mA. Schematic with 470 ohm resistor, colour bands yellow violet brown gold, 18.72 mA, 164.8 mW, recommended size half a watt, and the calculation step by step">
+      <div class="bar"><img src="img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="img/ledpreresistor-main-en.png" width="900" height="839" alt="LedPreResistor main window: 12 V supply, white LED, 20 mA. Schematic with 470 ohm resistor, colour bands yellow violet brown gold, 18.72 mA, 164.8 mW, recommended size half a watt, and the calculation step by step">
     </figure>
     <figcaption>English and German interface: it follows your Windows language, and View → Language switches at any time.</figcaption>
   </div>
@@ -104,7 +106,7 @@
       <div class="card"><h3><span class="dot" style="background:var(--red)"></span>Standard value and colour bands</h3><p>Always the next higher value from the E12, E24 or E96 series, so the LED never gets more current than planned. The resistor is drawn with its colour bands: four bands for E12/E24, five for E96.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span>Power and the right size</h3><p>Real current, power in the resistor and in the LEDs. LedPreResistor recommends ⅛, ¼, ½ or 1 W and warns from 50 % load, with an estimated temperature rise of the resistor.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--green)"></span>The calculation, step by step</h3><p>A fold-out panel walks through the five steps with your values: voltage across the resistor, ideal value, standard value, real current, power and warming. Ideal for learning and for checking.</p></div>
-      <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED preview</h3><p>A realistic 5 mm LED in the selected colour, with anode, cathode and the flat side labelled, so you solder it the right way round. It can blink at 0.5 to 5 Hz.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED preview</h3><p>A realistic 5 mm LED in the selected colour, with anode, cathode and the flat side labelled, so you solder it the right way round. In the blink circuit tab it blinks with the calculated times.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schematic with all values</h3><p>Supply, resistor and LED in a clear circuit diagram, with voltage, current and resistance at every part. Several LEDs in series are supported.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--accent)"></span>LED info built in</h3><p>Press F1 for “The LED”: how an LED works, colours and forward voltages, polarity, series resistor, constant current and practical tips. Opens in your browser, also offline.</p></div>
     </div>
@@ -126,13 +128,34 @@
       </ul>
     </div>
     <figure class="shot">
-      <div class="bar"><img src="img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.2</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
-      <img src="img/ledpreresistor-warning-en.png" width="900" height="799" alt="LedPreResistor with 9 V, red LED, 25 mA: 330 ohm, 148.5 mW, a quarter watt resistor would be 59 percent loaded, the status bar shows a yellow warning and recommends half a watt" loading="lazy">
+      <div class="bar"><img src="img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="img/ledpreresistor-warning-en.png" width="900" height="839" alt="LedPreResistor with 9 V, red LED, 25 mA: 330 ohm, 148.5 mW, a quarter watt resistor would be 59 percent loaded, the status bar shows a yellow warning and recommends half a watt" loading="lazy">
     </figure>
   </div>
 </section>
 
-<section id="how" class="alt">
+<section id="blink" class="alt">
+  <div class="wrap split rev">
+    <div>
+      <h2>Make your LED blink</h2>
+      <p class="sub" style="margin-bottom:0">New in version 2.3: the “Blink circuit” tab calculates the two classic hobby blinkers, with schematic, calculation steps and checks.</p>
+      <ul class="ticks">
+        <li><strong>NE555 astable:</strong> on and off time, frequency and duty cycle from R1, R2 and C, optionally with a diode across R2 for short flashes</li>
+        <li><strong>Multivibrator with two BC547:</strong> two LEDs blinking alternately, symmetric 1:1 by default</li>
+        <li><strong>The other way round:</strong> enter the frequency (NE555) or how long each LED stays on (multivibrator), and get resistors from the E12 series with the times they really give</li>
+        <li>Series resistor for the LEDs, colour bands and a schematic with every value</li>
+        <li>Checks for supply range, output current, transistor saturation and base reverse voltage</li>
+        <li>The LED preview blinks with the calculated times and shows the frequency in Hz</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <div class="bar"><img src="img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="img/ledpreresistor-blink-en.png" width="900" height="839" alt="LedPreResistor blink circuit tab: NE555 astable with R1 1 kilohm, R2 68 kilohm and 10 microfarad at 12 V, 1.05 Hz, 50.4 percent duty cycle, series resistor 390 ohm for a white LED, schematic and calculation steps" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<section id="how">
   <div class="wrap">
     <h2>How it works</h2>
     <p class="sub">Three steps from the datasheet to the right resistor.</p>
@@ -153,8 +176,8 @@
   </div>
 </section>
 
-<section>
-  <div class="wrap split rev">
+<section class="alt">
+  <div class="wrap split">
     <div>
       <h2>Learn while you calculate</h2>
       <p class="sub" style="margin-bottom:0">The built-in LED info is a short guide for hobbyists, rewritten for version 2.0 with values as of 2026, in English and German.</p>
@@ -174,7 +197,7 @@
   </div>
 </section>
 
-<section id="faq" class="alt">
+<section id="faq">
   <div class="wrap">
     <h2>Questions and answers</h2>
     <details>
@@ -203,7 +226,7 @@
     </details>
     <details>
       <summary>Is there a Linux version?</summary>
-      <p>Yes, since version 2.2: a native Linux build (x86_64, GTK2), no Wine needed. Unpack <code>LedPreResistor-2.2-linux-x86_64.tar.gz</code> and run <code>./LedPreResistor</code>. <code>./install.sh</code> adds it to your application menu without root. It needs GTK2, which most desktops already have (otherwise <code>sudo apt install libgtk2.0-0</code>, <code>sudo dnf install gtk2</code> or <code>sudo pacman -S gtk2</code>). Settings are stored in <code>~/.config/LedPreResistor/</code>.</p>
+      <p>Yes, since version 2.2: a native Linux build (x86_64, GTK2), no Wine needed. Unpack <code>LedPreResistor-2.3-linux-x86_64.tar.gz</code> and run <code>./LedPreResistor</code>. <code>./install.sh</code> adds it to your application menu without root. It needs GTK2, which most desktops already have (otherwise <code>sudo apt install libgtk2.0-0</code>, <code>sudo dnf install gtk2</code> or <code>sudo pacman -S gtk2</code>). Settings are stored in <code>~/.config/LedPreResistor/</code>.</p>
     </details>
     <details>
       <summary>Where does LedPreResistor come from?</summary>
@@ -216,13 +239,13 @@
   </div>
 </section>
 
-<section>
+<section class="alt">
   <div class="wrap" style="text-align:center">
     <h2>Ready for your next LED project?</h2>
     <p class="sub" style="margin:0 auto 26px">Download it for Windows or Linux, unpack it and start calculating.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.2/LedPreResistor-2.2.zip">⬇ Windows (ZIP)</a>
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.2/LedPreResistor-2.2-linux-x86_64.tar.gz">⬇ Linux (tar.gz)</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3.zip">⬇ Windows (ZIP)</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3-linux-x86_64.tar.gz">⬇ Linux (tar.gz)</a>
       <a class="btn" href="https://github.com/Elospeed/LedPreResistor#readme">Read the guide</a>
     </div>
     <p class="support">LedPreResistor is a one-person hobby project and free for good. If it helps you, you can <a href="https://ko-fi.com/elospeed">buy me a coffee on Ko-fi</a> ☕ or simply <a href="https://github.com/Elospeed/LedPreResistor">give it a star on GitHub</a>. Both are entirely optional.</p>
