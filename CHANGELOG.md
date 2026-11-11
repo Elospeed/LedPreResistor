@@ -7,13 +7,13 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.3 – Unveröffentlicht
+## 2.3 – 11. November 2026
 
 ### Blinkschaltung
 - Neuer Reiter «Blinkschaltung» (Ansicht → Blinkschaltung, Strg+2; zurück mit Strg+1). Der gewählte Reiter und die Schaltung bleiben beim nächsten Start erhalten.
 - NE555 astabil: aus R1, R2 und C die Zeiten t_H und t_L, Frequenz und Tastgrad; wahlweise mit Diode über R2 (dann auch Tastgrad unter 50 %). LED gegen Masse, gegen +U oder beide (Wechselblinker).
 - Multivibrator mit zwei BC547: aus den Basiswiderständen und Kondensatoren die Leuchtzeit jeder LED, dazu Basisstrom und Übersteuerung.
-- Rückwärts «aus Frequenz»: Wunschfrequenz und Tastgrad eingeben, das Programm schlägt Widerstände aus der E12-Reihe vor und rechnet mit diesen weiter.
+- Rückwärts «aus Frequenz» (NE555): Wunschfrequenz und Tastgrad eingeben, das Programm schlägt Widerstände aus der E12-Reihe vor und rechnet mit diesen weiter.
 - Vorwiderstand der LEDs mit der Spannung am Ausgang (NE555: U − 1,7 V, Multivibrator: U − 0,2 V), Farbringe und Schaltplan mit allen Werten.
 - Die LED-Vorschau blinkt mit den berechneten Zeiten (beim Multivibrator zwei LEDs im Wechsel), oben links steht die Blinkfrequenz gross in Hz bzw. kHz. Der Takt wird aus der laufenden Zeit berechnet, dadurch blinkt die Vorschau gleichmässig. Sie blinkt bis etwa 10 Hz (An- und Aus-Zeit mindestens 50 ms); schneller kann ein Bildschirm mit 60 Hz das nicht gleichmässig zeigen, dann zeigt sie ruhiges, gedimmtes Licht mit der Helligkeit des Tastgrads.
 - Rechenweg mit fünf Schritten und Statuszeile mit Prüfungen: NE555-Versorgung 4,5–16 V, R1 mindestens 1 kΩ, Ausgangsstrom bis 200 mA, Sperrspannung an der Basis über 6 V (Diode 1N4148 empfohlen), Sättigung der Transistoren, Blinken über 50 Hz (wirkt wie Dauerlicht).
