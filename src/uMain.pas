@@ -25,6 +25,8 @@ type
   { TFormMain – das Hauptfenster }
   TFormMain = class(TForm)
     CheckDiode: TCheckBox;        // NE555: Diode über R2
+    CheckSym: TCheckBox;          // Multivibrator: symmetrisch 1:1
+    LabelSym: TLabel;
     ComboCircuit: TComboBox;      // Blinkschaltung: NE555 oder Multivibrator
     ComboConn: TComboBox;         // NE555: Anschluss der LED
     EditT1: TEdit;                // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
@@ -94,6 +96,7 @@ type
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
+    procedure LabelSymClick(Sender: TObject);
     procedure MenuModeClick(Sender: TObject);
     procedure PaintModeMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -159,6 +162,7 @@ type
     MenuLangDe: TMenuItem;   // Sprache Deutsch
     MenuLangEn: TMenuItem;   // Sprache Englisch
     { Menü Ansicht → Sprache mit Deutsch und English anlegen }
+    procedure SyncSymmetric;
     procedure SetFineTimer(AOn: Boolean);
     procedure CreateLangMenu;
     { Klick auf eine Sprache im Menü (Tag 0 = Deutsch, 1 = Englisch) }
@@ -343,9 +347,14 @@ resourcestring
   rsCircuitMulti = 'Multivibrator (2 Transistoren)';
   rsModeParts = 'aus Bauteilen';
   rsModeFreq = 'aus Frequenz';
+  rsModeTimes = 'aus Zeiten';
+  rsLabelLed1 = 'LED 1 an';
+  rsLabelLed2 = 'LED 2 an';
+  rsErrBTimes = 'Bitte für LED 1 und LED 2 Zeiten grösser als 0 eingeben.';
   rsLabelFreq = 'Frequenz';
   rsLabelDuty = 'LED an';
   rsDiode = 'Diode über R2 (unter 50 % an)';
+  rsSym = 'Symmetrisch 1:1 (gleich lang an)';
   rsLabelConn = 'Anschluss am Ausgang';
   rsConnGnd = 'nach Masse (leuchtet bei High)';
   rsConnVcc = 'nach +Ub (leuchtet bei Low)';
@@ -412,7 +421,7 @@ resourcestring
   rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**';
   rsBStepMultiK = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**';
   rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
-  rsBStepMultiRev = 'Aus f = %s und %s LED 1 an: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nächste %s-Werte)';
+  rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
   rsBStepMultiRv = 'Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
@@ -503,10 +512,11 @@ end;
 const
   { Vorgaben der Zeitglied-Felder je Schaltung und Richtung:
     vorwärts R1/R_B1 in kΩ, R2/R_B2 in kΩ, C in µF;
-    rückwärts Frequenz in Hz, LED an in %, C in µF }
+    rückwärts Frequenz in Hz, LED an in %, C in µF (NE555) bzw.
+    Zeit LED 1 und LED 2 in s, C in µF (Multivibrator) }
   BLINK_DEFAULTS: array[TBlinkCircuit, Boolean, 0..2] of string = (
     (('1', '68', '10'), ('1', '55', '10')),
-    (('33', '33', '22'), ('1', '50', '22')));
+    (('33', '33', '22'), ('0,5', '0,5', '22')));
 
   { Normwerte für Pfeiltasten und Mausrad: E12 für Widerstände, E6 für Kondensatoren }
   E6_DIGITS: array[0..5] of Integer = (10, 15, 22, 33, 47, 68);
@@ -756,6 +766,7 @@ begin
   MenuModeB.Caption := _(rsMenuModeB);
   LabelHeadTiming.Caption := _(rsHeadTiming);
   LabelDiode.Caption := _(rsDiode);
+  LabelSym.Caption := _(rsSym);
   LabelConn.Caption := _(rsLabelConn);
   if FMode = 1 then
     LabelHeadInputs.Caption := _(rsHeadCircuit);
@@ -1772,6 +1783,7 @@ begin
       EditI.Text := '15';
     end;
     CheckDiode.Checked := False;
+    CheckSym.Checked := True;
     ComboConn.ItemIndex := Ord(cnGnd);
     LoadTimingTexts;
   finally
@@ -1886,6 +1898,8 @@ begin
     LabelHeadLed.Visible := Blink;
     CheckDiode.Visible := Blink and Is555;
     LabelDiode.Visible := Blink and Is555;
+    CheckSym.Visible := Blink and not Is555;
+    LabelSym.Visible := Blink and not Is555;
     LabelConn.Visible := False;  // die Auswahl erklärt sich selbst
     ComboConn.Visible := Blink and Is555;
 
@@ -1942,7 +1956,13 @@ begin
         Inc(Y, 26);
       end
       else
-        Inc(Y, 2);
+      begin
+        Put(CheckSym, 16, Y, 0);
+        LabelSym.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        Put(LabelSym, 36, Y + 2, 217);
+        Tab(CheckSym);
+        Inc(Y, 26);
+      end;
       // Kopf «LED AM AUSGANG» (NE555) bzw. «LEDS» (Multivibrator)
       Put(LabelHeadLed, 16, Y, 0);
       Put(ComboColor, 16, Y + 18, 237);
@@ -1976,7 +1996,16 @@ var
   Is555: Boolean;  // Schaltung NE555
 begin
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
-  if FReverse then
+  if FReverse and not Is555 then
+  begin
+    LabelT1.Caption := _(rsLabelLed1);
+    LabelT1Unit.Caption := 's';
+    EditT1.Tag := 100;     // 0,1 s pro Schritt
+    LabelT2.Caption := _(rsLabelLed2);
+    LabelT2Unit.Caption := 's';
+    EditT2.Tag := 100;
+  end
+  else if FReverse then
   begin
     LabelT1.Caption := _(rsLabelFreq);
     LabelT1Unit.Caption := 'Hz';
@@ -2037,11 +2066,35 @@ begin
     FUpdating := Old;
   end;
   UpdateTimingLabels;
+  SyncSymmetric;
+end;
+
+{ Multivibrator symmetrisch (1:1): das zweite Feld folgt dem ersten,
+  RB2 = RB1 bzw. Zeit LED 2 = Zeit LED 1. }
+procedure TFormMain.SyncSymmetric;
+var
+  Sym: Boolean;  // symmetrisch eingestellt
+  T: string;     // Text für das zweite Feld
+  Old: Boolean;  // vorheriger Zustand von FUpdating
+begin
+  Sym := (ComboCircuit.ItemIndex = Ord(bcMulti)) and CheckSym.Checked;
+  EditT2.Enabled := not Sym;
+  if not Sym then Exit;
+  T := EditT1.Text;
+  if EditT2.Text = T then Exit;
+  Old := FUpdating;
+  FUpdating := True;
+  try
+    EditT2.Text := T;
+  finally
+    FUpdating := Old;
+  end;
 end;
 
 procedure TFormMain.BlinkInputChange(Sender: TObject);
 begin
   if FUpdating then Exit;
+  SyncSymmetric;
   Recalc;
 end;
 
@@ -2058,6 +2111,11 @@ end;
 procedure TFormMain.LabelDiodeClick(Sender: TObject);
 begin
   CheckDiode.Checked := not CheckDiode.Checked;
+end;
+
+procedure TFormMain.LabelSymClick(Sender: TObject);
+begin
+  CheckSym.Checked := not CheckSym.Checked;
 end;
 
 procedure TFormMain.MenuModeClick(Sender: TObject);
@@ -2143,7 +2201,10 @@ begin
     else
     begin
       H := Types.Rect((R.Left + R.Right) div 2, R.Top, R.Right, R.Bottom);
-      T := _(rsModeFreq);
+      if ComboCircuit.ItemIndex = Ord(bcMulti) then
+        T := _(rsModeTimes)
+      else
+        T := _(rsModeFreq);
     end;
     if (I = 1) = FReverse then
     begin
@@ -2185,7 +2246,8 @@ end;
 
 procedure TFormMain.RecalcBlink;
 var
-  V: Double;  // umgewandelte Eingabe
+  V: Double;       // umgewandelte Eingabe
+  T1, T2: Double;  // Multivibrator: Zeiten von LED 1 und LED 2 in s
 begin
   FBInput := Default(TBlinkInput);
   if ComboCircuit.ItemIndex = Ord(bcMulti) then
@@ -2193,7 +2255,18 @@ begin
   else
     FBInput.Circuit := bcNE555;
   FBInput.Reverse := FReverse;
-  if FReverse then
+  if FReverse and (FBInput.Circuit = bcMulti) then
+  begin
+    // Multivibrator: Zeiten von LED 1 und LED 2 in s, daraus f und Tastgrad
+    if ParseDecimal(EditT1.Text, V) then T1 := V else T1 := 0;
+    if ParseDecimal(EditT2.Text, V) then T2 := V else T2 := 0;
+    if (T1 > 0) and (T2 > 0) then
+    begin
+      FBInput.F := 1 / (T1 + T2);
+      FBInput.Duty := T1 / (T1 + T2);
+    end;
+  end
+  else if FReverse then
   begin
     if ParseDecimal(EditT1.Text, V) then FBInput.F := V;
     if ParseDecimal(EditT2.Text, V) then FBInput.Duty := V / 100;
@@ -2243,8 +2316,10 @@ begin
     bsInvalidR2:
       if FBInput.Circuit = bcMulti then Result := _(rsErrBRB2) else Result := _(rsErrBR2);
     bsInvalidC: Result := _(rsErrBC);
-    bsInvalidF: Result := _(rsErrBF);
-    bsInvalidDuty: Result := _(rsErrBDuty);
+    bsInvalidF, bsInvalidDuty:
+      if FBInput.Circuit = bcMulti then Result := _(rsErrBTimes)
+      else if S = bsInvalidF then Result := _(rsErrBF)
+      else Result := _(rsErrBDuty);
     bsDutyNeedsDiode: Result := _(rsErrBDiode);
     bsUTooLow:
       begin
@@ -2631,7 +2706,7 @@ begin
   begin
     Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
     if Inp.Reverse then
-      Result[1] := Format(_(rsBStepMultiRev), [FormatFreq(Inp.F), FormatPercent(Inp.Duty),
+      Result[1] := Format(_(rsBStepMultiRev), [FormatSeconds(Inp.Duty / Inp.F), FormatSeconds((1 - Inp.Duty) / Inp.F),
         FormatOhm(Res.R2Calc), FormatOhm(Res.R2), FormatOhm(Res.R1Calc), FormatOhm(Res.R1), Ser])
     else
       Result[1] := Format(_(rsBStepMultiT), [FormatNum(Res.K, 3, 3), FormatOhm(Res.R2), FormatCap(Res.C),

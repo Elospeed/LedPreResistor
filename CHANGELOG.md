@@ -21,6 +21,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Hinweis rechts in der Kopfzeile «Rechenweg» (auch zugeklappt): Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.
 - Im Reiter «Vorwiderstand» leuchtet die LED-Vorschau jetzt dauernd: «Blinken» mit fester Frequenz (und «Ansicht → LED blinken») ist entfallen, geblinkt wird mit echten Zeiten im Reiter «Blinkschaltung». Die LED-Vorschau ist dadurch etwas grösser.
 - Pfeiltasten und Mausrad springen bei Widerständen durch die E12-Reihe, bei Kondensatoren durch die E6-Reihe.
+- Multivibrator: «Symmetrisch 1:1» ist vorgewählt (RB2 folgt RB1). Statt «aus Frequenz» gibt es «aus Zeiten»: Leuchtdauer von LED 1 und LED 2 in Sekunden eingeben, z. B. 1 s und 0,5 s; das Programm wählt die E12-Widerstände und zeigt die tatsächlichen Zeiten.
 - Eingabefelder nehmen nur Zahlen an: Buchstaben werden ignoriert, Punkt und Komma werden zum Dezimalzeichen der Sprache, nur eines pro Feld.
 
 ---

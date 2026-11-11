@@ -407,6 +407,9 @@ msgstr "LED on"
 msgid "Diode über R2 (unter 50 % an)"
 msgstr "Diode across R2 (under 50% on)"
 
+msgid "Symmetrisch 1:1 (gleich lang an)"
+msgstr "Symmetric 1:1 (equal times)"
+
 #: uMain.pas rsLabelConn
 msgid "Anschluss am Ausgang"
 msgstr "Connection at output"
@@ -668,8 +671,8 @@ msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** �
 msgstr "LED 1 on (T2 off): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 on: t_2 = k · R_B_1 · C = **%s**"
 
 #: uMain.pas rsBStepMultiRev
-msgid "Aus f = %s und %s LED 1 an: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nächste %s-Werte)"
-msgstr "From f = %s and %s LED 1 on: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nearest %s values)"
+msgid "Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)"
+msgstr "From t_1 = %s (LED 1) and t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nearest %s values)"
 
 #: uMain.pas rsBStepMultiF
 msgid "Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**"
@@ -708,3 +711,15 @@ msgstr "Note: take the forward voltage and current from the datasheet of the LED
 
 msgid "%s · Vorschau gedimmt, zu schnell zum Anzeigen"
 msgstr "%s · preview dimmed, too fast to show"
+
+msgid "aus Zeiten"
+msgstr "from times"
+
+msgid "LED 1 an"
+msgstr "LED 1 on"
+
+msgid "LED 2 an"
+msgstr "LED 2 on"
+
+msgid "Bitte für LED 1 und LED 2 Zeiten grösser als 0 eingeben."
+msgstr "Please enter times greater than 0 for LED 1 and LED 2."

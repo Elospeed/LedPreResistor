@@ -404,6 +404,27 @@ object FormMain: TFormMain
       OnClick = LabelDiodeClick
       Visible = False
     end
+    object CheckSym: TCheckBox
+      Left = 16
+      Height = 19
+      Top = 222
+      Width = 18
+      Checked = True
+      State = cbChecked
+      OnChange = BlinkInputChange
+      TabOrder = 12
+      Visible = False
+    end
+    object LabelSym: TLabel
+      Left = 36
+      Height = 15
+      Top = 224
+      Width = 200
+      Caption = 'Symmetrisch 1:1 (gleich lang an)'
+      ParentColor = False
+      OnClick = LabelSymClick
+      Visible = False
+    end
     object LabelHeadLed: TLabel
       Left = 16
       Height = 15
