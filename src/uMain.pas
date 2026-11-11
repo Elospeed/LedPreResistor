@@ -436,11 +436,12 @@ const
   { Kürzeste An- oder Aus-Zeit, die die Vorschau noch sauber blinken kann.
     Beim Blinken läuft der Timer mit feiner Auflösung (1 ms statt etwa
     16 ms) und meldet sich etwa alle 10 ms. Der Bildschirm zeigt bei 60 Hz
-    ein Bild alle 16,7 ms; eine Phase muss mindestens etwa ein Bild lang
-    sein. Ab 20 ms (bei 50 % Tastgrad 25 Hz) blinkt die Vorschau echt.
-    Kürzere Zeiten zeigt sie als gedimmtes Dauerlicht mit der Helligkeit
-    des Tastgrads, sonst entstünden Schwebungen mit der Bildwiederholung. }
-  BLINK_ANIM_MIN_PHASE = 0.02;
+    ein Bild alle 16,7 ms, jede Phase kann darum um ein Bild länger oder
+    kürzer erscheinen. Ab 50 ms (bei 50 % Tastgrad 10 Hz) fällt das kaum
+    auf; bei kürzeren Phasen stockt das Blinken sichtbar (unter Windows
+    ab etwa 12 Hz beobachtet). Kürzere Zeiten zeigt die Vorschau als
+    gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
+  BLINK_ANIM_MIN_PHASE = 0.05;
 
 { Laufende Zeit in ms mit feiner Auflösung. GetTickCount64 springt unter
   Windows nur in Schritten von etwa 16 ms, timeGetTime ist bei
