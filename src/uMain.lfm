@@ -121,6 +121,7 @@ object FormMain: TFormMain
       Width = 208
       OnChange = InputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 0
       Text = '12'
@@ -168,6 +169,7 @@ object FormMain: TFormMain
       Width = 92
       OnChange = InputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 2
       Text = '3,2'
@@ -196,6 +198,7 @@ object FormMain: TFormMain
       Width = 84
       OnChange = InputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 3
       Text = '20'
@@ -243,6 +246,7 @@ object FormMain: TFormMain
       Width = 84
       OnChange = InputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 5
       Text = '1'
@@ -302,6 +306,7 @@ object FormMain: TFormMain
       Width = 52
       OnChange = BlinkInputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 8
       Text = '1'
@@ -333,6 +338,7 @@ object FormMain: TFormMain
       Width = 52
       OnChange = BlinkInputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 9
       Text = '68'
@@ -364,6 +370,7 @@ object FormMain: TFormMain
       Width = 52
       OnChange = BlinkInputChange
       OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
       OnMouseWheel = EditMouseWheel
       TabOrder = 10
       Text = '10'
@@ -395,6 +402,27 @@ object FormMain: TFormMain
       Caption = 'Diode über R2 (Tastgrad unter 50 %)'
       ParentColor = False
       OnClick = LabelDiodeClick
+      Visible = False
+    end
+    object CheckSym: TCheckBox
+      Left = 16
+      Height = 19
+      Top = 222
+      Width = 18
+      Checked = True
+      State = cbChecked
+      OnChange = BlinkInputChange
+      TabOrder = 12
+      Visible = False
+    end
+    object LabelSym: TLabel
+      Left = 36
+      Height = 15
+      Top = 224
+      Width = 200
+      Caption = 'Symmetrisch 1:1 (gleich lang an)'
+      ParentColor = False
+      OnClick = LabelSymClick
       Visible = False
     end
     object LabelHeadLed: TLabel

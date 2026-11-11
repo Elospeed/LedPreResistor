@@ -6,10 +6,11 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- [ ] Version 2.3: Reiter «Blinkschaltung» (NE555 und Multivibrator) – PR offen, danach Testversion und Release
+- (nichts)
 
 ## Als Nächstes
 
+- [ ] Version 2.4: Reiter «Konstantstrom» (LM317 und zwei Transistoren)
 - [ ] Screenshots für die Seite unter echtem Windows neu aufnehmen (jetzt unter Wine)
 - [ ] About-Fenster statt Meldungsfenster
 - [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)

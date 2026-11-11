@@ -423,7 +423,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 <section id="blinken">
   <div class="eyebrow">Circuits</div>
   <h2>Blinking circuits</h2>
-  <p>The “Blink circuit” tab calculates two classic hobby circuits, and the preview blinks with the calculated times. With “from frequency” you enter frequency and duty cycle and get matching resistors from the E12 series.</p>
+  <p>The “Blink circuit” tab calculates two classic hobby circuits, and the preview blinks with the calculated times. With “from frequency” (NE555) you enter frequency and duty cycle, with “from times” (multivibrator) how long LED 1 and LED 2 stay on, e.g. 1 s and 0.5 s. The program picks matching resistors from the E12 series and shows the times they actually give. For the multivibrator, “Symmetric 1:1” is preselected: both LEDs stay on equally long.</p>
   <div class="cols">
     <div>
       <h3>NE555 astable</h3>
@@ -439,7 +439,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p class="mono">R<sub>B</sub> = 33 kΩ, C = 22 µF: about 1 Hz</p>
     </div>
   </div>
-  <p class="note"><strong>Visible blinking:</strong> Above about 25 Hz the eye no longer sees blinking, the LED just looks dimmer. The preview then shows steady light with correspondingly lower brightness.</p>
+  <p class="note"><strong>What the eye sees:</strong> Up to about 10 Hz you see clear blinking, up to about 25 Hz a restless flicker. From about 50 Hz the LED looks like steady light to most people, just dimmer (at the edge of vision or with movement, flicker can show up to 100 Hz, which is why PWM dimming uses 1 kHz or more). The preview in the program blinks up to about 10 Hz; a 60 Hz screen cannot show faster blinking evenly, so it then shows steady, dimmed light.</p>
 </section>
 
 <section id="konstantstrom">

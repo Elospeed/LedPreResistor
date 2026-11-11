@@ -25,6 +25,8 @@ type
   { TFormMain – das Hauptfenster }
   TFormMain = class(TForm)
     CheckDiode: TCheckBox;        // NE555: Diode über R2
+    CheckSym: TCheckBox;          // Multivibrator: symmetrisch 1:1
+    LabelSym: TLabel;
     ComboCircuit: TComboBox;      // Blinkschaltung: NE555 oder Multivibrator
     ComboConn: TComboBox;         // NE555: Anschluss der LED
     EditT1: TEdit;                // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
@@ -94,6 +96,7 @@ type
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
+    procedure LabelSymClick(Sender: TObject);
     procedure MenuModeClick(Sender: TObject);
     procedure PaintModeMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -105,6 +108,7 @@ type
     procedure ComboDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
     procedure EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditKeyPress(Sender: TObject; var Key: Char);
     procedure EditMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
@@ -136,6 +140,8 @@ type
     FLedOn: TBitmap;         // LED-Bild leuchtend (zwischengespeichert)
     FLedOff: TBitmap;        // LED-Bild aus (für das Blinken)
     FLedLit: Boolean;        // LED gerade an (beim Blinken wechselnd)
+    FBlinkStart: LongWord;   // Startzeit des Blinkens in ms (BlinkClockMs)
+    FFineTimer: Boolean;     // feine Timer-Auflösung ist eingeschaltet
     FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
     FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
@@ -156,6 +162,8 @@ type
     MenuLangDe: TMenuItem;   // Sprache Deutsch
     MenuLangEn: TMenuItem;   // Sprache Englisch
     { Menü Ansicht → Sprache mit Deutsch und English anlegen }
+    procedure SyncSymmetric;
+    procedure SetFineTimer(AOn: Boolean);
     procedure CreateLangMenu;
     { Klick auf eine Sprache im Menü (Tag 0 = Deutsch, 1 = Englisch) }
     procedure MenuLangClick(Sender: TObject);
@@ -339,9 +347,14 @@ resourcestring
   rsCircuitMulti = 'Multivibrator (2 Transistoren)';
   rsModeParts = 'aus Bauteilen';
   rsModeFreq = 'aus Frequenz';
+  rsModeTimes = 'aus Zeiten';
+  rsLabelLed1 = 'LED 1 an';
+  rsLabelLed2 = 'LED 2 an';
+  rsErrBTimes = 'Bitte für LED 1 und LED 2 Zeiten grösser als 0 eingeben.';
   rsLabelFreq = 'Frequenz';
   rsLabelDuty = 'LED an';
   rsDiode = 'Diode über R2 (unter 50 % an)';
+  rsSym = 'Symmetrisch 1:1 (gleich lang an)';
   rsLabelConn = 'Anschluss am Ausgang';
   rsConnGnd = 'nach Masse (leuchtet bei High)';
   rsConnVcc = 'nach +Ub (leuchtet bei Low)';
@@ -352,6 +365,7 @@ resourcestring
   rsBlinkInfoMulti = '%s · LED 1: %s, LED 2: %s';
   rsBlinkInfoFast = '%s: zu schnell fürs Auge, wirkt wie Dauerlicht (%s hell)';
   rsBlinkInfoInvalid = 'blinkt, sobald die Werte stimmen';
+  rsBlinkInfoSmooth = '%s · Vorschau gedimmt, zu schnell zum Anzeigen';
   rsBCardFreq = 'Blinkfrequenz';
   rsBCardFreqSub = 'Periode %s';
   rsBCardFreqSubAlt = 'Wechselblinker, Periode %s';
@@ -387,8 +401,8 @@ resourcestring
   rsWarnOut = 'Mehr als 200 mA ist zu viel für den Ausgang des NE555: Transistor nachschalten';
   rsChipRHigh = 'R über 1 MΩ';
   rsWarnRHigh = 'Ein Zeitwiderstand über 1 MΩ: der Leckstrom des Elkos verfälscht die Zeit, lieber C grösser wählen';
-  rsChipFast = 'über 25 Hz';
-  rsWarnFast = 'So schnell sieht das Auge kein Blinken mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)';
+  rsChipFast = 'über 50 Hz';
+  rsWarnFast = 'Ab etwa 50 Hz sieht das Auge kein Flimmern mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)';
   rsChipOk555 = 'NE555 passt';
   rsChipOkMulti = 'Transistoren schalten sicher';
   rsOkTolerance = 'Elkos haben oft ±20 % Toleranz: die echte Frequenz kann entsprechend abweichen';
@@ -407,7 +421,7 @@ resourcestring
   rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**';
   rsBStepMultiK = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**';
   rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
-  rsBStepMultiRev = 'Aus f = %s und %s LED 1 an: R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = %s → **%s** (nächste %s-Werte)';
+  rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
   rsBStepMultiRv = 'Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
@@ -424,12 +438,35 @@ implementation
 
 uses
   Math, Clipbrd, LCLIntf, Dialogs, IniFiles, uTheme, uFormat, uLedView, uSchematic, uRichText,
-  uLedInfo, uKofiButton, uBlinkSchematic;
+  uLedInfo, uKofiButton, uBlinkSchematic{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
 
 const
-  { Blinkfrequenzen in Hz für die Auswahlliste }
+  { Kürzeste An- oder Aus-Zeit, die die Vorschau noch sauber blinken kann.
+    Beim Blinken läuft der Timer mit feiner Auflösung (1 ms statt etwa
+    16 ms) und meldet sich etwa alle 10 ms. Der Bildschirm zeigt bei 60 Hz
+    ein Bild alle 16,7 ms, jede Phase kann darum um ein Bild länger oder
+    kürzer erscheinen. Ab 50 ms (bei 50 % Tastgrad 10 Hz) fällt das kaum
+    auf; bei kürzeren Phasen stockt das Blinken sichtbar (unter Windows
+    ab etwa 12 Hz beobachtet). Kürzere Zeiten zeigt die Vorschau als
+    gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
+  BLINK_ANIM_MIN_PHASE = 0.05;
+
+{ Laufende Zeit in ms mit feiner Auflösung. GetTickCount64 springt unter
+  Windows nur in Schritten von etwa 16 ms, timeGetTime ist bei
+  eingeschalteter feiner Auflösung auf 1 ms genau. Gerechnet wird nur mit
+  Differenzen in 32 Bit, darum stört der Überlauf nach 49 Tagen nicht. }
+function BlinkClockMs: LongWord;
+begin
+  {$IFDEF WINDOWS}
+  Result := timeGetTime;
+  {$ELSE}
+  Result := LongWord(GetTickCount64);
+  {$ENDIF}
+end;
+
+const
 
   { Einstellung für den zuletzt gewählten Reiter }
   INI_SECTION_VIEW = 'Ansicht';
@@ -475,10 +512,11 @@ end;
 const
   { Vorgaben der Zeitglied-Felder je Schaltung und Richtung:
     vorwärts R1/R_B1 in kΩ, R2/R_B2 in kΩ, C in µF;
-    rückwärts Frequenz in Hz, LED an in %, C in µF }
+    rückwärts Frequenz in Hz, LED an in %, C in µF (NE555) bzw.
+    Zeit LED 1 und LED 2 in s, C in µF (Multivibrator) }
   BLINK_DEFAULTS: array[TBlinkCircuit, Boolean, 0..2] of string = (
     (('1', '68', '10'), ('1', '55', '10')),
-    (('33', '33', '22'), ('1', '50', '22')));
+    (('33', '33', '22'), ('0,5', '0,5', '22')));
 
   { Normwerte für Pfeiltasten und Mausrad: E12 für Widerstände, E6 für Kondensatoren }
   E6_DIGITS: array[0..5] of Integer = (10, 15, 22, 33, 47, 68);
@@ -565,6 +603,7 @@ end;
 
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
+  SetFineTimer(False);
   FLedOn.Free;
   FLedOff.Free;
 end;
@@ -727,6 +766,7 @@ begin
   MenuModeB.Caption := _(rsMenuModeB);
   LabelHeadTiming.Caption := _(rsHeadTiming);
   LabelDiode.Caption := _(rsDiode);
+  LabelSym.Caption := _(rsSym);
   LabelConn.Caption := _(rsLabelConn);
   if FMode = 1 then
     LabelHeadInputs.Caption := _(rsHeadCircuit);
@@ -981,6 +1021,27 @@ begin
   Key := 0;
 end;
 
+{ Nur Ziffern und ein Dezimalzeichen zulassen. Punkt und Komma werden zum
+  Dezimalzeichen der Sprache; die Anzahl LEDs nimmt nur Ziffern an.
+  Steuerzeichen (Rücktaste, Kopieren, Einfügen) bleiben erlaubt. }
+procedure TFormMain.EditKeyPress(Sender: TObject; var Key: Char);
+var
+  E: TEdit;  // Eingabefeld
+begin
+  if (Key < ' ') or (Key in ['0'..'9']) then Exit;
+  E := Sender as TEdit;
+  if (Key in [',', '.']) and (E <> EditN) then
+  begin
+    // nur ein Dezimalzeichen; ein markiertes darf ersetzt werden
+    if (Pos(DisplayDecimal, E.Text) = 0) or (Pos(DisplayDecimal, E.SelText) > 0) then
+      Key := DisplayDecimal
+    else
+      Key := #0;
+    Exit;
+  end;
+  Key := #0;
+end;
+
 procedure TFormMain.EditMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
@@ -1009,6 +1070,8 @@ begin
 end;
 
 procedure TFormMain.PaintLedPaint(Sender: TObject);
+var
+  Y: Integer;  // Zeile der Frequenzanzeige
 begin
   if FLedDirty or (FLedOn.Width <> PaintLed.Width) or (FLedOn.Height <> PaintLed.Height) then
     RenderLedBitmaps;
@@ -1016,6 +1079,23 @@ begin
     PaintLed.Canvas.Draw(0, 0, FLedOn)
   else
     PaintLed.Canvas.Draw(0, 0, FLedOff);
+  // Blinkschaltung: Frequenz gross oben links in der Vorschau
+  if (FMode = 1) and (FBRes.Status = bsOk) then
+    with PaintLed.Canvas do
+    begin
+      Brush.Style := bsClear;
+      Font.Name := FONT_UI;
+      Font.Style := [];
+      Font.Size := 8;
+      Font.Color := clrTextDim;
+      TextOut(Px(8), Px(6), _(rsBCardFreq));
+      Y := Px(6) + TextHeight('Ag');
+      Font.Size := 14;
+      Font.Style := [fsBold];
+      Font.Color := clrAccent;
+      TextOut(Px(8), Y, FormatFreq(FBRes.F));
+      Font.Style := [];
+    end;
 end;
 
 procedure TFormMain.PaintLedResize(Sender: TObject);
@@ -1043,10 +1123,22 @@ begin
       Level := Max(0.15, FBRes.Duty1);
       LabelBlinkInfo.Caption := Format(_(rsBlinkInfoFast), [FormatFreq(FBRes.F), FormatPercent(FBRes.Duty1)]);
     end
+    else if Min(FBRes.TOn1, FBRes.TOff1) < BLINK_ANIM_MIN_PHASE then
+    begin
+      // sichtbar blinkend, aber zu schnell für eine ruhige Anzeige
+      TimerBlink.Enabled := False;
+      Level := Max(0.15, FBRes.Duty1);
+      LabelBlinkInfo.Caption := Format(_(rsBlinkInfoSmooth), [FormatFreq(FBRes.F)]);
+    end
     else
     begin
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOn1 * 1000), 20, 3600000);
+      // Der Timer fragt oft nach und rechnet an/aus aus der Zeit seit dem
+      // Start. So summieren sich Verspätungen einzelner Timer-Meldungen
+      // nicht auf, der Takt bleibt gleichmässig.
+      FBlinkStart := BlinkClockMs;
+      TimerBlink.Interval := 10;
       TimerBlink.Enabled := True;
+      SetFineTimer(True);
       if FBInput.Circuit = bcMulti then
         LabelBlinkInfo.Caption := Format(_(rsBlinkInfoMulti), [FormatFreq(FBRes.F),
           FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1)])
@@ -1059,6 +1151,8 @@ begin
       FOnLevel := Level;
       FLedDirty := True;
     end;
+    if not TimerBlink.Enabled then
+      SetFineTimer(False);
     FLedLit := True;
     PaintLed.Invalidate;
     Exit;
@@ -1070,22 +1164,42 @@ begin
   end;
   // Vorwiderstand: LED leuchtet dauernd, geblinkt wird nur im Reiter Blinkschaltung
   TimerBlink.Enabled := False;
+  SetFineTimer(False);
   FLedLit := True;
   PaintLed.Invalidate;
 end;
 
-procedure TFormMain.TimerBlinkTimer(Sender: TObject);
+{ Feine Timer-Auflösung (1 ms) nur während die Vorschau blinkt. Ohne sie
+  kommen Timer-Meldungen unter Windows nur etwa alle 16 ms. }
+procedure TFormMain.SetFineTimer(AOn: Boolean);
 begin
-  FLedLit := not FLedLit;
-  if FMode = 1 then
+  if AOn = FFineTimer then Exit;
+  FFineTimer := AOn;
+  {$IFDEF WINDOWS}
+  if AOn then
+    timeBeginPeriod(1)
+  else
+    timeEndPeriod(1);
+  {$ENDIF}
+end;
+
+procedure TFormMain.TimerBlinkTimer(Sender: TObject);
+var
+  OnMs, PeriodMs: QWord;  // An-Zeit und Periode in ms
+  Lit: Boolean;           // LED soll jetzt leuchten
+begin
+  if FMode <> 1 then
   begin
-    // An- und Aus-Zeit sind verschieden lang
-    if FLedLit then
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOn1 * 1000), 20, 3600000)
-    else
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOff1 * 1000), 20, 3600000);
-    PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
+    TimerBlink.Enabled := False;
+    SetFineTimer(False);
+    Exit;
   end;
+  OnMs := Max(1, Round(FBRes.TOn1 * 1000));
+  PeriodMs := OnMs + Max(1, Round(FBRes.TOff1 * 1000));
+  Lit := QWord(LongWord(BlinkClockMs - FBlinkStart)) mod PeriodMs < OnMs;
+  if Lit = FLedLit then Exit;  // nur beim Umschalten neu zeichnen
+  FLedLit := Lit;
+  PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
   PaintLed.Invalidate;
 end;
 
@@ -1669,6 +1783,7 @@ begin
       EditI.Text := '15';
     end;
     CheckDiode.Checked := False;
+    CheckSym.Checked := True;
     ComboConn.ItemIndex := Ord(cnGnd);
     LoadTimingTexts;
   finally
@@ -1783,6 +1898,8 @@ begin
     LabelHeadLed.Visible := Blink;
     CheckDiode.Visible := Blink and Is555;
     LabelDiode.Visible := Blink and Is555;
+    CheckSym.Visible := Blink and not Is555;
+    LabelSym.Visible := Blink and not Is555;
     LabelConn.Visible := False;  // die Auswahl erklärt sich selbst
     ComboConn.Visible := Blink and Is555;
 
@@ -1834,12 +1951,19 @@ begin
       if Is555 then
       begin
         Put(CheckDiode, 16, Y, 0);
-        Put(LabelDiode, 36, Y + 2, 0);
+        LabelDiode.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        Put(LabelDiode, 36, Y + 2, 217);
         Tab(CheckDiode);
         Inc(Y, 26);
       end
       else
-        Inc(Y, 2);
+      begin
+        Put(CheckSym, 16, Y, 0);
+        LabelSym.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        Put(LabelSym, 36, Y + 2, 217);
+        Tab(CheckSym);
+        Inc(Y, 26);
+      end;
       // Kopf «LED AM AUSGANG» (NE555) bzw. «LEDS» (Multivibrator)
       Put(LabelHeadLed, 16, Y, 0);
       Put(ComboColor, 16, Y + 18, 237);
@@ -1873,7 +1997,16 @@ var
   Is555: Boolean;  // Schaltung NE555
 begin
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
-  if FReverse then
+  if FReverse and not Is555 then
+  begin
+    LabelT1.Caption := _(rsLabelLed1);
+    LabelT1Unit.Caption := 's';
+    EditT1.Tag := 100;     // 0,1 s pro Schritt
+    LabelT2.Caption := _(rsLabelLed2);
+    LabelT2Unit.Caption := 's';
+    EditT2.Tag := 100;
+  end
+  else if FReverse then
   begin
     LabelT1.Caption := _(rsLabelFreq);
     LabelT1Unit.Caption := 'Hz';
@@ -1934,11 +2067,35 @@ begin
     FUpdating := Old;
   end;
   UpdateTimingLabels;
+  SyncSymmetric;
+end;
+
+{ Multivibrator symmetrisch (1:1): das zweite Feld folgt dem ersten,
+  RB2 = RB1 bzw. Zeit LED 2 = Zeit LED 1. }
+procedure TFormMain.SyncSymmetric;
+var
+  Sym: Boolean;  // symmetrisch eingestellt
+  T: string;     // Text für das zweite Feld
+  Old: Boolean;  // vorheriger Zustand von FUpdating
+begin
+  Sym := (ComboCircuit.ItemIndex = Ord(bcMulti)) and CheckSym.Checked;
+  EditT2.Enabled := not Sym;
+  if not Sym then Exit;
+  T := EditT1.Text;
+  if EditT2.Text = T then Exit;
+  Old := FUpdating;
+  FUpdating := True;
+  try
+    EditT2.Text := T;
+  finally
+    FUpdating := Old;
+  end;
 end;
 
 procedure TFormMain.BlinkInputChange(Sender: TObject);
 begin
   if FUpdating then Exit;
+  SyncSymmetric;
   Recalc;
 end;
 
@@ -1955,6 +2112,11 @@ end;
 procedure TFormMain.LabelDiodeClick(Sender: TObject);
 begin
   CheckDiode.Checked := not CheckDiode.Checked;
+end;
+
+procedure TFormMain.LabelSymClick(Sender: TObject);
+begin
+  CheckSym.Checked := not CheckSym.Checked;
 end;
 
 procedure TFormMain.MenuModeClick(Sender: TObject);
@@ -2040,7 +2202,10 @@ begin
     else
     begin
       H := Types.Rect((R.Left + R.Right) div 2, R.Top, R.Right, R.Bottom);
-      T := _(rsModeFreq);
+      if ComboCircuit.ItemIndex = Ord(bcMulti) then
+        T := _(rsModeTimes)
+      else
+        T := _(rsModeFreq);
     end;
     if (I = 1) = FReverse then
     begin
@@ -2082,7 +2247,8 @@ end;
 
 procedure TFormMain.RecalcBlink;
 var
-  V: Double;  // umgewandelte Eingabe
+  V: Double;       // umgewandelte Eingabe
+  T1, T2: Double;  // Multivibrator: Zeiten von LED 1 und LED 2 in s
 begin
   FBInput := Default(TBlinkInput);
   if ComboCircuit.ItemIndex = Ord(bcMulti) then
@@ -2090,7 +2256,18 @@ begin
   else
     FBInput.Circuit := bcNE555;
   FBInput.Reverse := FReverse;
-  if FReverse then
+  if FReverse and (FBInput.Circuit = bcMulti) then
+  begin
+    // Multivibrator: Zeiten von LED 1 und LED 2 in s, daraus f und Tastgrad
+    if ParseDecimal(EditT1.Text, V) then T1 := V else T1 := 0;
+    if ParseDecimal(EditT2.Text, V) then T2 := V else T2 := 0;
+    if (T1 > 0) and (T2 > 0) then
+    begin
+      FBInput.F := 1 / (T1 + T2);
+      FBInput.Duty := T1 / (T1 + T2);
+    end;
+  end
+  else if FReverse then
   begin
     if ParseDecimal(EditT1.Text, V) then FBInput.F := V;
     if ParseDecimal(EditT2.Text, V) then FBInput.Duty := V / 100;
@@ -2140,8 +2317,10 @@ begin
     bsInvalidR2:
       if FBInput.Circuit = bcMulti then Result := _(rsErrBRB2) else Result := _(rsErrBR2);
     bsInvalidC: Result := _(rsErrBC);
-    bsInvalidF: Result := _(rsErrBF);
-    bsInvalidDuty: Result := _(rsErrBDuty);
+    bsInvalidF, bsInvalidDuty:
+      if FBInput.Circuit = bcMulti then Result := _(rsErrBTimes)
+      else if S = bsInvalidF then Result := _(rsErrBF)
+      else Result := _(rsErrBDuty);
     bsDutyNeedsDiode: Result := _(rsErrBDiode);
     bsUTooLow:
       begin
@@ -2528,7 +2707,7 @@ begin
   begin
     Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
     if Inp.Reverse then
-      Result[1] := Format(_(rsBStepMultiRev), [FormatFreq(Inp.F), FormatPercent(Inp.Duty),
+      Result[1] := Format(_(rsBStepMultiRev), [FormatSeconds(Inp.Duty / Inp.F), FormatSeconds((1 - Inp.Duty) / Inp.F),
         FormatOhm(Res.R2Calc), FormatOhm(Res.R2), FormatOhm(Res.R1Calc), FormatOhm(Res.R1), Ser])
     else
       Result[1] := Format(_(rsBStepMultiT), [FormatNum(Res.K, 3, 3), FormatOhm(Res.R2), FormatCap(Res.C),
