@@ -193,6 +193,10 @@ begin
   I.C := 1e-6;
   R := CalculateBlink(I);
   AssertTrue('zu schnell', bwTooFast in R.Warnings);
+  // 1 kΩ, 15 kΩ, 1 µF -> 46,5 Hz: flackert noch, keine Warnung
+  I.R2 := 15000;
+  R := CalculateBlink(I);
+  AssertFalse('46 Hz noch sichtbar', bwTooFast in R.Warnings);
 end;
 
 procedure TTestBlink.MultivibratorVorwaerts;

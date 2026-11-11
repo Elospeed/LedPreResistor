@@ -37,7 +37,7 @@ const
 
   { Über dieser Frequenz sieht das Auge kein Blinken mehr (Vorschau zeigt
     dann Dauerlicht mit passender Helligkeit) }
-  BLINK_VISIBLE_MAX = 25.0;
+  BLINK_VISIBLE_MAX = 50.0;
   { Über diesem Wert verfälscht der Leckstrom eines Elkos die Zeiten }
   R_TIMING_MAX = 1e6;
 

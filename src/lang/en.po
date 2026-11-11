@@ -588,12 +588,12 @@ msgid "Ein Zeitwiderstand über 1 MΩ: der Leckstrom des Elkos verfälscht die Z
 msgstr "A timing resistor over 1 MΩ: the leakage current of the electrolytic capacitor distorts the timing, better choose a larger C"
 
 #: uMain.pas rsChipFast
-msgid "über 25 Hz"
-msgstr "over 25 Hz"
+msgid "über 50 Hz"
+msgstr "over 50 Hz"
 
 #: uMain.pas rsWarnFast
-msgid "So schnell sieht das Auge kein Blinken mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)"
-msgstr "At this speed the eye no longer sees blinking: the LED looks like a steady light with less brightness (PWM)"
+msgid "Ab etwa 50 Hz sieht das Auge kein Flimmern mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)"
+msgstr "From about 50 Hz the eye no longer sees flicker: the LED looks like a steady light with less brightness (PWM)"
 
 #: uMain.pas rsChipOk555
 msgid "NE555 passt"

@@ -136,6 +136,7 @@ type
     FLedOn: TBitmap;         // LED-Bild leuchtend (zwischengespeichert)
     FLedOff: TBitmap;        // LED-Bild aus (für das Blinken)
     FLedLit: Boolean;        // LED gerade an (beim Blinken wechselnd)
+    FBlinkStart: QWord;      // Startzeit des Blinkens in ms (GetTickCount64)
     FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
     FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
@@ -388,8 +389,8 @@ resourcestring
   rsWarnOut = 'Mehr als 200 mA ist zu viel für den Ausgang des NE555: Transistor nachschalten';
   rsChipRHigh = 'R über 1 MΩ';
   rsWarnRHigh = 'Ein Zeitwiderstand über 1 MΩ: der Leckstrom des Elkos verfälscht die Zeit, lieber C grösser wählen';
-  rsChipFast = 'über 25 Hz';
-  rsWarnFast = 'So schnell sieht das Auge kein Blinken mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)';
+  rsChipFast = 'über 50 Hz';
+  rsWarnFast = 'Ab etwa 50 Hz sieht das Auge kein Flimmern mehr: die LED wirkt wie Dauerlicht mit weniger Helligkeit (PWM)';
   rsChipOk555 = 'NE555 passt';
   rsChipOkMulti = 'Transistoren schalten sicher';
   rsOkTolerance = 'Elkos haben oft ±20 % Toleranz: die echte Frequenz kann entsprechend abweichen';
@@ -1076,7 +1077,11 @@ begin
     end
     else
     begin
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOn1 * 1000), 20, 3600000);
+      // Der Timer fragt oft nach und rechnet an/aus aus der Zeit seit dem
+      // Start. So summieren sich Verspätungen einzelner Timer-Meldungen
+      // nicht auf, der Takt bleibt gleichmässig.
+      FBlinkStart := GetTickCount64;
+      TimerBlink.Interval := 10;
       TimerBlink.Enabled := True;
       if FBInput.Circuit = bcMulti then
         LabelBlinkInfo.Caption := Format(_(rsBlinkInfoMulti), [FormatFreq(FBRes.F),
@@ -1106,17 +1111,21 @@ begin
 end;
 
 procedure TFormMain.TimerBlinkTimer(Sender: TObject);
+var
+  OnMs, PeriodMs: QWord;  // An-Zeit und Periode in ms
+  Lit: Boolean;           // LED soll jetzt leuchten
 begin
-  FLedLit := not FLedLit;
-  if FMode = 1 then
+  if FMode <> 1 then
   begin
-    // An- und Aus-Zeit sind verschieden lang
-    if FLedLit then
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOn1 * 1000), 20, 3600000)
-    else
-      TimerBlink.Interval := EnsureRange(Round(FBRes.TOff1 * 1000), 20, 3600000);
-    PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
+    TimerBlink.Enabled := False;
+    Exit;
   end;
+  OnMs := Max(1, Round(FBRes.TOn1 * 1000));
+  PeriodMs := OnMs + Max(1, Round(FBRes.TOff1 * 1000));
+  Lit := (GetTickCount64 - FBlinkStart) mod PeriodMs < OnMs;
+  if Lit = FLedLit then Exit;  // nur beim Umschalten neu zeichnen
+  FLedLit := Lit;
+  PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
   PaintLed.Invalidate;
 end;
 
