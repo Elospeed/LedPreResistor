@@ -41,6 +41,11 @@ function SeriesDigitCount(Series: TESeries): Integer;
   (über alle Dekaden). R muss grösser als 0 sein, sonst wird False geliefert. }
 function NextStdValue(R: Double; Series: TESeries; out Std: TStdValue): Boolean;
 
+{ Wie NextStdValue, aber der grösste Normwert, der höchstens R ist
+  (z. B. 5,35 kΩ -> 4,7 kΩ in E12). Für Widerstände, die eher etwas mehr
+  Strom liefern sollen (Basiswiderstand). }
+function PrevStdValue(R: Double; Series: TESeries; out Std: TStdValue): Boolean;
+
 implementation
 
 uses
@@ -117,6 +122,37 @@ begin
       // Ziffern auf die Dekade bringen: 47 bei 2 Ziffern = 4,7 * 10^E
       V := SeriesDigits(Series, I) * IntPower(10, E - DigitCount + 1);
       if V >= R * (1 - E_TOLERANCE) then
+      begin
+        Std.Value := V;
+        Std.Digits := SeriesDigits(Series, I);
+        Std.DigitCount := DigitCount;
+        Std.Exponent := E - DigitCount + 1;
+        Exit(True);
+      end;
+    end;
+end;
+
+function PrevStdValue(R: Double; Series: TESeries; out Std: TStdValue): Boolean;
+var
+  Decade: Integer;     // Zehnerpotenz von R
+  E: Integer;          // Zehnerpotenz, die gerade durchsucht wird
+  I: Integer;          // Index in der Ziffernfolge
+  DigitCount: Integer; // 2 oder 3 Ziffern je nach Reihe
+  V: Double;           // Kandidat in Ω
+begin
+  Result := False;
+  Std := Default(TStdValue);
+  if IsNan(R) or IsInfinite(R) or (R <= 0) then
+    Exit;
+
+  DigitCount := SeriesDigitCount(Series);
+  Decade := Floor(Log10(R));
+  // von oben nach unten suchen: der erste Wert, der passt, ist der grösste
+  for E := Decade + 1 downto Decade - 1 do
+    for I := SeriesCount(Series) - 1 downto 0 do
+    begin
+      V := SeriesDigits(Series, I) * IntPower(10, E - DigitCount + 1);
+      if V <= R * (1 + E_TOLERANCE) then
       begin
         Std.Value := V;
         Std.Digits := SeriesDigits(Series, I);

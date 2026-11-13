@@ -28,3 +28,11 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 2. **Reiter «Blinkschaltung»** – Schaltplan (`uBlinkSchematic`), Karten, Rechenweg, Prüfungen, blinkende Vorschau, Englisch. ✔
 3. **LED-Info-Kapitel** «Blinkschaltungen». ✔
 4. **Testversion** unter Wine (100 % und 150 %) und Windows, danach Release 2.3.
+
+## 2.4 – Konstantstrom
+
+1. **Rechenkern** `uKsq` – LM317 und Konstantstromquelle mit zwei Transistoren, Speisespannung als Bereich, Bauteilvorschlag, mit Tests. ✔
+2. **Reiter «Konstantstrom»** – Schaltpläne (`uKsqSchematic`), Karten, Rechenweg, Prüfungen, Englisch. ✔
+3. **Stränge parallel** im Reiter «Vorwiderstand». ✔
+4. **LED-Info** Kapitel «Konstantstrom» neu. ✔
+5. **Testversion** unter Wine (100 %, 150 %, 200 %) und Linux, danach Release 2.4.

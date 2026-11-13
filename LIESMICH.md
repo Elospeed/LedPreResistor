@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.3
+# Elospeed LedPreResistor 2.4
 
 **von Elospeed**
 
@@ -20,6 +20,8 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs oder eigene Durchlassspannung aus dem Datenblatt.
 - **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet.
 - Reiter **«Blinkschaltung»** (seit 2.3): NE555 astabil (wahlweise mit Diode über R2) oder Multivibrator mit zwei Transistoren (BC547). Rechnet aus den Bauteilen Frequenz, Ein-/Auszeit und den Vorwiderstand der LED oder umgekehrt aus Wunschfrequenz und Tastgrad (NE555) bzw. den Leuchtzeiten beider LEDs (Multivibrator, Standard 1:1) die Widerstände. Die Vorschau blinkt im berechneten Takt, dazu Schaltplan, Rechenweg und Prüfungen (Spannungsbereich, Ausgangsstrom, Sättigung der Transistoren, Sperrspannung an der Basis).
+- Reiter **«Konstantstrom»** (seit 2.4): LM317 als Stromquelle oder Konstantstromquelle mit zwei Transistoren. Die Speisespannung lässt sich als Bereich eingeben (z. B. 12 … 14,4 V im Auto); das Programm zeigt, wie wenig sich der LED-Strom ändert, verglichen mit einem einfachen Vorwiderstand. Rechnet Fühlerwiderstand, Mindestspannung, Verlustleistung mit Kühlkörper-Hinweis und schlägt das Bauteil vor (LM317L/LM317, T1 als BC547, BC337 oder BD139).
+- **Stränge parallel** (seit 2.4): mehrere gleiche LED-Stränge mit je eigenem Vorwiderstand, mit Gesamtstrom und Gesamtleistung.
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
 - Resultat kopieren mit Strg+Umschalt+C. Komma und Punkt als Dezimalzeichen.
 - **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; unter Ansicht → Sprache lässt sich jederzeit umschalten (gespeichert in `LedPreResistor.ini` neben der EXE, unter Linux in `~/.config/LedPreResistor/`).

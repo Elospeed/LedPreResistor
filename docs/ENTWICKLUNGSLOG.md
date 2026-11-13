@@ -8,6 +8,17 @@ Neueste Einträge oben.
 
 ---
 
+## Konstantstrom, 2.4 (November 2026)
+
+- **Spannung als Bereich.** Der Nutzen einer Stromquelle zeigt sich erst, wenn die Speisespannung schwankt (Auto 12 … 14,4 V). Darum «von … bis»; der Vergleich mit einem Vorwiderstand rechnet diesen für die untere Spannung und zeigt, um wie viel der Strom bei der oberen steigt: (U2 − U_LEDs) / (U1 − U_LEDs) − 1.
+- **LM317-Dropout 2 V.** Datenblätter nennen je nach Strom und Temperatur 1,5 … 2,5 V; mit 2 V als Faustwert liegt die Mindestspannung eher etwas zu hoch als zu tief. Mindestlast 10 mA (typisch 3,5 … 5 mA, bis 10 mA garantiert), darunter Warnung.
+- **Fühlerwiderstand nach oben runden.** Der nächsthöhere Normwert gibt etwas weniger Strom, wie beim Vorwiderstand. R_B dagegen wird nach unten gerundet (`PrevStdValue`), damit der Basisstrom sicher reicht.
+- **Basisstrom für R_B:** mindestens 2 mA oder das Doppelte des nötigen Basisstroms von T1 (β 100 für BC547/BC337, 40 für BD139). Bei 1,5 A und BD139 ergäbe das sehr kleine R_B mit viel Leistung; dann Warnung statt eines unbrauchbaren Werts.
+- **Stromänderung der Transistor-Schaltung:** Die U_BE von T2 steigt mit dem Strom durch R_B etwa um 26 mV · ln(I2/I1); geteilt durch 0,6 V ergibt das die wenigen Prozent, um die der LED-Strom über den Bereich steigt.
+- **Kühlkörper:** nötiger Wärmewiderstand ≈ 70 K / P − R_th,jc − 1 K/W (70 K Erwärmung bis zur Sperrschicht, 1 K/W für die Wärmeleitpaste). Ohne Kühlkörper gelten grobe Grenzen: LM317L 0,35 W, LM317 1 W, BC547 0,25 W, BC337 0,3 W, BD139 0,7 W.
+- **Gemeinsame Zeichenhilfen:** Kartenansicht, Leitungen, Widerstand mit Farbringen, LED und Transistor liegen jetzt im Interface von `uBlinkSchematic`, damit alle Schaltpläne gleich aussehen.
+- **Platz bei 200 %:** Der Rechenweg klappt auch zu, wenn der Schaltplan kleiner als 180 Pixel (96 dpi) würde.
+
 ## Blinkschaltung, 2.3 (November 2026)
 
 - **Multivibrator genauer als 0,69 · R · C.** Die Lehrbuchformel nimmt an, dass der Kollektor bis zur vollen Versorgung springt. Mit LED im Kollektorkreis springt er nur um ΔU = U − U_F − 0,2 V. Darum rechnet `uBlink` den Faktor k = ln((U − 0,6 + ΔU) / (U − 0,6)); bei kleiner LED-Spannung und hoher Versorgung geht k gegen ln 2 (Test `MultivibratorFaktorLehrbuch`).

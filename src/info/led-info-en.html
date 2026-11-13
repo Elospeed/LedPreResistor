@@ -416,6 +416,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     <div>
       <h3>Parallel: each LED with its own resistor</h3>
       <p>Even LEDs from the same batch have slightly different forward voltages. On top of that, U<sub>F</sub> drops as the temperature rises (about −2 mV/K). If several LEDs share one resistor, the “weakest” one draws the most current, gets warmer, draws even more and fails first.</p>
+      <p>In the “Series resistor” tab, enter under “Parallel strings” how many identical strings are connected side by side. The program calculates the resistor for one string (each string gets one of them) and shows the total current and power. The same applies to constant current: one current source per string.</p>
     </div>
   </div>
 </section>
@@ -445,12 +446,24 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 <section id="konstantstrom">
   <div class="eyebrow">Alternatives to the resistor</div>
   <h2>Constant current and dimming</h2>
+  <p>A series resistor is ideal for a fixed voltage and small currents. If the supply varies (battery, car with 12–14.4 V), a constant current source keeps the LED current fixed. The “Constant current” tab calculates two hobby circuits for this. Enter the voltage range under “from” and “to”: loss and minimum voltage then apply to the whole range, and the status bar shows how much the current would rise with a plain series resistor (43 % in the example of 12–14.4 V with two white LEDs).</p>
   <div class="cols">
     <div>
-      <h3>When constant current?</h3>
-      <p>A series resistor is ideal for a fixed voltage and small currents. If the supply varies (battery, car with 12–14.4 V) or it is about power LEDs from around 350 mA, a constant current source is better.</p>
-      <p>A classic: the LM317 as a current source with <span class="mono">R = 1.25 V / I</span>. For 20 mA that gives 62 Ω. It needs about 3 V of headroom and works reliably from around 10 mA.</p>
+      <h3>LM317 as a current source</h3>
+      <p>The LM317 always keeps 1.25 V between OUT and ADJ. A resistor between them sets the current: <span class="mono">R = 1.25 V / I</span>. It needs about 1.25 V + 2 V above the LEDs and turns the rest into heat: <span class="mono">P = (U<sub>B</sub> − U<sub>LED</sub> − 1.25 V) × I</span>. Up to 100 mA and with little loss, the small LM317L (TO-92) is enough. Below about 10 mA the LM317 does not regulate reliably.</p>
+      <p class="mono">20 mA: 62.5 Ω → 68 Ω, 18.4 mA</p>
     </div>
+    <div>
+      <h3>Two transistors</h3>
+      <p>T1 is in series with the LEDs and R<sub>B</sub> turns it on. The sense resistor R<sub>S</sub> carries I × R<sub>S</sub>; when that reaches about 0.6 V, T2 conducts and takes base current away from T1. This settles at <span class="mono">I ≈ 0.6 V / R<sub>S</sub></span>. The circuit needs only about 1.2 V above the LEDs. On the other hand U<sub>BE</sub> drops by about 2 mV/K: the current gets about 3 % smaller per 10 °C warmer. The program recommends T1 by current and loss: BC547 up to 100 mA, BC337 up to 500 mA, BD139 up to 1.5 A.</p>
+      <p class="mono">20 mA: 30 Ω → 33 Ω, 18.2 mA; R<sub>B</sub> = 4.7 kΩ</p>
+    </div>
+    <div>
+      <h3>Heat and heatsinks</h3>
+      <p>In free air a TO-92 package handles about 0.3 W, TO-126 (BD139) about 0.7 W and TO-220 (LM317) about 1 W. Above that the program suggests a heatsink: <span class="mono">R<sub>th</sub> ≤ 70 K / P − R<sub>th,JC</sub> − 1 K/W</span> (ambient up to 40 °C, junction at most 110 °C). Note: on the LM317 the tab is connected to OUT, on the BD139 to the collector. So mount it insulated.</p>
+    </div>
+  </div>
+  <div class="cols">
     <div>
       <h3>Power LEDs</h3>
       <p>For 1 W and 3 W LEDs and high-power LED strips, use ready-made switching drivers (buck drivers). They reach over 90% efficiency, while a resistor simply turns the voltage difference into heat. Power LEDs always need a heat sink.</p>
@@ -460,7 +473,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>LEDs are best dimmed with pulse width modulation: the LED is switched on and off very quickly and its colour stays the same. To avoid visible flicker (also on cameras), the frequency should be at least 1 kHz.</p>
     </div>
   </div>
-  <p class="note"><strong>In a car:</strong> The on-board voltage is up to 14.4 V while charging. Calculate the series resistor with this value, otherwise too much current flows with the engine running.</p>
+  <p class="note"><strong>In a car:</strong> The on-board voltage is up to 14.4 V while charging. Calculate the series resistor with this value, otherwise too much current flows with the engine running, or use a constant current source.</p>
 </section>
 
 <section id="waerme">

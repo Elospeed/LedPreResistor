@@ -455,6 +455,88 @@ object FormMain: TFormMain
       TabOrder = 12
       Visible = False
     end
+    object ComboKsq: TComboBox
+      Left = 16
+      Height = 24
+      Top = 30
+      Width = 237
+      ItemHeight = 20
+      OnChange = KsqCircuitChange
+      OnDrawItem = ComboDrawItem
+      Style = csOwnerDrawFixed
+      TabOrder = 20
+      Visible = False
+    end
+    object LabelHeadSupply: TLabel
+      Left = 16
+      Height = 15
+      Top = 64
+      Width = 100
+      Caption = 'SPEISESPANNUNG'
+      ParentColor = False
+      Visible = False
+    end
+    object LabelU2: TLabel
+      Left = 140
+      Height = 15
+      Top = 82
+      Width = 60
+      Caption = 'bis'
+      ParentColor = False
+      Visible = False
+    end
+    object EditU2: TEdit
+      Tag = 100
+      Left = 140
+      Height = 24
+      Top = 100
+      Width = 84
+      OnChange = InputChange
+      OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
+      OnMouseWheel = EditMouseWheel
+      TabOrder = 21
+      Text = '14,4'
+      Visible = False
+    end
+    object LabelU2Unit: TLabel
+      Left = 228
+      Height = 15
+      Top = 104
+      Width = 20
+      Caption = 'V'
+      ParentColor = False
+      Visible = False
+    end
+    object LabelStrings: TLabel
+      Left = 140
+      Height = 15
+      Top = 192
+      Width = 110
+      Caption = 'Stränge parallel'
+      ParentColor = False
+    end
+    object EditStrings: TEdit
+      Tag = 1000
+      Left = 140
+      Height = 24
+      Top = 210
+      Width = 84
+      OnChange = InputChange
+      OnKeyDown = EditKeyDown
+      OnKeyPress = EditKeyPress
+      OnMouseWheel = EditMouseWheel
+      TabOrder = 22
+      Text = '1'
+    end
+    object LabelStringsUnit: TLabel
+      Left = 228
+      Height = 15
+      Top = 214
+      Width = 25
+      Caption = 'Stk.'
+      ParentColor = False
+    end
     object LabelHeadPreview: TLabel
       Left = 16
       Height = 15
@@ -583,6 +665,14 @@ object FormMain: TFormMain
         GroupIndex = 2
         RadioItem = True
         ShortCut = 16434
+        OnClick = MenuModeClick
+      end
+      object MenuModeK: TMenuItem
+        Tag = 2
+        Caption = '&Konstantstrom'
+        GroupIndex = 2
+        RadioItem = True
+        ShortCut = 16435
         OnClick = MenuModeClick
       end
     end

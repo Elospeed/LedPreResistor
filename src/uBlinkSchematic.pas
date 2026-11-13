@@ -56,16 +56,46 @@ procedure DrawSchematic555(Canvas: TCanvas; const Rect: TRect;
 procedure DrawSchematicMulti(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 
+{ ---------- Zeichenhilfen, auch für die Konstantstrom-Schaltpläne (uKsqSchematic) ---------- }
+
+type
+  { Umrechnung Vorlage -> Pixel: Massstab und Verschiebung }
+  TMap = record
+    S, OX, OY: Double;
+  end;
+
+{ Vorlage der Grösse BW × BH mittig in Rect einpassen }
+function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
+{ Vorlage-Koordinaten in Pixel }
+function MX(const M: TMap; V: Double): Integer;
+function MY(const M: TMap; V: Double): Integer;
+function MP(const M: TMap; X, Y: Double): TPoint;
+{ Länge bzw. Strichstärke in Pixel, mindestens 1 }
+function MW(const M: TMap; V: Double): Integer;
+{ Text mit Auszeichnung (uRichText); Align 0 = links, 1 = Mitte, 2 = rechts;
+  BaseY ist die Grundlinie }
+procedure Txt(C: TCanvas; const M: TMap; BX, BaseY: Double; const T: string;
+  Color: TColor; Align: Integer; Bold: Boolean);
+{ Leitung durch die Punkte X1, Y1, X2, Y2, … }
+procedure Wire(C: TCanvas; const M: TMap; const P: array of Double);
+{ Verbindungspunkt }
+procedure Dot(C: TCanvas; const M: TMap; X, Y: Double; Color: TColor);
+{ Widerstand senkrecht als Rechteck ohne Farbringe }
+procedure ResV(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Col: TBlinkSchemColors);
+{ Widerstand senkrecht mit Farbringen }
+procedure ResBands(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Bands: TBandArray;
+  const Col: TBlinkSchemColors);
+{ LED nach unten zeigend, Dreieck von Top bis Top + 24 }
+procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
+  const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
+{ NPN-Transistor (Kreis, Basisbalken, Emitterpfeil) }
+procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
+  const Col: TBlinkSchemColors);
+
 implementation
 
 uses
   Math, uTheme, uRichText;
-
-type
-  { Umrechnung Vorlage -> Pixel }
-  TMap = record
-    S, OX, OY: Double;
-  end;
 
 function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
 begin

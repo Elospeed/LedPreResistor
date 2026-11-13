@@ -24,6 +24,7 @@ type
     procedure KleineUndGrosseWerte;
     procedure E24UndE96;
     procedure UngueltigeWerte;
+    procedure NormwertDarunter;
   end;
 
 implementation
@@ -125,6 +126,21 @@ begin
   AssertFalse(NextStdValue(0, esE12, Std));
   AssertFalse(NextStdValue(-10, esE12, Std));
   AssertFalse(NextStdValue(NaN, esE12, Std));
+end;
+
+procedure TTestESeries.NormwertDarunter;
+var
+  S: TStdValue;  // gefundener Normwert
+begin
+  AssertTrue(PrevStdValue(5350, esE12, S));
+  AssertEquals('5,35 kΩ -> 4,7 kΩ', 4700, S.Value, 1e-9);
+  AssertTrue(PrevStdValue(4700, esE12, S));
+  AssertEquals('genauer Normwert bleibt', 4700, S.Value, 1e-9);
+  AssertTrue(PrevStdValue(99, esE12, S));
+  AssertEquals('Dekadenwechsel', 82, S.Value, 1e-9);
+  AssertTrue(PrevStdValue(356.7, esE24, S));
+  AssertEquals('E24', 330, S.Value, 1e-9);
+  AssertFalse(PrevStdValue(0, esE12, S));
 end;
 
 initialization

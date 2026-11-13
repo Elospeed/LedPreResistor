@@ -10,7 +10,6 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## Als Nächstes
 
-- [ ] Version 2.4: Reiter «Konstantstrom» (LM317 und zwei Transistoren)
 - [ ] Screenshots für die Seite unter echtem Windows neu aufnehmen (jetzt unter Wine)
 - [ ] About-Fenster statt Meldungsfenster
 - [ ] Pfeile ▲▼ an den Eingabefeldern (im Moment: Pfeiltasten und Mausrad)

@@ -21,6 +21,7 @@ type
     LedText: string;    // z. B. "LED weiss" oder "3 × LED weiss"
     UFText: string;     // z. B. "U_F = 3,2 V"
     IText: string;      // z. B. "I = 18,72 mA"
+    StringsText: string; // z. B. "× 3 Stränge parallel" (leer = ein Strang)
     LedColor: TColor;   // Füllfarbe des LED-Symbols
     Bands: TBandArray;  // Farbringe im Widerstand (leer = ohne Ringe)
   end;
@@ -198,6 +199,8 @@ begin
   Txt(205, 70, V.URText, TextColor, 1, False);
   Txt(378, 150, V.LedText, TextColor, 0, False);
   Txt(378, 166, V.UFText, TextColor, 0, False);
+  if V.StringsText <> '' then
+    Txt(96, 150, V.StringsText, AccentColor, 0, True);
   Txt(210, 226, V.IText, AccentColor, 1, True);
 end;
 

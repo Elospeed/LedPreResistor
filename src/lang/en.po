@@ -615,24 +615,24 @@ msgid " (+%d weitere)"
 msgstr " (+%d more)"
 
 #: uMain.pas rsBStep555High
-msgid "Ausgang High (Laden über R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0,693 · %s · %s = **%s**"
-msgstr "Output High (charging via R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0.693 · %s · %s = **%s**"
+msgid "Ausgang High (Laden über R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0,693 × %s × %s = **%s**"
+msgstr "Output High (charging via R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0.693 × %s × %s = **%s**"
 
 #: uMain.pas rsBStep555HighD
-msgid "Ausgang High (Laden über R1, Diode überbrückt R2): t_H = ln 2 · R1 · C = 0,693 · %s · %s = **%s**"
-msgstr "Output High (charging via R1, diode bypasses R2): t_H = ln 2 · R1 · C = 0.693 · %s · %s = **%s**"
+msgid "Ausgang High (Laden über R1, Diode überbrückt R2): t_H = ln 2 · R1 · C = 0,693 × %s × %s = **%s**"
+msgstr "Output High (charging via R1, diode bypasses R2): t_H = ln 2 · R1 · C = 0.693 × %s × %s = **%s**"
 
 #: uMain.pas rsBStep555Low
-msgid "Ausgang Low (Entladen über R2): t_L = ln 2 · R2 · C = 0,693 · %s · %s = **%s**"
-msgstr "Output Low (discharging via R2): t_L = ln 2 · R2 · C = 0.693 · %s · %s = **%s**"
+msgid "Ausgang Low (Entladen über R2): t_L = ln 2 · R2 · C = 0,693 × %s × %s = **%s**"
+msgstr "Output Low (discharging via R2): t_L = ln 2 · R2 · C = 0.693 × %s × %s = **%s**"
 
 #: uMain.pas rsBStep555Rev1
-msgid "Aus f und C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**"
-msgstr "From f and C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0.693 · %s · %s) = **%s**"
+msgid "Aus f und C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0,693 × %s × %s) = **%s**"
+msgstr "From f and C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0.693 × %s × %s) = **%s**"
 
 #: uMain.pas rsBStep555Rev1D
-msgid "Aus f und C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**"
-msgstr "From f and C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0.693 · %s · %s) = **%s**"
+msgid "Aus f und C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0,693 × %s × %s) = **%s**"
+msgstr "From f and C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0.693 × %s × %s) = **%s**"
 
 #: uMain.pas rsBStep555Rev2
 msgid "Aufteilen für %s High: R1 = %s → **%s**, R2 = %s → **%s** (nächste %s-Werte)"
@@ -667,8 +667,8 @@ msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B
 msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → k = ln((U_B − 0.6 V + ΔU) / (U_B − 0.6 V)) = **%s**"
 
 #: uMain.pas rsBStepMultiT
-msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
-msgstr "LED 1 on (T2 off): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 on: t_2 = k · R_B_1 · C = **%s**"
+msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
+msgstr "LED 1 on (T2 off): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 on: t_2 = k · R_B_1 · C = **%s**"
 
 #: uMain.pas rsBStepMultiRev
 msgid "Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)"
@@ -723,3 +723,279 @@ msgstr "LED 2 on"
 
 msgid "Bitte für LED 1 und LED 2 Zeiten grösser als 0 eingeben."
 msgstr "Please enter times greater than 0 for LED 1 and LED 2."
+
+#: uMain.pas rsLabelStrings
+msgid "Stränge parallel"
+msgstr "Parallel strings"
+
+#: uMain.pas rsErrStrings
+msgid "Bitte mindestens 1 Strang angeben (ganze Zahl)."
+msgstr "Please enter at least 1 string (whole number)."
+
+#: uMain.pas rsSchemStrings
+msgid "× %d Stränge, je eigener R"
+msgstr "× %d strings, each with its own R"
+
+#: uMain.pas rsCardCurrentSubStrings
+msgid "je Strang; %d Stränge: gesamt %s"
+msgstr "per string; %d strings: total %s"
+
+#: uMain.pas rsCardPowerSubStrings
+msgid "je Widerstand (%d Stück)"
+msgstr "per resistor (%d pieces)"
+
+#: uMain.pas rsStep3Strings
+msgid "Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**"
+msgstr "Actual current: I = %s / %s = **%s** per string · %d strings: total **%s**"
+
+#: uMain.pas rsStatusStrings
+msgid "(%d Stränge)"
+msgstr "(%d strings)"
+
+#: uMain.pas rsCopyStrings
+msgid "Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s"
+msgstr "Parallel strings: %d, each with its own series resistor; total current %s"
+
+#: uMain.pas rsTabKsq
+msgid "Konstantstrom"
+msgstr "Constant current"
+
+#: uMain.pas rsMenuModeK
+msgid "&Konstantstrom"
+msgstr "&Constant current"
+
+#: uMain.pas rsHeadSupply
+msgid "SPEISESPANNUNG"
+msgstr "SUPPLY VOLTAGE"
+
+#: uMain.pas rsLabelFrom
+msgid "von"
+msgstr "from"
+
+#: uMain.pas rsLabelTo
+msgid "bis"
+msgstr "to"
+
+#: uMain.pas rsKsqLM317
+msgid "LM317 (Regler, bis 1,5 A)"
+msgstr "LM317 (regulator, up to 1.5 A)"
+
+#: uMain.pas rsKsqTrans
+msgid "2 Transistoren (T1 nach Strom)"
+msgstr "2 transistors (T1 by current)"
+
+#: uMain.pas rsKCardR
+msgid "Fühlerwiderstand (%s)"
+msgstr "Sense resistor (%s)"
+
+#: uMain.pas rsKCardRSub
+msgid "%s · %s (%s)"
+msgstr "%s · %s (%s)"
+
+#: uMain.pas rsKCardISubL
+msgid "berechnet %s → %s; bleibt von %s bis %s gleich"
+msgstr "calculated %s → %s; stays the same from %s to %s"
+
+#: uMain.pas rsKCardISubLFix
+msgid "berechnet %s → %s; bleibt auch bei schwankender Spannung gleich"
+msgstr "calculated %s → %s; stays the same even if the voltage varies"
+
+#: uMain.pas rsKCardISubT
+msgid "berechnet %s → %s; pro 10 °C wärmer ca. %s weniger"
+msgstr "calculated %s → %s; about %s less per 10 °C warmer"
+
+#: uMain.pas rsKCardLossL
+msgid "Verlust im Regler"
+msgstr "Loss in the regulator"
+
+#: uMain.pas rsKCardLossT
+msgid "Verlust in T1"
+msgstr "Loss in T1"
+
+#: uMain.pas rsKCardLossSubT
+msgid "%s; RB = %s"
+msgstr "%s; RB = %s"
+
+#: uMain.pas rsKCardNeed
+msgid "Mindestspannung"
+msgstr "Minimum voltage"
+
+#: uMain.pas rsKCardNeedSubL
+msgid "%s + 1,25 V + ca. 2 V Regler"
+msgstr "%s + 1.25 V + approx. 2 V regulator"
+
+#: uMain.pas rsKCardNeedSubT
+msgid "%s + 0,6 V + ca. 0,6 V an T1"
+msgstr "%s + 0.6 V + approx. 0.6 V across T1"
+
+#: uMain.pas rsKPartLM317L
+msgid "LM317L (TO-92) reicht, ohne Kühlkörper"
+msgstr "LM317L (TO-92) is enough, no heatsink"
+
+#: uMain.pas rsKPartLM317
+msgid "LM317 (TO-220) ohne Kühlkörper"
+msgstr "LM317 (TO-220) without heatsink"
+
+#: uMain.pas rsKPartFree
+msgid "%s ohne Kühlkörper"
+msgstr "%s without heatsink"
+
+#: uMain.pas rsKPartHeatsink
+msgid "%s mit Kühlkörper ≤ %s K/W"
+msgstr "%s with heatsink ≤ %s K/W"
+
+#: uMain.pas rsKPartTooHot
+msgid "%s: zu viel Verlust"
+msgstr "%s: too much loss"
+
+#: uMain.pas rsKPartShortHeat
+msgid "%s + Kühlkörper ≤ %s K/W"
+msgstr "%s + heatsink ≤ %s K/W"
+
+#: uMain.pas rsKStepL1
+msgid "Der LM317 hält zwischen OUT und ADJ 1,25 V: R = 1,25 V / I = 1,25 V / %s = **%s** → nächster %s-Wert darüber: **%s**"
+msgstr "The LM317 keeps 1.25 V between OUT and ADJ: R = 1.25 V / I = 1.25 V / %s = **%s** → next %s value above: **%s**"
+
+#: uMain.pas rsKStepL2
+msgid "Tatsächlicher Strom: I = 1,25 V / %s = **%s** · Leistung am R: P = 1,25 V × %s = **%s** → %s"
+msgstr "Actual current: I = 1.25 V / %s = **%s** · power in R: P = 1.25 V × %s = **%s** → %s"
+
+#: uMain.pas rsKStepL3
+msgid "Mindestspannung: U_m_i_n = %s + 1,25 V + ca. 2 V (Regler) = **%s** → Reserve bei %s: **%s**"
+msgstr "Minimum voltage: U_m_i_n = %s + 1.25 V + approx. 2 V (regulator) = **%s** → headroom at %s: **%s**"
+
+#: uMain.pas rsKStepL4
+msgid "Verlust im Regler: P = (U_B − U_L_E_D − 1,25 V) · I = (%s − %s − 1,25 V) × %s = **%s** → **%s**"
+msgstr "Loss in the regulator: P = (U_B − U_L_E_D − 1.25 V) · I = (%s − %s − 1.25 V) × %s = **%s** → **%s**"
+
+#: uMain.pas rsKStepL5
+msgid "Zum Vergleich ein Vorwiderstand: R = (%s − %s) / %s = %s; bei %s flösse **%s mehr** Strom, der LM317 hält ihn"
+msgstr "For comparison, a series resistor: R = (%s − %s) / %s = %s; at %s it would let **%s more** current through, the LM317 keeps it constant"
+
+#: uMain.pas rsKStepL5Fix
+msgid "Aus ADJ fliessen zusätzlich ca. 50 µA durch die LEDs (vernachlässigbar). Der Strom bleibt auch bei schwankender Spannung gleich."
+msgstr "About 50 µA from ADJ also flows through the LEDs (negligible). The current stays the same even if the voltage varies."
+
+#: uMain.pas rsKStepT1
+msgid "T2 leitet ab ca. 0,6 V an R_S: R_S = 0,6 V / I = 0,6 V / %s = **%s** → nächster %s-Wert darüber: **%s**"
+msgstr "T2 turns on at about 0.6 V across R_S: R_S = 0.6 V / I = 0.6 V / %s = **%s** → next %s value above: **%s**"
+
+#: uMain.pas rsKStepT2
+msgid "Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** → %s · U_B_E sinkt um ca. 2 mV/K: pro 10 °C ca. %s weniger"
+msgstr "Actual current: I = 0.6 V / %s = **%s** · power in R_S: **%s** → %s · U_B_E drops by approx. 2 mV/K: about %s less per 10 °C"
+
+#: uMain.pas rsKStepT3
+msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s → Normwert darunter: **%s**"
+msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 1.3 V) / %s = %s → standard value below: **%s**"
+
+#: uMain.pas rsKStepT4
+msgid "Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**"
+msgstr "Minimum voltage: U_m_i_n = %s + 0.6 V + approx. 0.6 V (T1) = **%s** → headroom at %s: **%s**"
+
+#: uMain.pas rsKStepT5
+msgid "Verlust in T1: P = (U_B − U_L_E_D − 0,6 V) · I = (%s − %s − 0,6 V) × %s = **%s** → **%s**"
+msgstr "Loss in T1: P = (U_B − U_L_E_D − 0.6 V) · I = (%s − %s − 0.6 V) × %s = **%s** → **%s**"
+
+#: uMain.pas rsErrKUTooLow
+msgid "Die Speisespannung (von) %s reicht nicht: die Schaltung braucht mindestens %s."
+msgstr "The supply voltage (from) %s is not enough: the circuit needs at least %s."
+
+#: uMain.pas rsErrKCurrent
+msgid "Mehr als 1,5 A schafft weder der LM317 noch der BD139: Strom kleiner wählen."
+msgstr "Neither the LM317 nor the BD139 can handle more than 1.5 A: choose a smaller current."
+
+#: uMain.pas rsKChipOk
+msgid "Konstantstrom passt"
+msgstr "Constant current OK"
+
+#: uMain.pas rsKOkRangeL
+msgid "Mit Vorwiderstand: +%s Strom bei %s, mit dem LM317 bleibt er gleich"
+msgstr "With a series resistor: +%s current at %s, with the LM317 it stays the same"
+
+#: uMain.pas rsKOkRangeT
+msgid "Mit Vorwiderstand: +%s Strom bei %s, hier nur ca. +%s"
+msgstr "With a series resistor: +%s current at %s, here only approx. +%s"
+
+#: uMain.pas rsKOkFix
+msgid "Tipp: bei «bis» die höchste Spannung eingeben (Auto z. B. 14,4 V)"
+msgstr "Tip: enter the highest voltage under «to» (e.g. car 14.4 V)"
+
+#: uMain.pas rsKChipHeat
+msgid "Kühlkörper nötig"
+msgstr "Heatsink needed"
+
+#: uMain.pas rsKWarnHeat
+msgid "%s verheizt bis %s: Kühlkörper mit höchstens %s K/W, Kühlfahne liegt an %s (isoliert montieren)"
+msgstr "%s dissipates up to %s: heatsink of at most %s K/W, the tab is connected to %s (mount insulated)"
+
+#: uMain.pas rsKTabOut
+msgid "OUT"
+msgstr "OUT"
+
+#: uMain.pas rsKTabCollector
+msgid "Kollektor"
+msgstr "the collector"
+
+#: uMain.pas rsKChipTooHot
+msgid "zu viel Verlust"
+msgstr "too much loss"
+
+#: uMain.pas rsKWarnTooHot
+msgid "Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom"
+msgstr "Up to %s loss is too much: lower voltage, more LEDs in series or less current"
+
+#: uMain.pas rsKChipMinLoad
+msgid "unter 10 mA"
+msgstr "below 10 mA"
+
+#: uMain.pas rsKWarnMinLoad
+msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren"
+msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
+
+#: uMain.pas rsKChipVolt
+msgid "Spannung zu hoch"
+msgstr "Voltage too high"
+
+#: uMain.pas rsKWarnVoltL
+msgid "Mehr als 40 V zwischen IN und OUT verträgt der LM317 nicht: Spannung senken oder mehr LEDs in Reihe"
+msgstr "The LM317 cannot take more than 40 V between IN and OUT: lower the voltage or put more LEDs in series"
+
+#: uMain.pas rsKWarnVoltT
+msgid "Mehr als 45 V an T1 verträgt der Transistor nicht: Spannung senken oder mehr LEDs in Reihe"
+msgstr "The transistor cannot take more than 45 V across T1: lower the voltage or put more LEDs in series"
+
+#: uMain.pas rsKChipBase
+msgid "RB wird warm"
+msgstr "RB gets warm"
+
+#: uMain.pas rsKWarnBase
+msgid "T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher"
+msgstr "T1 needs a lot of base current: RB (%s) dissipates up to %s, use %s – for large currents the LM317 is simpler"
+
+#: uMain.pas rsKChipRPower
+msgid "Fühler-R über 1 W"
+msgstr "Sense R over 1 W"
+
+#: uMain.pas rsKWarnRPower
+msgid "Der Fühlerwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen"
+msgstr "The sense resistor dissipates %s: use a power resistor (2–5 W)"
+
+#: uMain.pas rsKCopyTitle
+msgid "LedPreResistor %s – Konstantstrom (%s)"
+msgstr "LedPreResistor %s – Constant current (%s)"
+
+#: uMain.pas rsKCopyR
+msgid "Fühlerwiderstand: %s (%s, %s), berechnet %s"
+msgstr "Sense resistor: %s (%s, %s), calculated %s"
+
+#: uMain.pas rsKCopyLoss
+msgid "Verlust: %s → %s"
+msgstr "Loss: %s → %s"
+
+#: uMain.pas rsKCopyNeed
+msgid "Mindestspannung: %s"
+msgstr "Minimum voltage: %s"
+
+#: uMain.pas rsKCopyRB
+msgid "Basiswiderstand RB: %s (%s)"
+msgstr "Base resistor RB: %s (%s)"

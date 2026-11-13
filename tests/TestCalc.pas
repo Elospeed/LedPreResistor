@@ -19,6 +19,7 @@ type
     procedure BeispielRechnung;
     procedure BeispielBelastbarkeit;
     procedure MehrereLedsInReihe;
+    procedure StraengeParallel;
     procedure SpannungZuKlein;
     procedure UngueltigeEingaben;
     procedure Auslastungsstufen;
@@ -80,6 +81,25 @@ begin
   AssertEquals(120, R.R, 1e-9);
   AssertEquals(20, R.IAct * 1000, 1e-6);
   AssertEquals(3 * 3.2 * 0.020, R.PLed, 1e-12);
+end;
+
+procedure TTestCalc.StraengeParallel;
+var
+  E: TCalcInput;   // Eingaben
+  R: TCalcResult;  // Resultat
+begin
+  E := Beispiel;
+  E.Strings := 3;  // drei Stränge, jeder mit eigenem 470 Ω
+  R := Calculate(E);
+  AssertTrue(R.Status = csOk);
+  AssertEquals('Widerstand je Strang unverändert', 470, R.R, 1e-9);
+  AssertEquals('P je Widerstand unverändert in mW', 164.77, R.PR * 1000, 0.005);
+  AssertEquals('Strom gesamt in mA', 3 * 18.7234, R.ITotal * 1000, 0.001);
+  AssertEquals('P total in mW', 3 * 224.681, R.PTotal * 1000, 0.01);
+  E.Strings := 0;  // 0 = ein Strang (Vorgabe)
+  AssertEquals(1, Calculate(E).Strings);
+  E.Strings := -1;
+  AssertTrue(Calculate(E).Status = csInvalidStrings);
 end;
 
 procedure TTestCalc.SpannungZuKlein;
