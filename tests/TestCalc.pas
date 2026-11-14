@@ -1,5 +1,17 @@
-{ Tests für uCalc: Beispielrechnung aus der Projektübersicht, Prüfungen,
-  Belastbarkeit, Erwärmung und Eingabe mit Komma oder Punkt. }
+{==============================================================================
+  TestCalc - Tests
+==============================================================================
+  Zweck:     Tests für uCalc: Beispielrechnung aus der Projektübersicht,
+             Prüfungen, Belastbarkeit, Erwärmung und Eingabe mit Komma oder
+             Punkt.
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 unit TestCalc;
 
 {$mode objfpc}{$H+}
@@ -9,6 +21,9 @@ interface
 uses
   fpcunit, testregistry, uESeries, uCalc;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft die Rechenlogik }
   TTestCalc = class(TTestCase)
@@ -30,6 +45,16 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  Beispiel
+------------------------------------------------------------------------------
+  Liefert die Eingaben der Beispielrechnung: 12 V, 1 weisse LED 3,2 V, 20
+  mA, E12, ¼ W.
+------------------------------------------------------------------------------}
 function TTestCalc.Beispiel: TCalcInput;
 begin
   Result := Default(TCalcInput);
@@ -41,25 +66,36 @@ begin
   Result.RatingW := 0.25;
 end;
 
+{------------------------------------------------------------------------------
+  BeispielRechnung
+------------------------------------------------------------------------------
+  Beispielrechnung aus der Projektübersicht: Widerstand, Normwert, Strom,
+  Leistung.
+------------------------------------------------------------------------------}
 procedure TTestCalc.BeispielRechnung;
 var
-  R: TCalcResult;  // Resultat
+  R: TCalcResult;                                        // Resultat
 begin
   R := Calculate(Beispiel);
   AssertTrue('Status ok', R.Status = csOk);
   AssertEquals('U_R', 8.8, R.UR, 1e-9);
   AssertEquals('R berechnet', 440, R.RCalc, 1e-6);
   AssertEquals('Normwert E12', 470, R.R, 1e-9);
-  AssertEquals('I tatsächlich in mA', 18.72, R.IAct * 1000, 0.005);      // 18,7234 mA
-  AssertEquals('P Widerstand in mW', 164.77, R.PR * 1000, 0.005);        // 164,766 mW
-  AssertEquals('P LED in mW', 59.91, R.PLed * 1000, 0.005);              // 59,915 mW
-  AssertEquals('P total in mW', 224.68, R.PTotal * 1000, 0.005);         // 224,681 mW
+  AssertEquals('I tatsächlich in mA', 18.72, R.IAct * 1000, 0.005);  // 18,7234 mA
+  AssertEquals('P Widerstand in mW', 164.77, R.PR * 1000, 0.005);  // 164,766 mW
+  AssertEquals('P LED in mW', 59.91, R.PLed * 1000, 0.005);  // 59,915 mW
+  AssertEquals('P total in mW', 224.68, R.PTotal * 1000, 0.005);  // 224,681 mW
   AssertEquals('P total = P_R + P_LED', R.PTotal, R.PR + R.PLed, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  BeispielBelastbarkeit
+------------------------------------------------------------------------------
+  Beispielrechnung: Auslastung des ¼-W-Widerstands.
+------------------------------------------------------------------------------}
 procedure TTestCalc.BeispielBelastbarkeit;
 var
-  R: TCalcResult;  // Resultat
+  R: TCalcResult;                                        // Resultat
 begin
   R := Calculate(Beispiel);
   AssertEquals('Auslastung ¼ W in %', 66, Round(R.Load * 100));
@@ -67,13 +103,18 @@ begin
   AssertEquals('Empfehlung ½ W', 0.5, R.RecommendedW, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  MehrereLedsInReihe
+------------------------------------------------------------------------------
+  Mehrere LEDs in Reihe: ihre Durchlassspannungen addieren sich.
+------------------------------------------------------------------------------}
 procedure TTestCalc.MehrereLedsInReihe;
 var
-  E: TCalcInput;   // Eingaben
-  R: TCalcResult;  // Resultat
+  E: TCalcInput;                                         // Eingaben
+  R: TCalcResult;                                        // Resultat
 begin
   E := Beispiel;
-  E.N := 3;        // 3 * 3,2 V = 9,6 V -> U_R = 2,4 V -> 120 Ω
+  E.N := 3;                                              // 3 * 3,2 V = 9,6 V -> U_R = 2,4 V -> 120 Ω
   R := Calculate(E);
   AssertTrue(R.Status = csOk);
   AssertEquals(2.4, R.UR, 1e-9);
@@ -83,40 +124,55 @@ begin
   AssertEquals(3 * 3.2 * 0.020, R.PLed, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  StraengeParallel
+------------------------------------------------------------------------------
+  Mehrere Stränge parallel: Gesamtstrom und Gesamtleistung.
+------------------------------------------------------------------------------}
 procedure TTestCalc.StraengeParallel;
 var
-  E: TCalcInput;   // Eingaben
-  R: TCalcResult;  // Resultat
+  E: TCalcInput;                                         // Eingaben
+  R: TCalcResult;                                        // Resultat
 begin
   E := Beispiel;
-  E.Strings := 3;  // drei Stränge, jeder mit eigenem 470 Ω
+  E.Strings := 3;                                        // drei Stränge, jeder mit eigenem 470 Ω
   R := Calculate(E);
   AssertTrue(R.Status = csOk);
   AssertEquals('Widerstand je Strang unverändert', 470, R.R, 1e-9);
   AssertEquals('P je Widerstand unverändert in mW', 164.77, R.PR * 1000, 0.005);
   AssertEquals('Strom gesamt in mA', 3 * 18.7234, R.ITotal * 1000, 0.001);
   AssertEquals('P total in mW', 3 * 224.681, R.PTotal * 1000, 0.01);
-  E.Strings := 0;  // 0 = ein Strang (Vorgabe)
+  E.Strings := 0;                                        // 0 = ein Strang (Vorgabe)
   AssertEquals(1, Calculate(E).Strings);
   E.Strings := -1;
   AssertTrue(Calculate(E).Status = csInvalidStrings);
 end;
 
+{------------------------------------------------------------------------------
+  SpannungZuKlein
+------------------------------------------------------------------------------
+  Speisespannung reicht nicht für die LEDs: Fehler wird gemeldet.
+------------------------------------------------------------------------------}
 procedure TTestCalc.SpannungZuKlein;
 var
-  E: TCalcInput;   // Eingaben
+  E: TCalcInput;                                         // Eingaben
 begin
   E := Beispiel;
-  E.N := 4;        // 4 * 3,2 V = 12,8 V > 12 V
+  E.N := 4;                                              // 4 * 3,2 V = 12,8 V > 12 V
   AssertTrue(Calculate(E).Status = csUTooLow);
   E.N := 1;
-  E.U := 3.2;      // genau gleich: kein Strom möglich
+  E.U := 3.2;                                            // genau gleich: kein Strom möglich
   AssertTrue(Calculate(E).Status = csUTooLow);
 end;
 
+{------------------------------------------------------------------------------
+  UngueltigeEingaben
+------------------------------------------------------------------------------
+  Fehlende oder negative Eingaben werden erkannt.
+------------------------------------------------------------------------------}
 procedure TTestCalc.UngueltigeEingaben;
 var
-  E: TCalcInput;   // Eingaben
+  E: TCalcInput;                                         // Eingaben
 begin
   E := Beispiel; E.U := 0;   AssertTrue(Calculate(E).Status = csInvalidU);
   E := Beispiel; E.Ud := -1; AssertTrue(Calculate(E).Status = csInvalidUd);
@@ -124,6 +180,11 @@ begin
   E := Beispiel; E.N := 0;   AssertTrue(Calculate(E).Status = csInvalidN);
 end;
 
+{------------------------------------------------------------------------------
+  Auslastungsstufen
+------------------------------------------------------------------------------
+  Grenzen der Auslastungsstufen (OK, Hinweis, zu hoch).
+------------------------------------------------------------------------------}
 procedure TTestCalc.Auslastungsstufen;
 begin
   AssertTrue(LoadLevelOf(0.5) = llOk);
@@ -132,6 +193,11 @@ begin
   AssertTrue(LoadLevelOf(1.01) = llOverload);
 end;
 
+{------------------------------------------------------------------------------
+  EmpfehlungBauform
+------------------------------------------------------------------------------
+  Empfohlene Bauform des Widerstands je nach Leistung.
+------------------------------------------------------------------------------}
 procedure TTestCalc.EmpfehlungBauform;
 begin
   AssertEquals(0.125, RecommendRating(0.0625), 1e-12);
@@ -140,9 +206,14 @@ begin
   AssertEquals('über 0,5 W reicht keine Bauform bis 1 W', 0, RecommendRating(0.51), 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  Erwaermung
+------------------------------------------------------------------------------
+  Geschätzte Erwärmung des Widerstands.
+------------------------------------------------------------------------------}
 procedure TTestCalc.Erwaermung;
 var
-  R: TCalcResult;  // Resultat
+  R: TCalcResult;                                        // Resultat
 begin
   // Beispiel: 164,8 mW in ¼ W * 225 °C/W ≈ 37 °C
   R := Calculate(Beispiel);
@@ -151,9 +222,14 @@ begin
   AssertEquals(EstimateTempRise(0.1, 0.25) / 2, EstimateTempRise(0.1, 0.5), 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  EingabeKommaUndPunkt
+------------------------------------------------------------------------------
+  Zahlen werden mit Komma und mit Punkt gelesen.
+------------------------------------------------------------------------------}
 procedure TTestCalc.EingabeKommaUndPunkt;
 var
-  V: Double;  // umgewandelte Zahl
+  V: Double;                                             // umgewandelte Zahl
 begin
   AssertTrue(ParseDecimal('3,2', V));  AssertEquals(3.2, V, 1e-12);
   AssertTrue(ParseDecimal('3.2', V));  AssertEquals(3.2, V, 1e-12);

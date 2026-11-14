@@ -1,5 +1,16 @@
-{ Tests für uKsq: LM317 und Konstantstromquelle mit zwei Transistoren.
-  Beispiel aus dem Konzept: Auto 12–14,4 V, zwei weisse LEDs (3,2 V), 20 mA. }
+{==============================================================================
+  TestKsq - Tests
+==============================================================================
+  Zweck:     Tests für uKsq: LM317 und Konstantstromquelle mit zwei
+             Transistoren. Beispiel aus dem Konzept: Auto 12–14,4 V, zwei
+             weisse LEDs (3,2 V), 20 mA.
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  neu
+==============================================================================}
 unit TestKsq;
 
 {$mode objfpc}{$H+}
@@ -9,6 +20,9 @@ interface
 uses
   fpcunit, testregistry, uESeries, uKsq;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft die Rechnung der Konstantstromquellen }
   TTestKsq = class(TTestCase)
@@ -28,6 +42,16 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  Basis
+------------------------------------------------------------------------------
+  Liefert Grund-Eingaben für die gewählte Schaltung, auf denen die einzelnen
+  Tests aufbauen.
+------------------------------------------------------------------------------}
 function TTestKsq.Basis(Circuit: TKsqCircuit): TKsqInput;
 begin
   Result := Default(TKsqInput);
@@ -40,9 +64,15 @@ begin
   Result.Series := esE12;
 end;
 
+{------------------------------------------------------------------------------
+  LM317Beispiel
+------------------------------------------------------------------------------
+  LM317-Beispiel aus dem Konzept: Auto 12 ... 14,4 V, zwei weisse LEDs, 20
+  mA.
+------------------------------------------------------------------------------}
 procedure TTestKsq.LM317Beispiel;
 var
-  R: TKsqResult;  // Resultat
+  R: TKsqResult;                                         // Resultat
 begin
   R := CalculateKsq(Basis(kcLM317));
   AssertTrue('Status', R.Status = ksOk);
@@ -62,13 +92,18 @@ begin
   AssertEquals('LM317 hält den Strom', 0, R.KsqRise, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  LM317GrosserStrom
+------------------------------------------------------------------------------
+  LM317 mit grossem Strom: Bauteil, Verlust und Kühlkörper-Hinweis.
+------------------------------------------------------------------------------}
 procedure TTestKsq.LM317GrosserStrom;
 var
-  E: TKsqInput;   // Eingabe
-  R: TKsqResult;  // Resultat
+  E: TKsqInput;                                          // Eingabe
+  R: TKsqResult;                                         // Resultat
 begin
   E := Basis(kcLM317);
-  E.I := 0.35;    // 1-W-LED: 1,25 V / 0,35 A = 3,57 Ω -> 3,9 Ω
+  E.I := 0.35;                                           // 1-W-LED: 1,25 V / 0,35 A = 3,57 Ω -> 3,9 Ω
   E.N := 1;
   E.Ud := 3.3;
   R := CalculateKsq(E);
@@ -84,18 +119,28 @@ begin
   AssertEquals('Fühlerwiderstand 1 W', 1.0, R.RRating, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  LM317KleinerStrom
+------------------------------------------------------------------------------
+  LM317 unter dem Mindestlaststrom: Hinweis.
+------------------------------------------------------------------------------}
 procedure TTestKsq.LM317KleinerStrom;
 var
-  E: TKsqInput;   // Eingabe
+  E: TKsqInput;                                          // Eingabe
 begin
   E := Basis(kcLM317);
   E.I := 0.002;
   AssertTrue(kwMinLoad in CalculateKsq(E).Warnings);
 end;
 
+{------------------------------------------------------------------------------
+  TransistorenBeispiel
+------------------------------------------------------------------------------
+  Zwei Transistoren, Beispiel aus dem Konzept: R_S und R_B.
+------------------------------------------------------------------------------}
 procedure TTestKsq.TransistorenBeispiel;
 var
-  R: TKsqResult;  // Resultat
+  R: TKsqResult;                                         // Resultat
 begin
   R := CalculateKsq(Basis(kcTransistors));
   AssertTrue(R.Status = ksOk);
@@ -115,15 +160,20 @@ begin
   AssertEquals('fast gleich', 0.0088, R.KsqRise, 0.0001);
 end;
 
+{------------------------------------------------------------------------------
+  TransistorenGrosserStrom
+------------------------------------------------------------------------------
+  Zwei Transistoren mit grossem Strom: stärkerer Transistor und Basisstrom.
+------------------------------------------------------------------------------}
 procedure TTestKsq.TransistorenGrosserStrom;
 var
-  E: TKsqInput;   // Eingabe
-  R: TKsqResult;  // Resultat
+  E: TKsqInput;                                          // Eingabe
+  R: TKsqResult;                                         // Resultat
 begin
   E := Basis(kcTransistors);
-  E.UMax := 0;      // feste 12 V
+  E.UMax := 0;                                           // feste 12 V
   E.N := 3;
-  E.I := 0.7;       // 0,6 V / 0,7 A = 0,857 Ω -> 1 Ω -> 0,6 A
+  E.I := 0.7;                                            // 0,6 V / 0,7 A = 0,857 Ω -> 1 Ω -> 0,6 A
   R := CalculateKsq(E);
   AssertTrue(R.Status = ksOk);
   AssertEquals(1.0, R.R, 1e-9);
@@ -137,10 +187,15 @@ begin
   AssertEquals('kein Bereich', 0, R.RvRise, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  BereichVertauschtUndLeer
+------------------------------------------------------------------------------
+  Spannungsbereich vertauscht oder «bis» leer: wird richtig behandelt.
+------------------------------------------------------------------------------}
 procedure TTestKsq.BereichVertauschtUndLeer;
 var
-  E: TKsqInput;   // Eingabe
-  R: TKsqResult;  // Resultat
+  E: TKsqInput;                                          // Eingabe
+  R: TKsqResult;                                         // Resultat
 begin
   E := Basis(kcLM317);
   E.UMin := 14.4;
@@ -154,23 +209,34 @@ begin
   AssertEquals(R.PLossMin, R.PLossMax, 1e-12);
 end;
 
+{------------------------------------------------------------------------------
+  SpannungZuKlein
+------------------------------------------------------------------------------
+  Speisespannung reicht nicht für die LEDs: Fehler wird gemeldet.
+------------------------------------------------------------------------------}
 procedure TTestKsq.SpannungZuKlein;
 var
-  E: TKsqInput;   // Eingabe
+  E: TKsqInput;                                          // Eingabe
 begin
   E := Basis(kcLM317);
-  E.UMin := 9;    // braucht 9,65 V
+  E.UMin := 9;                                           // braucht 9,65 V
   AssertTrue(CalculateKsq(E).Status = ksUTooLow);
   E := Basis(kcTransistors);
-  E.UMin := 7.6;  // genau die Mindestspannung reicht
+  E.UMin := 7.6;                                         // genau die Mindestspannung reicht
   AssertTrue(CalculateKsq(E).Status = ksOk);
   E.UMin := 7.5;
   AssertTrue(CalculateKsq(E).Status = ksUTooLow);
 end;
 
+{------------------------------------------------------------------------------
+  Fehler
+------------------------------------------------------------------------------
+  Ungültige Eingaben liefern den passenden Fehler und keine halben
+  Resultate.
+------------------------------------------------------------------------------}
 procedure TTestKsq.Fehler;
 var
-  E: TKsqInput;   // Eingabe
+  E: TKsqInput;                                          // Eingabe
 begin
   E := Basis(kcLM317); E.UMin := 0; AssertTrue(CalculateKsq(E).Status = ksInvalidU);
   E := Basis(kcLM317); E.Ud := 0;   AssertTrue(CalculateKsq(E).Status = ksInvalidUd);

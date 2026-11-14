@@ -1,4 +1,16 @@
-{ Tests für uESeries: Tabellen und Suche nach dem nächsthöheren Normwert. }
+{==============================================================================
+  TestESeries - Tests
+==============================================================================
+  Zweck:     Tests für uESeries: Tabellen und Suche nach dem nächsthöheren
+             Normwert.
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 unit TestESeries;
 
 {$mode objfpc}{$H+}
@@ -8,6 +20,9 @@ interface
 uses
   fpcunit, testregistry, uESeries;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft die Normreihen }
   TTestESeries = class(TTestCase)
@@ -29,12 +44,21 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
 uses
   SysUtils, Math;
 
+{------------------------------------------------------------------------------
+  CheckNext
+------------------------------------------------------------------------------
+  Hilfsroutine: prüft den nächsthöheren Normwert eines Werts.
+------------------------------------------------------------------------------}
 procedure TTestESeries.CheckNext(R: Double; Series: TESeries; Expected: Double);
 var
-  Std: TStdValue;  // gefundener Normwert
+  Std: TStdValue;                                        // gefundener Normwert
 begin
   AssertTrue('Normwert gefunden für ' + FloatToStrF(R, ffGeneral, 12, 0), NextStdValue(R, Series, Std));
   AssertTrue('Normwert zu ' + FloatToStrF(R, ffGeneral, 12, 0) + ': erwartet '
@@ -42,6 +66,11 @@ begin
     SameValue(Std.Value, Expected, Expected * 1e-12));
 end;
 
+{------------------------------------------------------------------------------
+  AnzahlWerteProReihe
+------------------------------------------------------------------------------
+  Jede Normreihe hat die richtige Anzahl Werte (12, 24, 96).
+------------------------------------------------------------------------------}
 procedure TTestESeries.AnzahlWerteProReihe;
 begin
   AssertEquals(12, SeriesCount(esE12));
@@ -49,19 +78,29 @@ begin
   AssertEquals(96, SeriesCount(esE96));
 end;
 
+{------------------------------------------------------------------------------
+  ReihenAufsteigend
+------------------------------------------------------------------------------
+  Die Werte jeder Reihe sind aufsteigend sortiert.
+------------------------------------------------------------------------------}
 procedure TTestESeries.ReihenAufsteigend;
 var
-  S: TESeries;  // geprüfte Reihe
-  I: Integer;   // Index in der Reihe
+  S: TESeries;                                           // geprüfte Reihe
+  I: Integer;                                            // Index in der Reihe
 begin
   for S := Low(TESeries) to High(TESeries) do
     for I := 1 to SeriesCount(S) - 1 do
       AssertTrue('Reihe aufsteigend', SeriesDigits(S, I) > SeriesDigits(S, I - 1));
 end;
 
+{------------------------------------------------------------------------------
+  Beispiel440OhmE12
+------------------------------------------------------------------------------
+  440 Ω in E12 wird zu 470 Ω.
+------------------------------------------------------------------------------}
 procedure TTestESeries.Beispiel440OhmE12;
 var
-  Std: TStdValue;  // gefundener Normwert
+  Std: TStdValue;                                        // gefundener Normwert
 begin
   AssertTrue(NextStdValue(440, esE12, Std));
   AssertEquals(470.0, Std.Value, 1e-9);
@@ -70,6 +109,11 @@ begin
   AssertEquals(1, Std.Exponent);
 end;
 
+{------------------------------------------------------------------------------
+  GenauerNormwertBleibt
+------------------------------------------------------------------------------
+  Ein genauer Normwert bleibt unverändert.
+------------------------------------------------------------------------------}
 procedure TTestESeries.GenauerNormwertBleibt;
 begin
   CheckNext(470, esE12, 470);
@@ -78,6 +122,11 @@ begin
   CheckNext(82, esE12, 82);
 end;
 
+{------------------------------------------------------------------------------
+  Genau330OhmBleibt330
+------------------------------------------------------------------------------
+  330 Ω bleibt 330 Ω (keine Rundungsfehler).
+------------------------------------------------------------------------------}
 procedure TTestESeries.Genau330OhmBleibt330;
 begin
   // Fehler der Altversion: 3.3 * 100 = 329,99999… -> sprang auf 390
@@ -86,6 +135,11 @@ begin
   CheckNext(330.000001, esE12, 390);
 end;
 
+{------------------------------------------------------------------------------
+  DekadenWechsel
+------------------------------------------------------------------------------
+  Über dem grössten Wert einer Dekade geht es in der nächsten weiter.
+------------------------------------------------------------------------------}
 procedure TTestESeries.DekadenWechsel;
 begin
   CheckNext(83, esE12, 100);
@@ -94,6 +148,11 @@ begin
   CheckNext(100.1, esE12, 120);
 end;
 
+{------------------------------------------------------------------------------
+  KleineUndGrosseWerte
+------------------------------------------------------------------------------
+  Sehr kleine und sehr grosse Werte.
+------------------------------------------------------------------------------}
 procedure TTestESeries.KleineUndGrosseWerte;
 begin
   CheckNext(0.5, esE12, 0.56);
@@ -103,9 +162,14 @@ begin
   CheckNext(9.5e6, esE12, 10e6);
 end;
 
+{------------------------------------------------------------------------------
+  E24UndE96
+------------------------------------------------------------------------------
+  Suche in den Reihen E24 und E96.
+------------------------------------------------------------------------------}
 procedure TTestESeries.E24UndE96;
 var
-  Std: TStdValue;  // gefundener Normwert
+  Std: TStdValue;                                        // gefundener Normwert
 begin
   CheckNext(440, esE24, 470);
   CheckNext(431, esE24, 470);
@@ -119,18 +183,28 @@ begin
   AssertEquals(1, Std.Exponent);
 end;
 
+{------------------------------------------------------------------------------
+  UngueltigeWerte
+------------------------------------------------------------------------------
+  Null, negative und ungültige Zahlen liefern False.
+------------------------------------------------------------------------------}
 procedure TTestESeries.UngueltigeWerte;
 var
-  Std: TStdValue;  // gefundener Normwert
+  Std: TStdValue;                                        // gefundener Normwert
 begin
   AssertFalse(NextStdValue(0, esE12, Std));
   AssertFalse(NextStdValue(-10, esE12, Std));
   AssertFalse(NextStdValue(NaN, esE12, Std));
 end;
 
+{------------------------------------------------------------------------------
+  NormwertDarunter
+------------------------------------------------------------------------------
+  Suche nach dem nächstkleineren Normwert.
+------------------------------------------------------------------------------}
 procedure TTestESeries.NormwertDarunter;
 var
-  S: TStdValue;  // gefundener Normwert
+  S: TStdValue;                                          // gefundener Normwert
 begin
   AssertTrue(PrevStdValue(5350, esE12, S));
   AssertEquals('5,35 kΩ -> 4,7 kΩ', 4700, S.Value, 1e-9);

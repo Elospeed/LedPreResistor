@@ -1,4 +1,15 @@
-{ Tests für uFormat: Anzeige ohne überflüssige Nachkommastellen. }
+{==============================================================================
+  TestFormat - Tests
+==============================================================================
+  Zweck:     Tests für uFormat: Anzeige ohne überflüssige Nachkommastellen.
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 unit TestFormat;
 
 {$mode objfpc}{$H+}
@@ -8,6 +19,9 @@ interface
 uses
   fpcunit, testregistry, uFormat;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft die formatierte Ausgabe }
   TTestFormat = class(TTestCase)
@@ -24,6 +38,15 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  Zahlen
+------------------------------------------------------------------------------
+  Zahlen ohne überflüssige Nachkommastellen.
+------------------------------------------------------------------------------}
 procedure TTestFormat.Zahlen;
 begin
   AssertEquals('12', FormatNum(12, 2, 0));
@@ -33,6 +56,11 @@ begin
   AssertEquals('0', FormatNum(-0.001, 2, 0));
 end;
 
+{------------------------------------------------------------------------------
+  Spannung
+------------------------------------------------------------------------------
+  Spannungen in V.
+------------------------------------------------------------------------------}
 procedure TTestFormat.Spannung;
 begin
   AssertEquals('12 V', FormatVolt(12));
@@ -40,6 +68,11 @@ begin
   AssertEquals('3,25 V', FormatVolt(3.25));
 end;
 
+{------------------------------------------------------------------------------
+  Widerstand
+------------------------------------------------------------------------------
+  Widerstände in Ω, kΩ und MΩ.
+------------------------------------------------------------------------------}
 procedure TTestFormat.Widerstand;
 begin
   AssertEquals('470 Ω', FormatOhm(470));
@@ -50,12 +83,22 @@ begin
   AssertEquals('0,47 Ω', FormatOhm(0.47));
 end;
 
+{------------------------------------------------------------------------------
+  Strom
+------------------------------------------------------------------------------
+  Ströme in mA.
+------------------------------------------------------------------------------}
 procedure TTestFormat.Strom;
 begin
   AssertEquals('18,72 mA', FormatMilliAmp(8.8 / 470));
   AssertEquals('20,0 mA', FormatMilliAmp(0.020));
 end;
 
+{------------------------------------------------------------------------------
+  Leistung
+------------------------------------------------------------------------------
+  Leistungen in mW und W.
+------------------------------------------------------------------------------}
 procedure TTestFormat.Leistung;
 begin
   AssertEquals('164,8 mW', FormatPower(8.8 * 8.8 / 470));
@@ -63,6 +106,11 @@ begin
   AssertEquals('1,25 W', FormatPower(1.25));
 end;
 
+{------------------------------------------------------------------------------
+  BauformUndProzent
+------------------------------------------------------------------------------
+  Bauform (¼ W usw.) und Prozentangaben.
+------------------------------------------------------------------------------}
 procedure TTestFormat.BauformUndProzent;
 begin
   AssertEquals('½ W', FormatRating(0.5));
@@ -71,6 +119,11 @@ begin
   AssertEquals('66 %', FormatPercent(0.659));
 end;
 
+{------------------------------------------------------------------------------
+  PunktAlsDezimalzeichen
+------------------------------------------------------------------------------
+  Englische Anzeige mit Punkt als Dezimalzeichen.
+------------------------------------------------------------------------------}
 procedure TTestFormat.PunktAlsDezimalzeichen;
 begin
   DisplayDecimal := '.';
@@ -89,6 +142,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkWerte
+------------------------------------------------------------------------------
+  Zeiten, Frequenzen und Kapazitäten der Blinkschaltung.
+------------------------------------------------------------------------------}
 procedure TTestFormat.BlinkWerte;
 begin
   AssertEquals('0', FormatSig(0, 3));
