@@ -1,5 +1,17 @@
-{ Tests für uBlink: NE555 und Multivibrator, vorwärts und rückwärts.
-  Referenzwerte aus dem Konzept vom 9.11.2026 (9 V, rote LED, 15 mA). }
+{==============================================================================
+  TestBlink - Tests
+==============================================================================
+  Zweck:     Tests für uBlink: NE555 und Multivibrator, vorwärts und
+             rückwärts. Referenzwerte aus dem Konzept vom 9.11.2026 (9 V,
+             rote LED, 15 mA).
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.3  11.11.2026  neu
+==============================================================================}
 unit TestBlink;
 
 {$mode objfpc}{$H+}
@@ -9,6 +21,9 @@ interface
 uses
   fpcunit, testregistry, uESeries, uBlink;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft die Rechnung der Blinkschaltungen }
   TTestBlink = class(TTestCase)
@@ -32,12 +47,22 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
 uses
   Math;
 
 const
-  EPS = 1e-6;  // Toleranz für Vergleiche
+  EPS = 1e-6;                                            // Toleranz für Vergleiche
 
+{------------------------------------------------------------------------------
+  Basis
+------------------------------------------------------------------------------
+  Liefert Grund-Eingaben für die gewählte Schaltung, auf denen die einzelnen
+  Tests aufbauen.
+------------------------------------------------------------------------------}
 function TTestBlink.Basis(Circuit: TBlinkCircuit): TBlinkInput;
 begin
   Result := Default(TBlinkInput);
@@ -49,10 +74,16 @@ begin
   Result.Conn := cnGnd;
 end;
 
+{------------------------------------------------------------------------------
+  NE555Vorwaerts
+------------------------------------------------------------------------------
+  NE555 vorwärts: aus R1, R2 und C die Zeiten, Frequenz und den
+  Vorwiderstand rechnen.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555Vorwaerts;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.R1 := 1000;
@@ -73,10 +104,15 @@ begin
   AssertTrue('keine Hinweise', R.Warnings = []);
 end;
 
+{------------------------------------------------------------------------------
+  NE555LedNachPlus
+------------------------------------------------------------------------------
+  NE555 mit LED nach +U_B: die LED leuchtet in der Low-Phase.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555LedNachPlus;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.R1 := 1000;
@@ -92,10 +128,15 @@ begin
   AssertEquals('R_V', 470, R.Led1.R, EPS);
 end;
 
+{------------------------------------------------------------------------------
+  NE555Wechselblinker
+------------------------------------------------------------------------------
+  NE555 als Wechselblinker: zwei LEDs, eine nach Masse, eine nach +U_B.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555Wechselblinker;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.R1 := 1000;
@@ -109,10 +150,15 @@ begin
   AssertEquals('R_V2 nach +Ub', 470, R.Led2.R, EPS);
 end;
 
+{------------------------------------------------------------------------------
+  NE555MitDiode
+------------------------------------------------------------------------------
+  NE555 mit Diode über R2: High- und Low-Zeit getrennt einstellbar.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555MitDiode;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.R1 := 47000;
@@ -124,10 +170,16 @@ begin
   AssertEquals('genau 50 %', 0.5, R.Duty1, EPS);
 end;
 
+{------------------------------------------------------------------------------
+  NE555Rueckwaerts
+------------------------------------------------------------------------------
+  NE555 rückwärts: aus Frequenz und Tastgrad passende Normwerte für R1 und
+  R2.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555Rueckwaerts;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   // 1 Hz, 55 % an, 10 µF: S = 144,3 kΩ, R2 = 64,9 kΩ -> 68 kΩ, R1 = 14,4 kΩ -> 15 kΩ
   I := Basis(bcNE555);
@@ -151,10 +203,16 @@ begin
   AssertEquals('R2 Diode', 68000, R.R2, EPS);
 end;
 
+{------------------------------------------------------------------------------
+  NE555RueckwaertsBrauchtDiode
+------------------------------------------------------------------------------
+  NE555 rückwärts ohne Diode: High-Anteil unter 50 % ist nicht möglich und
+  wird gemeldet.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555RueckwaertsBrauchtDiode;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.Reverse := True;
@@ -170,10 +228,16 @@ begin
   AssertEquals('Tastgrad ungefähr 40 %', 0.4, R.Duty1, 0.05);
 end;
 
+{------------------------------------------------------------------------------
+  NE555Hinweise
+------------------------------------------------------------------------------
+  NE555: Hinweise bei falscher Speisespannung, kleinem R1, zu grossem
+  Ausgangsstrom.
+------------------------------------------------------------------------------}
 procedure TTestBlink.NE555Hinweise;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.U := 3.7;
@@ -199,11 +263,17 @@ begin
   AssertFalse('46 Hz noch sichtbar', bwTooFast in R.Warnings);
 end;
 
+{------------------------------------------------------------------------------
+  MultivibratorVorwaerts
+------------------------------------------------------------------------------
+  Multivibrator vorwärts: Zeiten aus R_B und C, Vorwiderstände und
+  Sättigung.
+------------------------------------------------------------------------------}
 procedure TTestBlink.MultivibratorVorwaerts;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
-  K: Double;         // erwarteter Faktor
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
+  K: Double;                                             // erwarteter Faktor
 begin
   I := Basis(bcMulti);
   I.R1 := 33000;
@@ -232,10 +302,15 @@ begin
   AssertFalse('5 V sicher', bwBaseReverse in R.Warnings);
 end;
 
+{------------------------------------------------------------------------------
+  MultivibratorRueckwaerts
+------------------------------------------------------------------------------
+  Multivibrator rückwärts: aus Frequenz und Tastgrad passende R_B.
+------------------------------------------------------------------------------}
 procedure TTestBlink.MultivibratorRueckwaerts;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcMulti);
   I.Reverse := True;
@@ -251,15 +326,25 @@ begin
   AssertEquals('Frequenz ungefähr', 1, R.F, 0.1);
 end;
 
+{------------------------------------------------------------------------------
+  MultivibratorFaktorLehrbuch
+------------------------------------------------------------------------------
+  Zeitfaktor K im Lehrbuchfall (ΔU = U_B − 0,6 V) ist ln 2.
+------------------------------------------------------------------------------}
 procedure TTestBlink.MultivibratorFaktorLehrbuch;
 begin
   // Kollektor springt um Ub − 0,6 V: dann ist K = ln 2
   AssertEquals(Ln(2), MultiFactor(9, 8.4), EPS);
 end;
 
+{------------------------------------------------------------------------------
+  NaechsterNormwert
+------------------------------------------------------------------------------
+  NearestStdValue findet den nächsten Normwert (im Verhältnis).
+------------------------------------------------------------------------------}
 procedure TTestBlink.NaechsterNormwert;
 var
-  S: TStdValue;  // gefundener Normwert
+  S: TStdValue;                                          // gefundener Normwert
 begin
   AssertTrue(NearestStdValue(14400, esE12, S));
   AssertEquals(15000, S.Value, EPS);
@@ -272,10 +357,16 @@ begin
   AssertFalse(NearestStdValue(0, esE12, S));
 end;
 
+{------------------------------------------------------------------------------
+  Fehler
+------------------------------------------------------------------------------
+  Ungültige Eingaben liefern den passenden Fehler und keine halben
+  Resultate.
+------------------------------------------------------------------------------}
 procedure TTestBlink.Fehler;
 var
-  I: TBlinkInput;    // Eingabe
-  R: TBlinkResult;   // Resultat
+  I: TBlinkInput;                                        // Eingabe
+  R: TBlinkResult;                                       // Resultat
 begin
   I := Basis(bcNE555);
   I.R1 := 1000;

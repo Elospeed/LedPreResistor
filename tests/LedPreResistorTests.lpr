@@ -1,6 +1,18 @@
-{ Testprogramm für die Rechenlogik von LedPreResistor (FPCUnit, Konsole).
-  Führt alle registrierten Tests aus, zeigt Fehler an und beendet sich mit
-  Exitcode 1, wenn ein Test fehlschlägt. So bricht auch der Build-Workflow ab. }
+{==============================================================================
+  LedPreResistorTests - Testprogramm
+==============================================================================
+  Zweck:     Testprogramm für die Rechenlogik von LedPreResistor (FPCUnit,
+             Konsole). Führt alle registrierten Tests aus, zeigt Fehler an
+             und beendet sich mit Exitcode 1, wenn ein Test fehlschlägt. So
+             bricht auch der Build-Workflow ab.
+
+  Benutzung: lazbuild LedPreResistorTests.lpi, dann
+             ../bin/LedPreResistorTests (auch im Build-Workflow)
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 program LedPreResistorTests;
 
 {$mode objfpc}{$H+}
@@ -9,11 +21,14 @@ uses
   Classes, SysUtils, fpcunit, testregistry,
   TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink, TestKsq;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Gibt jeden Test mit Ergebnis auf der Konsole aus }
   TKonsolenAusgabe = class(TInterfacedObject, ITestListener)
   private
-    FFehler: Boolean;  // der laufende Test hat einen Fehler oder Abbruch gemeldet
+    FFehler: Boolean;                                    // der laufende Test hat einen Fehler oder Abbruch gemeldet
   public
     { Ein Test hat eine Prüfung nicht bestanden }
     procedure AddFailure(ATest: TTest; AFailure: TTestFailure);
@@ -29,12 +44,22 @@ type
     procedure EndTestSuite(ATestSuite: TTestSuite);
   end;
 
+{------------------------------------------------------------------------------
+  AddFailure
+------------------------------------------------------------------------------
+  Ein Test hat eine Prüfung nicht bestanden: Meldung ausgeben.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.AddFailure(ATest: TTest; AFailure: TTestFailure);
 begin
   FFehler := True;
   WriteLn('  FEHLER  ', ATest.TestSuiteName, '.', ATest.TestName, ': ', AFailure.ExceptionMessage);
 end;
 
+{------------------------------------------------------------------------------
+  AddError
+------------------------------------------------------------------------------
+  Ein Test ist mit einer Exception abgebrochen: Meldung ausgeben.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.AddError(ATest: TTest; AError: TTestFailure);
 begin
   FFehler := True;
@@ -42,28 +67,51 @@ begin
     AError.ExceptionClassName, ': ', AError.ExceptionMessage);
 end;
 
+{------------------------------------------------------------------------------
+  StartTest
+------------------------------------------------------------------------------
+  Ein Test beginnt: Fehler-Merker zurücksetzen.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.StartTest(ATest: TTest);
 begin
   FFehler := False;
 end;
 
+{------------------------------------------------------------------------------
+  EndTest
+------------------------------------------------------------------------------
+  Ein Test ist fertig: «ok» ausgeben, wenn kein Fehler gemeldet wurde.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.EndTest(ATest: TTest);
 begin
   if not FFehler then
     WriteLn('  ok      ', ATest.TestSuiteName, '.', ATest.TestName);
 end;
 
+{------------------------------------------------------------------------------
+  StartTestSuite
+------------------------------------------------------------------------------
+  Eine Testgruppe beginnt: Namen ausgeben.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.StartTestSuite(ATestSuite: TTestSuite);
 begin
 end;
 
+{------------------------------------------------------------------------------
+  EndTestSuite
+------------------------------------------------------------------------------
+  Eine Testgruppe ist fertig.
+------------------------------------------------------------------------------}
 procedure TKonsolenAusgabe.EndTestSuite(ATestSuite: TTestSuite);
 begin
 end;
 
+{==============================================================================
+  HAUPTPROGRAMM
+==============================================================================}
 var
-  Ergebnis: TTestResult;     // sammelt die Resultate aller Tests
-  Ausgabe: ITestListener;    // schreibt den Fortschritt auf die Konsole
+  Ergebnis: TTestResult;                                 // sammelt die Resultate aller Tests
+  Ausgabe: ITestListener;                                // schreibt den Fortschritt auf die Konsole
 begin
   Ergebnis := TTestResult.Create;
   try

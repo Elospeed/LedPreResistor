@@ -23,8 +23,8 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - Reiter **«Konstantstrom»** (seit 2.4): LM317 als Stromquelle oder Konstantstromquelle mit zwei Transistoren. Die Speisespannung lässt sich als Bereich eingeben (z. B. 12 … 14,4 V im Auto); das Programm zeigt, wie wenig sich der LED-Strom ändert, verglichen mit einem einfachen Vorwiderstand. Rechnet Fühlerwiderstand, Mindestspannung, Verlustleistung mit Kühlkörper-Hinweis und schlägt das Bauteil vor (LM317L/LM317, T1 als BC547, BC337 oder BD139).
 - **Stränge parallel** (seit 2.4): mehrere gleiche LED-Stränge mit je eigenem Vorwiderstand, mit Gesamtstrom und Gesamtleistung.
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
-- Resultat kopieren mit Strg+Umschalt+C. Komma und Punkt als Dezimalzeichen.
-- **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; unter Ansicht → Sprache lässt sich jederzeit umschalten (gespeichert in `LedPreResistor.ini` neben der EXE, unter Linux in `~/.config/LedPreResistor/`).
+- Knopf **«Kopieren»** in der Kopfzeile des Rechenwegs (oder Strg+Umschalt+C): kopiert Resultat, kompletten Rechenweg und Zeichen-Erklärung als einfachen Text. Komma und Punkt als Dezimalzeichen.
+- **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; der Umschalter DE/EN oben rechts wechselt jederzeit (gespeichert in `LedPreResistor.ini` neben der EXE, unter Linux in `~/.config/LedPreResistor/`).
 
 **Beispiel:** 12 V, eine weisse LED (3,2 V), 20 mA → berechnet 440 Ω, **470 Ω** (E12, gelb-violett-braun-gold), tatsächlich 18,72 mA, 164,8 mW im Widerstand → ½-W-Widerstand nehmen.
 

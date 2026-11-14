@@ -10,7 +10,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ## 2.4 – noch nicht veröffentlicht
 
 ### Konstantstrom
-- Neuer Reiter «Konstantstrom» (Ansicht → Konstantstrom, Strg+3) mit zwei Schaltungen: LM317 als Stromquelle und Konstantstromquelle mit zwei Transistoren. Die gewählte Schaltung bleibt beim nächsten Start erhalten.
+- Neuer Reiter «Konstantstrom» (Strg+3) mit zwei Schaltungen: LM317 als Stromquelle und Konstantstromquelle mit zwei Transistoren. Die gewählte Schaltung bleibt beim nächsten Start erhalten.
 - Speisespannung als Bereich «von … bis» (z. B. 12 … 14,4 V im Auto): Das Programm zeigt, wie wenig sich der Strom über den Bereich ändert, und zum Vergleich, um wie viel er mit einem einfachen Vorwiderstand steigen würde.
 - LM317: Fühlerwiderstand R = 1,25 V / I aus der E-Reihe (nächsthöherer Wert), Leistung und Belastbarkeit von R, Mindestspannung (LEDs + 1,25 V + ca. 2 V Regler), Verlust im Regler. Bis 100 mA wird der LM317L (TO-92) vorgeschlagen, darüber der LM317 (TO-220), mit Hinweis auf einen Kühlkörper samt nötigem Wärmewiderstand. Warnungen unter 10 mA (Mindestlast) und über 40 V am Regler.
 - Zwei Transistoren: Fühlerwiderstand R_S = 0,6 V / I und Basiswiderstand R_B; T1 wird nach Strom und Verlustleistung vorgeschlagen (BC547, BC337 oder BD139), T2 bleibt ein BC547. Schaltplan mit sauberen Transistorsymbolen.
@@ -23,9 +23,21 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Rechenweg
 - In Zeilen mit eingesetzten Zahlen steht jetzt × statt · (z. B. 0,693 × 69 kΩ × 10 µF); Formeln mit Symbolen behalten den Punkt.
 - Ist der Schaltplan zu klein, klappt der Rechenweg automatisch zu.
+- Unter den Schritten erklärt «Zeichen:» die Formelzeichen des aktuellen Reiters (z. B. U_F Durchlassspannung einer LED, R_S Fühlerwiderstand), in gleicher Schrift wie der Rechenweg, bei Bedarf zweizeilig.
+- Knopf «Kopieren» in der Kopfzeile des Rechenwegs: kopiert das Resultat, den kompletten Rechenweg und die Zeichen-Erklärung als einfachen Text. Strg+Umschalt+C macht dasselbe.
+
+### Fenster ohne Menüleiste
+- Die Menüleiste ist weg (sie blieb unter Windows ausserdem hell). Oben rechts in der Reiterzeile stehen jetzt kleine Symbole mit Tooltip: ↺ Eingaben zurücksetzen, DE/EN für die Sprache, ein LED-Symbol für die LED-Info (F1) und ⓘ für «Über LedPreResistor». Ko-fi bleibt der Knopf unten rechts.
+- Programmsymbol neu gezeichnet: dieselbe gelbe LED wie bisher, jetzt scharf in allen Grössen von 16 bis 256 Pixel (vorher nur 32 Pixel, bei hoher Skalierung unscharf in Taskleiste, Explorer und Info-Fenster). Vorlage als SVG in docs/symbol/.
+- Tastenkürzel bleiben: Strg+1/2/3 für die Reiter, F1 für die LED-Info, Strg+Umschalt+C zum Kopieren. Beenden mit dem X oder Alt+F4.
+- Das Fenster «Über LedPreResistor» ist jetzt dunkel wie das Hauptfenster; der Text hat auch auf Deutsch ganz Platz, Knopfschrift und Programmsymbol wachsen mit der Windows-Skalierung mit (das Symbol geglättet).
+- Behoben: Die Beschriftung neben «Diode über R2» bzw. «Symmetrisch 1:1» war bei 125–200 % unten abgeschnitten. In den Resultatkarten rutscht eine Einheit nicht mehr allein auf die nächste Zeile (z. B. «½» / «W»). Beim NE555-Wechselblinker steht U_OUT jetzt unter der Ausgangsleitung statt auf der Leitung von LED 2.
 
 ### Schaltpläne
 - Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.
+
+### Quelltext
+- Alle Units und Tests ausführlich kommentiert: Kopf mit Zweck, Idee, Formeln und Rechenbeispiel, Autor und Versionen; Abschnitte als Kästen; vor jeder Prozedur und Funktion ein Kasten mit Parametern, Rückgabe und Ablauf; Zeilenkommentare rechts in einer eigenen Spalte.
 
 ---
 

@@ -23,8 +23,8 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - **Constant current** tab (since 2.4): LM317 as a current source or a two-transistor current source. Enter the supply as a range (e.g. 12 … 14.4 V in a car) and see how little the LED current changes compared with a plain series resistor. Calculates the sense resistor, minimum supply voltage, power loss with heatsink hint, and suggests the part (LM317L/LM317, T1 as BC547, BC337 or BD139).
 - **Parallel strings** (since 2.4): several identical LED strings, each with its own resistor, with total current and power.
 - **LED info** "The LED" built in (F1, opens in your browser, also offline).
-- Copy the result with Ctrl+Shift+C. Comma and dot both work as decimal separator.
-- **English and German**: starts in German on a German Windows and in English everywhere else; View → Language switches at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).
+- **Copy** button in the "Calculation steps" header (or Ctrl+Shift+C): copies the result, all calculation steps and the symbol legend as plain text. Comma and dot both work as decimal separator.
+- **English and German**: starts in German on a German Windows and in English everywhere else; the DE/EN switch at the top right changes it at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).
 
 **Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 

@@ -1,17 +1,17 @@
 object FormMain: TFormMain
   Left = 200
-  Height = 820
+  Height = 842
   Top = 60
   Width = 900
   Caption = 'LedPreResistor'
-  ClientHeight = 820
+  ClientHeight = 842
   ClientWidth = 900
   Constraints.MinHeight = 700
   Constraints.MinWidth = 820
   Font.Height = -12
   Font.Name = 'Segoe UI'
   KeyPreview = True
-  Menu = MainMenu
+  OnKeyDown = FormKeyDown
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -21,6 +21,10 @@ object FormMain: TFormMain
     Top = 0
     Width = 900
     Align = alTop
+    ParentShowHint = False
+    ShowHint = True
+    OnMouseLeave = PaintTabsMouseLeave
+    OnMouseMove = PaintTabsMouseMove
     OnMouseUp = PaintTabsMouseUp
     OnPaint = PaintTabsPaint
   end
@@ -61,7 +65,7 @@ object FormMain: TFormMain
   end
   object PanelRechenweg: TPanel
     Left = 16
-    Height = 158
+    Height = 200
     Top = 586
     Width = 868
     Align = alBottom
@@ -70,15 +74,16 @@ object FormMain: TFormMain
     BorderSpacing.Top = 6
     BorderSpacing.Bottom = 10
     BevelOuter = bvNone
-    ClientHeight = 158
+    ClientHeight = 200
     ClientWidth = 868
     TabOrder = 1
     object PaintRechenweg: TPaintBox
       Left = 0
-      Height = 158
+      Height = 200
       Top = 0
       Width = 868
       Align = alClient
+      OnMouseMove = PaintRechenwegMouseMove
       OnMouseUp = PaintRechenwegMouseUp
       OnPaint = PaintRechenwegPaint
     end
@@ -610,90 +615,6 @@ object FormMain: TFormMain
       BorderSpacing.Top = 12
       BorderSpacing.Right = 16
       OnPaint = PaintSchematicPaint
-    end
-  end
-  object MainMenu: TMainMenu
-    Left = 400
-    Top = 100
-    object MenuFile: TMenuItem
-      Caption = '&Datei'
-      object MenuCopy: TMenuItem
-        Caption = 'Resultat &kopieren'
-        ShortCut = 24643
-        OnClick = MenuCopyClick
-      end
-      object MenuSep1: TMenuItem
-        Caption = '-'
-      end
-      object MenuExit: TMenuItem
-        Caption = '&Beenden'
-        OnClick = MenuExitClick
-      end
-    end
-    object MenuEdit: TMenuItem
-      Caption = '&Bearbeiten'
-      object MenuCopy2: TMenuItem
-        Caption = 'Resultat &kopieren'
-        OnClick = MenuCopyClick
-      end
-      object MenuReset: TMenuItem
-        Caption = 'Eingaben &zurücksetzen'
-        OnClick = MenuResetClick
-      end
-    end
-    object MenuView: TMenuItem
-      Caption = '&Ansicht'
-      object MenuRechenweg: TMenuItem
-        Caption = '&Rechenweg'
-        Checked = True
-        OnClick = MenuRechenwegClick
-      end
-      object MenuSepView: TMenuItem
-        Caption = '-'
-      end
-      object MenuModeR: TMenuItem
-        Caption = '&Vorwiderstand'
-        Checked = True
-        GroupIndex = 2
-        RadioItem = True
-        ShortCut = 16433
-        OnClick = MenuModeClick
-      end
-      object MenuModeB: TMenuItem
-        Tag = 1
-        Caption = 'Blink&schaltung'
-        GroupIndex = 2
-        RadioItem = True
-        ShortCut = 16434
-        OnClick = MenuModeClick
-      end
-      object MenuModeK: TMenuItem
-        Tag = 2
-        Caption = '&Konstantstrom'
-        GroupIndex = 2
-        RadioItem = True
-        ShortCut = 16435
-        OnClick = MenuModeClick
-      end
-    end
-    object MenuHelp: TMenuItem
-      Caption = '&Hilfe'
-      object MenuLedInfo: TMenuItem
-        Caption = '&LED-Info (Die Leuchtdiode) …'
-        ShortCut = 112
-        OnClick = MenuLedInfoClick
-      end
-      object MenuSepHelp: TMenuItem
-        Caption = '-'
-      end
-      object MenuKofi: TMenuItem
-        Caption = 'Einen Kaffee spendieren (Ko-fi) …'
-        OnClick = KofiClick
-      end
-      object MenuAbout: TMenuItem
-        Caption = 'Ü&ber LedPreResistor …'
-        OnClick = MenuAboutClick
-      end
     end
   end
   object TimerBlink: TTimer

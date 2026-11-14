@@ -1,4 +1,15 @@
-{ Tests für uLang: .po lesen und Texte übersetzen. }
+{==============================================================================
+  TestLang - Tests
+==============================================================================
+  Zweck:     Tests für uLang: .po lesen und Texte übersetzen.
+
+  Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
+             Prozedur unter «published» ist ein Test.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.1  08.11.2026  neu
+==============================================================================}
 unit TestLang;
 
 {$mode objfpc}{$H+}
@@ -8,6 +19,9 @@ interface
 uses
   Classes, SysUtils, fpcunit, testregistry, uLang;
 
+{==============================================================================
+  TESTKLASSE
+==============================================================================}
 type
   { Prüft das Lesen der Übersetzung und das Nachschlagen }
   TTestLang = class(TTestCase)
@@ -18,6 +32,15 @@ type
 
 implementation
 
+{==============================================================================
+  TESTFÄLLE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  DeutschOhneUebersetzung
+------------------------------------------------------------------------------
+  Deutsch: Texte kommen unverändert zurück.
+------------------------------------------------------------------------------}
 procedure TTestLang.DeutschOhneUebersetzung;
 begin
   LangLoad('de');
@@ -25,9 +48,14 @@ begin
   AssertEquals('Speisespannung', _('Speisespannung'));
 end;
 
+{------------------------------------------------------------------------------
+  EnglischAusPo
+------------------------------------------------------------------------------
+  Englisch: Übersetzung aus .po-Zeilen lesen und nachschlagen.
+------------------------------------------------------------------------------}
 procedure TTestLang.EnglischAusPo;
 var
-  L: TStringList;  // kleine .po-Datei
+  L: TStringList;                                        // kleine .po-Datei
 begin
   L := TStringList.Create;
   try

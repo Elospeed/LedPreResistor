@@ -1,6 +1,21 @@
-{ Alle Farben und Schriften von LedPreResistor an einer Stelle
-  (Entwurf A «Labor 2», dunkel). TColor ist unter Windows BGR, darum werden
-  die Farben hier mit RGBToColor aus den gewohnten #RRGGBB-Werten gebildet. }
+{==============================================================================
+  uTheme - Farben und Schriften von LedPreResistor
+==============================================================================
+  Zweck:     Alle Farben und Schriften an einer einzigen Stelle, damit das
+             ganze Programm einheitlich aussieht (dunkles Design «Labor 2»).
+             Wer eine Farbe ändern will, ändert sie nur hier.
+
+  Technik:   TColor ist unter Windows BGR (Blau-Grün-Rot). Darum werden die
+             Farben mit RGBToColor aus den gewohnten #RRGGBB-Werten gebildet;
+             so stimmen sie mit dem Entwurf und den Webseiten überein.
+             Die Werte werden im Abschnitt «initialization» gesetzt, also
+             schon bevor das Hauptfenster entsteht.
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+             2.2  09.11.2026  Schriften für Linux (Sans, Monospace)
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 unit uTheme;
 
 {$mode objfpc}{$H+}
@@ -8,58 +23,90 @@ unit uTheme;
 interface
 
 uses
-  Graphics, uCalc, uColorCode;
+  Graphics,                                              // TColor, RGBToColor
+  uCalc,                                                 // TLedColor (LED-Farben)
+  uColorCode;                                            // TBandColor (Ringfarben)
 
+{==============================================================================
+  SCHRIFTEN
+------------------------------------------------------------------------------
+  Segoe UI für Text, Consolas für Zahlen in den Eingabefeldern. Unter Linux
+  gibt es beide meist nicht: dort die Standardschriften des Systems
+  (fontconfig wählt z. B. DejaVu Sans und DejaVu Sans Mono).
+==============================================================================}
 const
-  { Schriften: Segoe UI für Text; Zahlen in den Eingabefeldern in Consolas.
-    Unter Linux gibt es beide meist nicht: dort die Standardschriften des
-    Systems (fontconfig wählt z. B. DejaVu Sans / DejaVu Sans Mono). }
   {$IFDEF WINDOWS}
-  FONT_UI = 'Segoe UI';
-  FONT_MONO = 'Consolas';
+  FONT_UI = 'Segoe UI';                                  // Beschriftungen, Texte
+  FONT_MONO = 'Consolas';                                // Zahlen in den Eingabefeldern
   {$ELSE}
-  FONT_UI = 'Sans';
-  FONT_MONO = 'Monospace';
+  FONT_UI = 'Sans';                                      // Standardschrift des Systems
+  FONT_MONO = 'Monospace';                               // Standard-Festbreitenschrift
   {$ENDIF}
 
+{==============================================================================
+  FARBEN
+------------------------------------------------------------------------------
+  Als Variablen (nicht Konstanten), weil RGBToColor eine Funktion ist; die
+  Werte stehen unten im Abschnitt «initialization».
+==============================================================================}
 var
-  { Flächen }
-  clrWindow: TColor;       // Grund des Fensters (#1E2228)
-  clrPanel: TColor;        // linke Spalte und Karten (#23272E)
-  clrDeep: TColor;         // Schaltplan, Eingabefelder, LED-Vorschau (#15181C)
-  clrBar: TColor;          // Statuszeile (#16191D)
-  clrBorder: TColor;       // Rahmenlinien (#333A42)
-  clrEditBorder: TColor;   // Rahmen der Eingabefelder (#45505C)
+  // ----- Flächen -----
+  clrWindow: TColor;                                     // Grund des Fensters (#1E2228)
+  clrPanel: TColor;                                      // linke Spalte und Karten (#23272E)
+  clrDeep: TColor;                                       // Schaltplan, Eingabefelder, LED-Vorschau (#15181C)
+  clrBar: TColor;                                        // Statuszeile (#16191D)
+  clrBorder: TColor;                                     // Rahmenlinien (#333A42)
+  clrEditBorder: TColor;                                 // Rahmen der Eingabefelder (#45505C)
 
-  { Text }
-  clrText: TColor;         // normaler Text (#DFE3E8)
-  clrTextBright: TColor;   // Resultatwerte (#FFFFFF)
-  clrTextDim: TColor;      // Nebentext, Überschriften (#7F8A96)
-  clrTextSoft: TColor;     // Beschreibungen in Karten (#9AA4AE)
-  clrAccent: TColor;       // Hervorhebung im Schaltplan, Nummern (#5AA9FF)
-  clrLine: TColor;         // Schaltplan-Linien (#C9D1DA)
+  // ----- Text -----
+  clrText: TColor;                                       // normaler Text (#DFE3E8)
+  clrTextBright: TColor;                                 // Resultatwerte (#FFFFFF)
+  clrTextDim: TColor;                                    // Nebentext, Überschriften (#7F8A96)
+  clrTextSoft: TColor;                                   // Beschreibungen in Karten (#9AA4AE)
+  clrAccent: TColor;                                     // Hervorhebung im Schaltplan, Nummern (#5AA9FF)
+  clrLine: TColor;                                       // Schaltplan-Linien (#C9D1DA)
 
-  { Zustände }
-  clrOk: TColor;           // grün (#3DDC84)
-  clrOkBack: TColor;       // Hintergrund grüner Hinweis (#10301E)
-  clrWarn: TColor;         // gelb (#FFCC33)
-  clrWarnBack: TColor;     // Hintergrund gelber Hinweis (#3A3110)
-  clrError: TColor;        // rot (#FF5C5C)
-  clrErrorBack: TColor;    // Hintergrund roter Hinweis (#3A1414)
+  // ----- Zustände (Statuszeile, Karten) -----
+  clrOk: TColor;                                         // grün (#3DDC84)
+  clrOkBack: TColor;                                     // Hintergrund grüner Hinweis (#10301E)
+  clrWarn: TColor;                                       // gelb (#FFCC33)
+  clrWarnBack: TColor;                                   // Hintergrund gelber Hinweis (#3A3110)
+  clrError: TColor;                                      // rot (#FF5C5C)
+  clrErrorBack: TColor;                                  // Hintergrund roter Hinweis (#3A1414)
 
-  { Widerstand }
-  clrResistorBody: TColor; // Körper (#E3C992)
-  clrResistorEdge: TColor; // Umriss (#9C804C)
-  clrWire: TColor;         // Anschlussdraht (#9AA3AB)
+  // ----- Widerstand im Schaltplan und in den Karten -----
+  clrResistorBody: TColor;                               // Körper (#E3C992)
+  clrResistorEdge: TColor;                               // Umriss (#9C804C)
+  clrWire: TColor;                                       // Anschlussdraht (#9AA3AB)
 
-{ Farbe, in der eine LED leuchtet (Bildschirmfarbe, nicht Wellenlänge) }
+{==============================================================================
+  ÖFFENTLICHE FUNKTIONEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  LedGlowColor - Farbe, in der eine LED auf dem Bildschirm leuchtet
+------------------------------------------------------------------------------
+  Parameter: C - LED-Farbe
+  Rückgabe:  Bildschirmfarbe (nicht die echte Wellenlänge, sondern ein
+             Farbton, der auf dem dunklen Grund nach dieser LED aussieht).
+             Infrarot ist unsichtbar und wird nur dunkel angedeutet.
+------------------------------------------------------------------------------}
 function LedGlowColor(C: TLedColor): TColor;
 
-{ Bildschirmfarbe eines Farbrings }
+{------------------------------------------------------------------------------
+  BandScreenColor - Bildschirmfarbe eines Farbrings
+------------------------------------------------------------------------------
+  Parameter: B - Ringfarbe
+  Rückgabe:  Farbe für Schaltplan und Karten, so gewählt, dass sie auf dem
+             hellen Widerstandskörper gut zu unterscheiden ist.
+------------------------------------------------------------------------------}
 function BandScreenColor(B: TBandColor): TColor;
 
 implementation
 
+{------------------------------------------------------------------------------
+  LedGlowColor - siehe Interface
+------------------------------------------------------------------------------}
 function LedGlowColor(C: TLedColor): TColor;
 begin
   case C of
@@ -74,6 +121,9 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BandScreenColor - siehe Interface
+------------------------------------------------------------------------------}
 function BandScreenColor(B: TBandColor): TColor;
 begin
   case B of
@@ -89,10 +139,15 @@ begin
     bcWhite:  Result := RGBToColor($F4, $F4, $F4);
     bcGold:   Result := RGBToColor($C9, $A3, $3A);
   else
-    Result := RGBToColor($B8, $BC, $C2);  // Silber
+    Result := RGBToColor($B8, $BC, $C2);                 // Silber
   end;
 end;
 
+{==============================================================================
+  START: Farben setzen
+------------------------------------------------------------------------------
+  Läuft einmal beim Programmstart, bevor das Hauptfenster entsteht.
+==============================================================================}
 initialization
   clrWindow := RGBToColor($1E, $22, $28);
   clrPanel := RGBToColor($23, $27, $2E);

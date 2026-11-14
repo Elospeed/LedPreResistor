@@ -29,3 +29,13 @@ Die Regeln gelten gleich für alle Elospeed-Programme (StemMaker mit allen AddOn
 - Im PR schreiben, bei welchen Stufen getestet wurde.
 
 **Hier im Repo:** Das Ein- und Ausklappen des Rechenwegs darf die Fensterhöhe nie ändern (sonst kämpfen Mindesthöhe und Begrenzung gegeneinander).
+
+## 2. Quelltext-Kommentare – vor jedem Release
+
+Vor jedem Release ist der Quelltext sauber dokumentiert. Vorbild ist `src/uKsq.pas`.
+
+- **Kopf jeder Datei** als Kasten: Name und Kurzbeschreibung, dann Zweck, Idee (wie es funktioniert), bei Rechen-Units Formeln mit einem durchgerechneten Beispiel, Regeln. Am Ende `Autor: Elospeed` und `Versionen:` mit Version, Datum und Änderung, neueste oben.
+- **Abschnitte** als Kasten in Grossbuchstaben (KONSTANTEN, TYPEN, ÖFFENTLICHE FUNKTIONEN, HILFSFUNKTIONEN …).
+- **Vor jeder Prozedur und Funktion** ein Kasten mit Name, kurzer Beschreibung, `Parameter:`, `Rückgabe:` und bei längeren Routinen `Ablauf:` in nummerierten Schritten. Im Code markiert `// ----- 1. … -----` jeden Schritt.
+- **Zeilenkommentare** rechts in einer eigenen Spalte (Spalte 58), auch bei Variablendeklarationen.
+- **Begriffe wie in der Oberfläche:** Speisespannung U_B, Durchlassspannung U_F, Fühlerwiderstand R_S usw.
