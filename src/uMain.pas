@@ -11,11 +11,11 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Menus,
-  LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uSkalierung, uLang;
+  LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uKsq, uSkalierung, uLang;
 
 const
   { Programmversion für Titelleiste und Info }
-  APP_VER = '2.3';
+  APP_VER = '2.4';
 
   { Ko-fi-Seite von Elospeed }
   KOFI_URL = 'https://ko-fi.com/elospeed';
@@ -28,6 +28,15 @@ type
     CheckSym: TCheckBox;          // Multivibrator: symmetrisch 1:1
     LabelSym: TLabel;
     ComboCircuit: TComboBox;      // Blinkschaltung: NE555 oder Multivibrator
+    ComboKsq: TComboBox;          // Konstantstrom: LM317 oder zwei Transistoren
+    EditU2: TEdit;                // Konstantstrom: Speisespannung bis (V)
+    EditStrings: TEdit;           // Vorwiderstand: Stränge parallel
+    LabelHeadSupply: TLabel;
+    LabelStrings: TLabel;
+    LabelStringsUnit: TLabel;
+    LabelU2: TLabel;
+    LabelU2Unit: TLabel;
+    MenuModeK: TMenuItem;
     ComboConn: TComboBox;         // NE555: Anschluss der LED
     EditT1: TEdit;                // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
     EditT2: TEdit;                // Zeitglied, zweites Feld (R2, R_B2 oder Tastgrad)
@@ -47,7 +56,7 @@ type
     MenuModeR: TMenuItem;
     MenuSepView: TMenuItem;
     PaintMode: TPaintBox;         // Umschalter «aus Bauteilen / aus Frequenz»
-    PaintTabs: TPaintBox;         // Reiter «Vorwiderstand | Blinkschaltung»
+    PaintTabs: TPaintBox;         // Reiter «Vorwiderstand | Blinkschaltung | Konstantstrom»
     ComboColor: TComboBox;        // LED-Farbe
     ComboSeries: TComboBox;       // E-Reihe
     EditI: TEdit;                 // LED-Strom in mA
@@ -95,6 +104,7 @@ type
     TimerBlink: TTimer;           // schaltet die LED beim Blinken um
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
+    procedure KsqCircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
     procedure LabelSymClick(Sender: TObject);
     procedure MenuModeClick(Sender: TObject);
@@ -147,7 +157,7 @@ type
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
     KofiCaptionShown: string; // Text des Ko-fi-Knopfs in der aktuellen Sprache
     FRechenwegOpen: Boolean; // Rechenweg aufgeklappt
-    FMode: Integer;          // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung
+    FMode: Integer;          // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
     FReverse: Boolean;       // Blinkschaltung: aus Frequenz und Tastgrad rechnen
     FCircuitShown: TBlinkCircuit; // Schaltung, deren Werte in den Feldern stehen
     FReverseShown: Boolean;  // Richtung, deren Werte in den Feldern stehen
@@ -157,7 +167,11 @@ type
     FBBands1: TBandArray;    // Farbringe Vorwiderstand LED 1
     FBBands2: TBandArray;    // Farbringe Vorwiderstand LED 2
     FOnLevel: Double;        // Helligkeit der leuchtenden LED (Dauerlicht bei schnellem Takt)
-    FTabX: array[0..2] of Integer; // Grenzen der Reiter (für Mausklicks)
+    FTabX: array[0..3] of Integer; // Grenzen der Reiter (für Mausklicks)
+    FKInput: TKsqInput;      // Eingaben der Konstantstromquelle
+    FKRes: TKsqResult;       // Resultat der Konstantstromquelle
+    FKBands: TBandArray;     // Farbringe des Fühlerwiderstands
+    FKBandsB: TBandArray;    // Farbringe von R_B (zwei Transistoren)
     MenuLang: TMenuItem;     // Ansicht → Sprache (zur Laufzeit erzeugt)
     MenuLangDe: TMenuItem;   // Sprache Deutsch
     MenuLangEn: TMenuItem;   // Sprache Englisch
@@ -182,7 +196,7 @@ type
     procedure RenderLedBitmaps;
     { Blink-Timer je nach Häkchen und Frequenz einstellen }
     procedure UpdateBlink;
-    { Reiter wechseln: 0 = Vorwiderstand, 1 = Blinkschaltung }
+    { Reiter wechseln: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom }
     procedure SwitchMode(M: Integer; Save: Boolean);
     { Bedienelemente der linken Spalte je nach Reiter anordnen }
     procedure LayoutLeft;
@@ -204,6 +218,24 @@ type
     function BlinkSummary: string;
     { Hinweis-Kästchen und Text der Statuszeile für die Blinkschaltung }
     procedure BlinkStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
+    { Konstantstrom: rechnen, Fehlertext, Rechenweg, Karten, Schaltplan,
+      Statuszeile und Zusammenfassung }
+    procedure RecalcKsq;
+    function KsqStatusText(S: TKsqStatus): string;
+    function KsqRechenwegLines: TStringArray;
+    procedure PaintKsqCards;
+    procedure PaintKsqSchematic;
+    procedure KsqStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
+    function KsqSummary: string;
+    { Konstantstrom: Speisespannung als Bereich, z. B. "12 … 14,4 V" }
+    function KsqVoltRange: string;
+    { Konstantstrom: empfohlenes Bauteil mit Kühlkörper-Angabe }
+    function KsqPartText: string;
+    { Konstantstrom: Spannung der LEDs als Text, z. B. "2 × 3,2 V" }
+    function KsqLedVolt: string;
+    { Beschriftungen, die vom Reiter abhängen (Kopfzeile, «von» statt
+      «Speisespannung», «LEDS») }
+    procedure ModeCaptions;
     { Farbname der LED, z. B. "rot" }
     function LedColorName: string;
     { Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen }
@@ -311,6 +343,15 @@ resourcestring
   rsCopyPower = 'Leistung Widerstand: %s, LEDs: %s, gesamt: %s';
   rsCopyRating = 'Empfohlene Bauform: %s (%s zu %s ausgelastet)';
   rsLedInfoFailed = 'Die LED-Info konnte nicht geöffnet werden.';
+  { Stränge parallel (Reiter Vorwiderstand) }
+  rsLabelStrings = 'Stränge parallel';
+  rsErrStrings = 'Bitte mindestens 1 Strang angeben (ganze Zahl).';
+  rsSchemStrings = '× %d Stränge, je eigener R';
+  rsCardCurrentSubStrings = 'je Strang; %d Stränge: gesamt %s';
+  rsCardPowerSubStrings = 'je Widerstand (%d Stück)';
+  rsStep3Strings = 'Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**';
+  rsStatusStrings = '(%d Stränge)';
+  rsCopyStrings = 'Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s';
   { Beschriftungen, die im Formular (uMain.lfm) deutsch stehen; sie werden
     in ApplyLanguage zur Laufzeit gesetzt }
   rsHeadInputs = 'EINGABEN';
@@ -407,11 +448,11 @@ resourcestring
   rsChipOkMulti = 'Transistoren schalten sicher';
   rsOkTolerance = 'Elkos haben oft ±20 % Toleranz: die echte Frequenz kann entsprechend abweichen';
   rsMoreHints = ' (+%d weitere)';
-  rsBStep555High = 'Ausgang High (Laden über R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0,693 · %s · %s = **%s**';
-  rsBStep555HighD = 'Ausgang High (Laden über R1, Diode überbrückt R2): t_H = ln 2 · R1 · C = 0,693 · %s · %s = **%s**';
-  rsBStep555Low = 'Ausgang Low (Entladen über R2): t_L = ln 2 · R2 · C = 0,693 · %s · %s = **%s**';
-  rsBStep555Rev1 = 'Aus f und C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**';
-  rsBStep555Rev1D = 'Aus f und C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0,693 · %s · %s) = **%s**';
+  rsBStep555High = 'Ausgang High (Laden über R1 + R2): t_H = ln 2 · (R1 + R2) · C = 0,693 × %s × %s = **%s**';
+  rsBStep555HighD = 'Ausgang High (Laden über R1, Diode überbrückt R2): t_H = ln 2 · R1 · C = 0,693 × %s × %s = **%s**';
+  rsBStep555Low = 'Ausgang Low (Entladen über R2): t_L = ln 2 · R2 · C = 0,693 × %s × %s = **%s**';
+  rsBStep555Rev1 = 'Aus f und C: R1 + 2 · R2 = 1 / (ln 2 · f · C) = 1 / (0,693 × %s × %s) = **%s**';
+  rsBStep555Rev1D = 'Aus f und C: R1 + R2 = 1 / (ln 2 · f · C) = 1 / (0,693 × %s × %s) = **%s**';
   rsBStep555Rev2 = 'Aufteilen für %s High: R1 = %s → **%s**, R2 = %s → **%s** (nächste %s-Werte)';
   rsBStepFreq = 'Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED an: **%s**';
   rsBStepFreqRev = 'Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED an: **%s**';
@@ -420,7 +461,7 @@ resourcestring
   rsBStepRv = 'Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**';
   rsBStepMultiK = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**';
-  rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s · %s · %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
+  rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
   rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
@@ -430,6 +471,69 @@ resourcestring
   rsBCopyParts = 'Bauteile: %s = %s, %s = %s, C = %s';
   rsBCopyTimes = 'LED an %s, aus %s, Frequenz %s, Tastgrad %s';
   rsBCopyRv = 'Vorwiderstand: %s';
+  { Konstantstrom }
+  rsTabKsq = 'Konstantstrom';
+  rsMenuModeK = '&Konstantstrom';
+  rsHeadSupply = 'SPEISESPANNUNG';
+  rsLabelFrom = 'von';
+  rsLabelTo = 'bis';
+  rsKsqLM317 = 'LM317 (Regler, bis 1,5 A)';
+  rsKsqTrans = '2 Transistoren (T1 nach Strom)';
+  rsKCardR = 'Fühlerwiderstand (%s)';
+  rsKCardRSub = '%s · %s (%s)';
+  rsKCardI = 'LED-Strom';
+  rsKCardISubL = 'berechnet %s → %s; bleibt von %s bis %s gleich';
+  rsKCardISubLFix = 'berechnet %s → %s; bleibt auch bei schwankender Spannung gleich';
+  rsKCardISubT = 'berechnet %s → %s; pro 10 °C wärmer ca. %s weniger';
+  rsKCardLossL = 'Verlust im Regler';
+  rsKCardLossT = 'Verlust in T1';
+  rsKCardLossSubT = '%s; RB = %s';
+  rsKCardNeed = 'Mindestspannung';
+  rsKCardNeedSubL = '%s + 1,25 V + ca. 2 V Regler';
+  rsKCardNeedSubT = '%s + 0,6 V + ca. 0,6 V an T1';
+  rsKPartLM317L = 'LM317L (TO-92) reicht, ohne Kühlkörper';
+  rsKPartLM317 = 'LM317 (TO-220) ohne Kühlkörper';
+  rsKPartFree = '%s ohne Kühlkörper';
+  rsKPartHeatsink = '%s mit Kühlkörper ≤ %s K/W';
+  rsKPartTooHot = '%s: zu viel Verlust';
+  rsKPartShortHeat = '%s + Kühlkörper ≤ %s K/W';
+  rsKStepL1 = 'Der LM317 hält zwischen OUT und ADJ 1,25 V: R = 1,25 V / I = 1,25 V / %s = **%s** → nächster %s-Wert darüber: **%s**';
+  rsKStepL2 = 'Tatsächlicher Strom: I = 1,25 V / %s = **%s** · Leistung am R: P = 1,25 V × %s = **%s** → %s';
+  rsKStepL3 = 'Mindestspannung: U_m_i_n = %s + 1,25 V + ca. 2 V (Regler) = **%s** → Reserve bei %s: **%s**';
+  rsKStepL4 = 'Verlust im Regler: P = (U_B − U_L_E_D − 1,25 V) · I = (%s − %s − 1,25 V) × %s = **%s** → **%s**';
+  rsKStepL5 = 'Zum Vergleich ein Vorwiderstand: R = (%s − %s) / %s = %s; bei %s flösse **%s mehr** Strom, der LM317 hält ihn';
+  rsKStepL5Fix = 'Aus ADJ fliessen zusätzlich ca. 50 µA durch die LEDs (vernachlässigbar). Der Strom bleibt auch bei schwankender Spannung gleich.';
+  rsKStepT1 = 'T2 leitet ab ca. 0,6 V an R_S: R_S = 0,6 V / I = 0,6 V / %s = **%s** → nächster %s-Wert darüber: **%s**';
+  rsKStepT2 = 'Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** → %s · U_B_E sinkt um ca. 2 mV/K: pro 10 °C ca. %s weniger';
+  rsKStepT3 = 'Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s → Normwert darunter: **%s**';
+  rsKStepT4 = 'Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**';
+  rsKStepT5 = 'Verlust in T1: P = (U_B − U_L_E_D − 0,6 V) · I = (%s − %s − 0,6 V) × %s = **%s** → **%s**';
+  rsErrKUTooLow = 'Die Speisespannung (von) %s reicht nicht: die Schaltung braucht mindestens %s.';
+  rsErrKCurrent = 'Mehr als 1,5 A schafft weder der LM317 noch der BD139: Strom kleiner wählen.';
+  rsKChipOk = 'Konstantstrom passt';
+  rsKOkRangeL = 'Mit Vorwiderstand: +%s Strom bei %s, mit dem LM317 bleibt er gleich';
+  rsKOkRangeT = 'Mit Vorwiderstand: +%s Strom bei %s, hier nur ca. +%s';
+  rsKOkFix = 'Tipp: bei «bis» die höchste Spannung eingeben (Auto z. B. 14,4 V)';
+  rsKChipHeat = 'Kühlkörper nötig';
+  rsKWarnHeat = '%s verheizt bis %s: Kühlkörper mit höchstens %s K/W, Kühlfahne liegt an %s (isoliert montieren)';
+  rsKTabOut = 'OUT';
+  rsKTabCollector = 'Kollektor';
+  rsKChipTooHot = 'zu viel Verlust';
+  rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
+  rsKChipMinLoad = 'unter 10 mA';
+  rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
+  rsKChipVolt = 'Spannung zu hoch';
+  rsKWarnVoltL = 'Mehr als 40 V zwischen IN und OUT verträgt der LM317 nicht: Spannung senken oder mehr LEDs in Reihe';
+  rsKWarnVoltT = 'Mehr als 45 V an T1 verträgt der Transistor nicht: Spannung senken oder mehr LEDs in Reihe';
+  rsKChipBase = 'RB wird warm';
+  rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
+  rsKChipRPower = 'Fühler-R über 1 W';
+  rsKWarnRPower = 'Der Fühlerwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen';
+  rsKCopyTitle = 'LedPreResistor %s – Konstantstrom (%s)';
+  rsKCopyR = 'Fühlerwiderstand: %s (%s, %s), berechnet %s';
+  rsKCopyLoss = 'Verlust: %s → %s';
+  rsKCopyNeed = 'Mindestspannung: %s';
+  rsKCopyRB = 'Basiswiderstand RB: %s (%s)';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -438,7 +542,7 @@ implementation
 
 uses
   Math, Clipbrd, LCLIntf, Dialogs, IniFiles, uTheme, uFormat, uLedView, uSchematic, uRichText,
-  uLedInfo, uKofiButton, uBlinkSchematic{$IFDEF WINDOWS}, MMSystem{$ENDIF};
+  uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic, uSmooth{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
 
@@ -472,6 +576,7 @@ const
   INI_SECTION_VIEW = 'Ansicht';
   INI_KEY_TAB = 'Reiter';
   INI_KEY_CIRCUIT = 'Schaltung';
+  INI_KEY_KSQ = 'Konstantstrom';
 
 { Zahl aus der Einstellungsdatei lesen (Fehler: Vorgabe) }
 function ReadViewSetting(const Key: string; Default: Integer): Integer;
@@ -587,6 +692,7 @@ begin
     ComboSeries.ItemIndex := Ord(esE12);
     ComboCircuit.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_CIRCUIT, 0), 0, Ord(High(TBlinkCircuit)));
     ComboConn.ItemIndex := Ord(cnGnd);
+    ComboKsq.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_KSQ, 0), 0, Ord(High(TKsqCircuit)));
     LoadTimingTexts;
   finally
     FUpdating := False;
@@ -596,7 +702,7 @@ begin
   UpdateRechenwegHeight;
   Recalc;
   // zuletzt gewählten Reiter wieder öffnen
-  SwitchMode(EnsureRange(ReadViewSetting(INI_KEY_TAB, 0), 0, 1), False);
+  SwitchMode(EnsureRange(ReadViewSetting(INI_KEY_TAB, 0), 0, 2), False);
   OnShow := @FormShowPlatz;
   PanelLeft.OnResize := @PanelLeftResize;
 end;
@@ -653,6 +759,10 @@ begin
   LabelUdUnit.Font.Color := clrTextDim;
   LabelIUnit.Font.Color := clrTextDim;
   LabelNUnit.Font.Color := clrTextDim;
+  LabelU2Unit.Font.Color := clrTextDim;
+  LabelStringsUnit.Font.Color := clrTextDim;
+  LabelHeadSupply.Font.Color := clrTextDim;
+  LabelHeadSupply.Font.Size := 8;
   LabelHeadInputs.Font.Color := clrTextDim;
   LabelHeadPreview.Font.Color := clrTextDim;
   LabelHeadInputs.Font.Size := 8;
@@ -712,7 +822,7 @@ procedure TFormMain.ApplyLanguage;
 var
   OldKofi: string;  // Ko-fi-Text vor dem Wechsel (für die Breite)
   OldDec: Char;     // Dezimalzeichen vor dem Wechsel
-  Idx: array[0..4] of Integer;  // gewählte Einträge der fünf Listen
+  Idx: array[0..5] of Integer;  // gewählte Einträge der sechs Listen
   BC: TBlinkCircuit;            // Schaltung
   BR: Boolean;                  // Richtung
   K: Integer;                   // Feld
@@ -764,13 +874,17 @@ begin
   MenuAbout.Caption := _(rsMenuAbout);
   MenuModeR.Caption := _(rsMenuModeR);
   MenuModeB.Caption := _(rsMenuModeB);
+  MenuModeK.Caption := _(rsMenuModeK);
+  LabelStrings.Caption := _(rsLabelStrings);
+  LabelStringsUnit.Caption := _(rsUnitN);
+  LabelHeadSupply.Caption := _(rsHeadSupply);
+  LabelU2.Caption := _(rsLabelTo);
   LabelHeadTiming.Caption := _(rsHeadTiming);
   LabelDiode.Caption := _(rsDiode);
   LabelSym.Caption := _(rsSym);
   LabelConn.Caption := _(rsLabelConn);
-  if FMode = 1 then
-    LabelHeadInputs.Caption := _(rsHeadCircuit);
   UpdateTimingLabels;
+  ModeCaptions;
   PaintTabs.Invalidate;
   PaintMode.Invalidate;
   MenuLangDe.Checked := LangCode <> 'en';
@@ -783,17 +897,20 @@ begin
     Idx[1] := ComboSeries.ItemIndex;
     Idx[3] := ComboCircuit.ItemIndex;
     Idx[4] := ComboConn.ItemIndex;
+    Idx[5] := ComboKsq.ItemIndex;
     FillCombos;
     ComboColor.ItemIndex := Idx[0];
     ComboSeries.ItemIndex := Idx[1];
     ComboCircuit.ItemIndex := Idx[3];
     ComboConn.ItemIndex := Idx[4];
+    ComboKsq.ItemIndex := Idx[5];
     if OldDec <> DisplayDecimal then
     begin
       SwapDecimal(EditU);
       SwapDecimal(EditUd);
       SwapDecimal(EditI);
       SwapDecimal(EditN);
+      SwapDecimal(EditU2);
       SwapDecimal(EditT1);
       SwapDecimal(EditT2);
       SwapDecimal(EditT3);
@@ -845,6 +962,9 @@ begin
   ComboConn.Items.Add(_(rsConnGnd));
   ComboConn.Items.Add(_(rsConnVcc));
   ComboConn.Items.Add(_(rsConnBoth));
+  ComboKsq.Items.Clear;
+  ComboKsq.Items.Add(_(rsKsqLM317));
+  ComboKsq.Items.Add(_(rsKsqTrans));
 end;
 
 function TFormMain.CurrentLed: TLedColor;
@@ -904,6 +1024,7 @@ begin
     csUTooLow: Result := Format(_(rsErrUTooLow), [FormatVolt(FInput.U), FInput.N,
       FormatVolt(FInput.Ud), FormatVolt(FInput.N * FInput.Ud)]);
     csNoStdValue: Result := _(rsErrNoStd);
+    csInvalidStrings: Result := _(rsErrStrings);
   else
     Result := '';
   end;
@@ -926,12 +1047,18 @@ begin
   if ComboSeries.ItemIndex >= 0 then
     FInput.Series := TESeries(ComboSeries.ItemIndex);
   FInput.RatingW := RATING_REFERENCE;
+  // Stränge parallel: ganze Zahl 1..100, sonst ungültig (-1)
+  if ParseDecimal(EditStrings.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= 100) then
+    FInput.Strings := Round(V)
+  else
+    FInput.Strings := -1;
 
   FRes := Calculate(FInput);
   if (FRes.Status <> csOk) or not ColorBands(FRes.Std, FInput.Series, FBands) then
     FBands := nil;
 
   RecalcBlink;
+  RecalcKsq;
 
   PaintSchematic.Invalidate;
   PaintCards.Invalidate;
@@ -1015,7 +1142,7 @@ begin
   Step := E.Tag / 1000;  // Tag = Schrittweite in Tausendsteln
   if ssShift in Shift then Step := Step * 10;
   if Key = VK_UP then V := V + Step else V := V - Step;
-  if E = EditN then V := Max(1, V) else V := Max(0, V);
+  if (E = EditN) or (E = EditStrings) then V := Max(1, V) else V := Max(0, V);
   E.Text := FormatNum(V, 2, 0);
   E.SelStart := Length(E.Text);
   Key := 0;
@@ -1030,7 +1157,7 @@ var
 begin
   if (Key < ' ') or (Key in ['0'..'9']) then Exit;
   E := Sender as TEdit;
-  if (Key in [',', '.']) and (E <> EditN) then
+  if (Key in [',', '.']) and (E <> EditN) and (E <> EditStrings) then
   begin
     // nur ein Dezimalzeichen; ein markiertes darf ersetzt werden
     if (Pos(DisplayDecimal, E.Text) = 0) or (Pos(DisplayDecimal, E.SelText) > 0) then
@@ -1207,6 +1334,8 @@ end;
 
 procedure TFormMain.PaintSchematicPaint(Sender: TObject);
 var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
   V: TSchematicValues;  // Texte und Farben für den Schaltplan
   R: TRect;             // Zeichenfläche
   LedName: string;      // Farbname der LED im Text
@@ -1223,6 +1352,11 @@ begin
   if FMode = 1 then
   begin
     PaintBlinkSchematic;
+    Exit;
+  end;
+  if FMode = 2 then
+  begin
+    PaintKsqSchematic;
     Exit;
   end;
   LedName := LedColorName;
@@ -1246,6 +1380,8 @@ begin
     V.URText := 'U_R = ' + FormatVolt(FRes.UR);
     V.IText := 'I = ' + FormatMilliAmp(FRes.IAct);
     V.Bands := FBands;
+    if FRes.Strings > 1 then
+      V.StringsText := Format(_(rsSchemStrings), [FRes.Strings]);
   end
   else
   begin
@@ -1254,7 +1390,11 @@ begin
     V.IText := 'I = ' + Dash;
   end;
   InflateRect(R, -Px(20), -Px(20));
-  DrawSchematic(PaintSchematic.Canvas, R, V, clrLine, clrLine, clrAccent, clrPanel);
+  if BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then
+  begin
+    DrawSchematic(BC, BR, V, clrLine, clrLine, clrAccent, clrPanel);
+    EndSmooth;
+  end;
 end;
 
 { ---------- Resultatkarten ---------- }
@@ -1316,6 +1456,11 @@ begin
   if FMode = 1 then
   begin
     PaintBlinkCards;
+    Exit;
+  end;
+  if FMode = 2 then
+  begin
+    PaintKsqCards;
     Exit;
   end;
   C := PaintCards.Canvas;
@@ -1381,13 +1526,18 @@ begin
         else
           Card(Format(_(rsCardStd), [SeriesName(FInput.Series)]), '–', '', clrTextBright);
       1:
-        if Ok then
+        if Ok and (FRes.Strings > 1) then
+          Card(_(rsCardCurrent), FormatMilliAmp(FRes.IAct),
+            Format(_(rsCardCurrentSubStrings), [FRes.Strings, FormatMilliAmp(FRes.ITotal)]), clrTextBright)
+        else if Ok then
           Card(_(rsCardCurrent), FormatMilliAmp(FRes.IAct),
             Format(_(rsCardCurrentSub), [FormatOhm(FRes.RCalc), FormatMilliAmp(FInput.I)]), clrTextBright)
         else
           Card(_(rsCardCurrent), '–', '', clrTextBright);
       2:
-        if Ok then
+        if Ok and (FRes.Strings > 1) then
+          Card(_(rsCardPower), FormatPower(FRes.PR), Format(_(rsCardPowerSubStrings), [FRes.Strings]), clrTextBright)
+        else if Ok then
           Card(_(rsCardPower), FormatPower(FRes.PR), _(rsCardPowerSub), clrTextBright)
         else
           Card(_(rsCardPower), '–', '', clrTextBright);
@@ -1456,7 +1606,11 @@ begin
     Result[0] := Format(_(rsStep1), [FormatVolt(FInput.U), FormatVolt(FInput.Ud), FormatVolt(FRes.UR)]);
   Result[1] := Format(_(rsStep2), [FormatVolt(FRes.UR), FormatNum(FInput.I, 4, 3),
     FormatOhm(FRes.RCalc), SeriesName(FInput.Series), FormatOhm(FRes.R)]);
-  Result[2] := Format(_(rsStep3), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
+  if FRes.Strings > 1 then
+    Result[2] := Format(_(rsStep3Strings), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct),
+      FRes.Strings, FormatMilliAmp(FRes.ITotal)])
+  else
+    Result[2] := Format(_(rsStep3), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
   if FRes.Load > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
   if FRes.RecommendedW = 0 then
     Result[3] := Format(_(rsStep4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
@@ -1503,7 +1657,8 @@ end;
 
 procedure TFormMain.RechenwegZuBeiPlatzmangel(Data: PtrInt);
 begin
-  if FRechenwegOpen and (PaintLed.Height < Px(120)) then
+  // zu wenig Platz für LED-Vorschau oder Schaltplan (z. B. 200 % auf Full HD)
+  if FRechenwegOpen and ((PaintLed.Height < Px(120)) or (PaintSchematic.Height < Px(180))) then
   begin
     FRechenwegOpen := False;
     UpdateRechenwegHeight;
@@ -1563,6 +1718,11 @@ begin
   begin
     L := BlinkRechenwegLines;
     Ok := FBRes.Status = bsOk;
+  end
+  else if FMode = 2 then
+  begin
+    L := KsqRechenwegLines;
+    Ok := FKRes.Status = ksOk;
   end
   else
   begin
@@ -1626,6 +1786,8 @@ begin
   X := R.Left + Px(10);
   if FMode = 1 then
     BlinkStatus(ChipText, Txt, Sym, Fore, Back)
+  else if FMode = 2 then
+    KsqStatus(ChipText, Txt, Sym, Fore, Back)
   else if FRes.Status <> csOk then
   begin
     ChipText := '';
@@ -1652,6 +1814,8 @@ begin
       Txt := Format(_(rsStatusWarn), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise),
         FormatRating(FRes.RecommendedW)]);
     Txt := Txt + '   ·   ' + Format(_(rsStatusTotal), [FormatPower(FRes.PTotal)]);
+    if FRes.Strings > 1 then
+      Txt := Txt + ' ' + Format(_(rsStatusStrings), [FRes.Strings]);
   end;
   // Hinweis-Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz)
   IconW := Px(14);
@@ -1739,6 +1903,8 @@ begin
     SL.Add(Format(_(rsCopyStd), [FormatOhm(FRes.R), SeriesName(FInput.Series),
       BandNames(FBands, '-'), FormatOhm(FRes.RCalc)]));
     SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FRes.IAct)]));
+    if FRes.Strings > 1 then
+      SL.Add(Format(_(rsCopyStrings), [FRes.Strings, FormatMilliAmp(FRes.ITotal)]));
     SL.Add(Format(_(rsCopyPower), [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
     if FRes.RecommendedW > 0 then
       SL.Add(Format(_(rsCopyRating), [FormatRating(FRes.RecommendedW), FormatRating(RATING_REFERENCE),
@@ -1753,6 +1919,8 @@ procedure TFormMain.MenuCopyClick(Sender: TObject);
 begin
   if FMode = 1 then
     Clipboard.AsText := BlinkSummary
+  else if FMode = 2 then
+    Clipboard.AsText := KsqSummary
   else
     Clipboard.AsText := ResultSummary;
 end;
@@ -1771,6 +1939,8 @@ begin
     EditUd.Text := FormatNum(LED_DEFAULT_UD[lcWhite], 2, 1);
     EditI.Text := '20';
     EditN.Text := '1';
+    EditStrings.Text := '1';
+    EditU2.Text := FormatNum(14.4, 1, 1);
     ComboSeries.ItemIndex := Ord(esE12);
     // Blinkschaltung auf die Vorgaben
     FBTexts := BLINK_DEFAULTS;
@@ -1782,6 +1952,8 @@ begin
       EditUd.Text := FormatNum(LED_DEFAULT_UD[lcRed], 2, 1);
       EditI.Text := '15';
     end;
+    if FMode = 2 then
+      EditN.Text := '2';  // Konstantstrom: zwei weisse LEDs im Auto wie im Beispiel
     CheckDiode.Checked := False;
     CheckSym.Checked := True;
     ComboConn.ItemIndex := Ord(cnGnd);
@@ -1825,16 +1997,14 @@ begin
   FMode := M;
   MenuModeR.Checked := M = 0;
   MenuModeB.Checked := M = 1;
+  MenuModeK.Checked := M = 2;
   LabelBlinkInfo.Visible := M = 1;
   // Platz unter der LED nur im Blinkmodus (Takt-Angabe)
   if M = 1 then
     PaintLed.BorderSpacing.Bottom := Px(36)
   else
     PaintLed.BorderSpacing.Bottom := 0;
-  if M = 1 then
-    LabelHeadInputs.Caption := _(rsHeadCircuit)
-  else
-    LabelHeadInputs.Caption := _(rsHeadInputs);
+  ModeCaptions;
   LayoutLeft;
   UpdateBlink;
   FLedDirty := True;
@@ -1851,6 +2021,7 @@ end;
 procedure TFormMain.LayoutLeft;
 var
   Blink: Boolean;  // Reiter Blinkschaltung
+  Ksq: Boolean;    // Reiter Konstantstrom
   Is555: Boolean;  // Schaltung NE555
   Y: Integer;      // laufende Zeile (96 dpi)
   Order: Integer;  // laufende Tab-Reihenfolge
@@ -1873,15 +2044,26 @@ var
 
 begin
   Blink := FMode = 1;
+  Ksq := FMode = 2;
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
   PanelLeft.VertScrollBar.Position := 0;
   PanelLeft.DisableAlign;
   try
     // nur im Reiter Vorwiderstand
-    LabelColor.Visible := not Blink;
+    LabelColor.Visible := FMode = 0;
+    LabelStrings.Visible := FMode = 0;
+    EditStrings.Visible := FMode = 0;
+    LabelStringsUnit.Visible := FMode = 0;
+    // Vorwiderstand und Konstantstrom
     LabelN.Visible := not Blink;
     EditN.Visible := not Blink;
     LabelNUnit.Visible := not Blink;
+    // nur im Reiter Konstantstrom
+    ComboKsq.Visible := Ksq;
+    LabelHeadSupply.Visible := Ksq;
+    LabelU2.Visible := Ksq;
+    EditU2.Visible := Ksq;
+    LabelU2Unit.Visible := Ksq;
     // nur im Reiter Blinkschaltung
     ComboCircuit.Visible := Blink;
     LabelHeadTiming.Visible := Blink;
@@ -1895,7 +2077,7 @@ begin
     LabelT3.Visible := Blink;
     EditT3.Visible := Blink;
     LabelT3Unit.Visible := Blink;
-    LabelHeadLed.Visible := Blink;
+    LabelHeadLed.Visible := Blink or Ksq;
     CheckDiode.Visible := Blink and Is555;
     LabelDiode.Visible := Blink and Is555;
     CheckSym.Visible := Blink and not Is555;
@@ -1905,12 +2087,42 @@ begin
 
     Order := 0;
     Put(LabelHeadInputs, 16, 12, 0);
-    if not Blink then
+    if Ksq then
     begin
-      // Anordnung wie im Formular (uMain.lfm)
+      // Schaltung, Speisespannung von … bis, LEDs
+      Put(ComboKsq, 16, 30, 237);
+      Put(LabelHeadSupply, 16, 64, 0);
+      Put(LabelU, 16, 82, 0);
+      Put(EditU, 16, 100, 92);
+      Put(LabelUUnit, 112, 104, 0);
+      Put(LabelU2, 140, 82, 0);
+      Put(EditU2, 140, 100, 84);
+      Put(LabelU2Unit, 228, 104, 0);
+      Put(LabelHeadLed, 16, 134, 0);
+      Put(ComboColor, 16, 152, 237);
+      Put(LabelUd, 16, 186, 0);
+      Put(EditUd, 16, 204, 92);
+      Put(LabelUdUnit, 112, 208, 0);
+      Put(LabelI, 140, 186, 0);
+      Put(EditI, 140, 204, 84);
+      Put(LabelIUnit, 228, 208, 0);
+      Put(LabelSeries, 16, 238, 0);
+      Put(ComboSeries, 16, 256, 113);
+      Put(LabelN, 140, 238, 0);
+      Put(EditN, 140, 256, 84);
+      Put(LabelNUnit, 228, 260, 0);
+      Y := 296;
+      Tab(ComboKsq); Tab(EditU); Tab(EditU2); Tab(ComboColor); Tab(EditUd); Tab(EditI);
+      Tab(ComboSeries); Tab(EditN);
+    end
+    else if not Blink then
+    begin
+      // Speisespannung und E-Reihe, LED, Anzahl in Reihe und Stränge parallel
       Put(LabelU, 16, 36, 0);
-      Put(EditU, 16, 54, 208);
-      Put(LabelUUnit, 230, 58, 0);
+      Put(EditU, 16, 54, 92);
+      Put(LabelUUnit, 112, 58, 0);
+      Put(LabelSeries, 140, 36, 0);
+      Put(ComboSeries, 140, 54, 113);
       Put(LabelColor, 16, 88, 0);
       Put(ComboColor, 16, 106, 237);
       Put(LabelUd, 16, 140, 0);
@@ -1919,13 +2131,14 @@ begin
       Put(LabelI, 140, 140, 0);
       Put(EditI, 140, 158, 84);
       Put(LabelIUnit, 228, 162, 0);
-      Put(LabelSeries, 16, 192, 0);
-      Put(ComboSeries, 16, 210, 116);
-      Put(LabelN, 140, 192, 0);
-      Put(EditN, 140, 210, 84);
-      Put(LabelNUnit, 228, 214, 0);
+      Put(LabelN, 16, 192, 0);
+      Put(EditN, 16, 210, 92);
+      Put(LabelNUnit, 112, 214, 0);
+      Put(LabelStrings, 140, 192, 0);
+      Put(EditStrings, 140, 210, 84);
+      Put(LabelStringsUnit, 228, 214, 0);
       Y := 250;
-      Tab(EditU); Tab(ComboColor); Tab(EditUd); Tab(EditI); Tab(ComboSeries); Tab(EditN);
+      Tab(EditU); Tab(ComboSeries); Tab(ComboColor); Tab(EditUd); Tab(EditI); Tab(EditN); Tab(EditStrings);
     end
     else
     begin
@@ -2035,7 +2248,9 @@ begin
   LabelT3.Caption := 'C';
   LabelT3Unit.Caption := 'µF';
   EditT3.Tag := -2;        // E6-Werte
-  if Is555 then
+  if FMode = 2 then
+    LabelHeadLed.Caption := _(rsHeadLeds)
+  else if Is555 then
     LabelHeadLed.Caption := _(rsHeadLed)
   else
     LabelHeadLed.Caption := _(rsHeadLeds);
@@ -2146,9 +2361,14 @@ begin
   C.Pen.Color := clrBorder;
   C.Pen.Width := 1;
   C.Line(R.Left, R.Bottom - 1, R.Right, R.Bottom - 1);
-  for I := 0 to 1 do
+  for I := 0 to 2 do
   begin
-    if I = 0 then T := _(rsTabResistor) else T := _(rsTabBlink);
+    case I of
+      0: T := _(rsTabResistor);
+      1: T := _(rsTabBlink);
+    else
+      T := _(rsTabKsq);
+    end;
     W := C.TextWidth(T) + Px(32);
     if I = FMode then
     begin
@@ -2177,7 +2397,9 @@ begin
   if (X >= FTabX[0]) and (X < FTabX[1]) and (FMode <> 0) then
     SwitchMode(0, True)
   else if (X >= FTabX[1]) and (X < FTabX[2]) and (FMode <> 1) then
-    SwitchMode(1, True);
+    SwitchMode(1, True)
+  else if (X >= FTabX[2]) and (X < FTabX[3]) and (FMode <> 2) then
+    SwitchMode(2, True);
 end;
 
 procedure TFormMain.PaintModePaint(Sender: TObject);
@@ -2338,8 +2560,34 @@ begin
   end;
 end;
 
+{ Alles, was den Blink-Schaltplan verändert, als Text (Schlüssel für das
+  Zwischenspeichern des geglätteten Bilds) }
+function BlinkSchemKey(const V: TBlinkSchemValues; const Col: TBlinkSchemColors;
+  Multi: Boolean): string;
+
+  { Farbringe als Text }
+  function BandsKey(const B: TBandArray): string;
+  var
+    I: Integer;  // Zähler
+  begin
+    Result := '';
+    for I := 0 to High(B) do
+      Result := Result + IntToStr(Ord(B[I])) + ',';
+  end;
+
+begin
+  Result := Format('%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s',
+    [V.UBText, V.R1Text, V.R2Text, V.CText, V.C2Text, V.RV1Text, V.RV2Text,
+     V.Led1Text, V.Led2Text, V.UOutText, V.T1Text, V.T2Text,
+     V.LedColor, Ord(V.Led1Lit), Ord(V.Led2Lit), Ord(V.Diode), Ord(V.Conn), Ord(V.Elko),
+     Col.Line, Col.Text, Col.Accent, Col.Dim, Col.Body, Col.LedOff, Ord(Multi),
+     BandsKey(V.Bands1), BandsKey(V.Bands2)]);
+end;
+
 procedure TFormMain.PaintBlinkSchematic;
 var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
   V: TBlinkSchemValues;   // Texte und Zustände
   Col: TBlinkSchemColors; // Farben
   R: TRect;               // Zeichenfläche
@@ -2450,10 +2698,13 @@ begin
 
   R := PaintSchematic.ClientRect;
   InflateRect(R, -Px(16), -Px(16));
+  // Schlüssel fürs Zwischenspeichern: beim Blinken wechseln nur zwei Bilder
+  if not BeginSmooth(PaintSchematic.Canvas, R, clrDeep, BlinkSchemKey(V, Col, Multi), BC, BR) then Exit;
   if Multi then
-    DrawSchematicMulti(PaintSchematic.Canvas, R, V, Col)
+    DrawSchematicMulti(BC, BR, V, Col)
   else
-    DrawSchematic555(PaintSchematic.Canvas, R, V, Col);
+    DrawSchematic555(BC, BR, V, Col);
+  EndSmooth;
 end;
 
 procedure TFormMain.PaintBlinkCards;
@@ -2809,6 +3060,514 @@ begin
     if FBRes.Led2.Used then
       Rv := Rv + ', ' + FormatOhm(FBRes.Led2.R) + ' (' + BandNames(FBBands2, '-') + ')';
     SL.Add(Format(_(rsBCopyRv), [Rv]));
+    Result := TrimRight(SL.Text);
+  finally
+    SL.Free;
+  end;
+end;
+
+{ ---------- Konstantstrom ---------- }
+
+{ Name des empfohlenen Bauteils }
+function KsqPartName(P: TKsqPart): string;
+begin
+  case P of
+    kpLM317L: Result := 'LM317L';
+    kpLM317: Result := 'LM317';
+    kpBC547: Result := 'BC547';
+    kpBC337: Result := 'BC337';
+  else
+    Result := 'BD139';
+  end;
+end;
+
+{ Leistungsbereich mit gemeinsamer Einheit, z. B. "80,0 … 124,1 mW" }
+function FormatPowerRange(P1, P2: Double): string;
+begin
+  if Abs(P2 - P1) <= 0.005 * Max(Abs(P2), 1e-9) then
+    Result := FormatPower(P2)
+  else if P2 >= 1 then
+    Result := FormatNum(P1, 2, 0) + ' … ' + FormatNum(P2, 2, 0) + ' W'
+  else
+    Result := FormatNum(P1 * 1000, 1, 1) + ' … ' + FormatNum(P2 * 1000, 1, 1) + ' mW';
+end;
+
+procedure TFormMain.ModeCaptions;
+begin
+  case FMode of
+    1:
+      begin
+        LabelHeadInputs.Caption := _(rsHeadCircuit);
+        LabelU.Caption := _(rsLabelU);
+      end;
+    2:
+      begin
+        LabelHeadInputs.Caption := _(rsHeadCircuit);
+        LabelU.Caption := _(rsLabelFrom);
+      end;
+  else
+    LabelHeadInputs.Caption := _(rsHeadInputs);
+    LabelU.Caption := _(rsLabelU);
+  end;
+  UpdateTimingLabels;  // Kopf «LEDS» bzw. «LED AM AUSGANG»
+end;
+
+procedure TFormMain.KsqCircuitChange(Sender: TObject);
+begin
+  if FUpdating then Exit;
+  Recalc;
+  WriteViewSetting(INI_KEY_KSQ, ComboKsq.ItemIndex);
+end;
+
+procedure TFormMain.RecalcKsq;
+var
+  V: Double;  // umgewandelte Eingabe
+begin
+  FKInput := Default(TKsqInput);
+  if ComboKsq.ItemIndex = Ord(kcTransistors) then
+    FKInput.Circuit := kcTransistors
+  else
+    FKInput.Circuit := kcLM317;
+  FKInput.UMin := FInput.U;
+  // «bis» leer oder ungültig: feste Spannung (gleich wie «von»)
+  if ParseDecimal(EditU2.Text, V) and (V > 0) then
+    FKInput.UMax := V;
+  FKInput.Ud := FInput.Ud;
+  FKInput.I := FInput.I;
+  FKInput.N := FInput.N;
+  FKInput.Series := FInput.Series;
+  FKRes := CalculateKsq(FKInput);
+  FKBands := nil;
+  FKBandsB := nil;
+  if FKRes.Status = ksOk then
+  begin
+    if not ColorBands(FKRes.Std, FKInput.Series, FKBands) then FKBands := nil;
+    if (FKInput.Circuit = kcTransistors) and not ColorBands(FKRes.RBStd, FKInput.Series, FKBandsB) then
+      FKBandsB := nil;
+  end;
+end;
+
+function TFormMain.KsqStatusText(S: TKsqStatus): string;
+begin
+  case S of
+    ksInvalidU: Result := _(rsErrU);
+    ksInvalidUd: Result := _(rsErrUd);
+    ksInvalidI: Result := _(rsErrI);
+    ksInvalidN: Result := _(rsErrN);
+    ksTooMuchCurrent: Result := _(rsErrKCurrent);
+    ksUTooLow: Result := Format(_(rsErrKUTooLow), [FormatVolt(FKRes.UMin), FormatVolt(FKRes.UNeed)]);
+    ksNoStdValue: Result := _(rsErrNoStd);
+  else
+    Result := '';
+  end;
+end;
+
+function TFormMain.KsqVoltRange: string;
+begin
+  if FKRes.UMax > FKRes.UMin then
+    Result := FormatNum(FKRes.UMin, 2, 0) + ' … ' + FormatVolt(FKRes.UMax)
+  else
+    Result := FormatVolt(FKRes.UMin);
+end;
+
+function TFormMain.KsqLedVolt: string;
+begin
+  if FKInput.N > 1 then
+    Result := IntToStr(FKInput.N) + ' × ' + FormatVolt(FKInput.Ud)
+  else
+    Result := FormatVolt(FKInput.Ud);
+end;
+
+function TFormMain.KsqPartText: string;
+var
+  N: string;  // Name des Bauteils
+begin
+  N := KsqPartName(FKRes.Part);
+  if kwTooHot in FKRes.Warnings then
+    Result := Format(_(rsKPartTooHot), [N])
+  else if kwHeatsink in FKRes.Warnings then
+    Result := Format(_(rsKPartHeatsink), [N, IntToStr(Floor(FKRes.HeatsinkRth))])
+  else if FKRes.Part = kpLM317L then
+    Result := _(rsKPartLM317L)
+  else if FKRes.Part = kpLM317 then
+    Result := _(rsKPartLM317)
+  else
+    Result := Format(_(rsKPartFree), [N]);
+end;
+
+function TFormMain.KsqRechenwegLines: TStringArray;
+var
+  Res: TKsqResult;   // Abkürzung
+  Ser: string;       // Name der Normreihe
+  RatingT: string;   // Bauform des Fühlerwiderstands
+  Drift: Double;     // Stromänderung pro 10 °C (T2)
+  PartShort: string; // empfohlenes Bauteil, kurz
+begin
+  Result := nil;
+  Res := FKRes;
+  if kwTooHot in Res.Warnings then
+    PartShort := Format(_(rsKPartTooHot), [KsqPartName(Res.Part)])
+  else if kwHeatsink in Res.Warnings then
+    PartShort := Format(_(rsKPartShortHeat), [KsqPartName(Res.Part), IntToStr(Floor(Res.HeatsinkRth))])
+  else
+    PartShort := KsqPartName(Res.Part);
+  if Res.Status <> ksOk then
+  begin
+    SetLength(Result, 1);
+    Result[0] := KsqStatusText(Res.Status);
+    Exit;
+  end;
+  Ser := SeriesName(FKInput.Series);
+  if Res.RRating > 0 then RatingT := FormatRating(Res.RRating) else RatingT := _(rsCardRatingNone);
+  SetLength(Result, 5);
+  if FKInput.Circuit = kcLM317 then
+  begin
+    Result[0] := Format(_(rsKStepL1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]);
+    Result[1] := Format(_(rsKStepL2), [FormatOhm(Res.R), FormatMilliAmp(Res.IAct), FormatMilliAmp(Res.IAct),
+      FormatPower(Res.PR), RatingT]);
+    Result[2] := Format(_(rsKStepL3), [KsqLedVolt, FormatVolt(Res.UNeed), FormatVolt(Res.UMin), FormatVolt(Res.Reserve)]);
+    Result[3] := Format(_(rsKStepL4), [KsqVoltRange, FormatVolt(Res.ULeds), FormatMilliAmp(Res.IAct),
+      FormatPowerRange(Res.PLossMin, Res.PLossMax), PartShort]);
+    if Res.UMax > Res.UMin then
+      Result[4] := Format(_(rsKStepL5), [FormatVolt(Res.UMin), FormatVolt(Res.ULeds), FormatMilliAmp(FKInput.I),
+        FormatOhm(Res.RvCalc), FormatVolt(Res.UMax), FormatPercent(Res.RvRise)])
+    else
+      Result[4] := _(rsKStepL5Fix);
+  end
+  else
+  begin
+    Drift := -KSQ_UBE_TC * 10 / KSQ_UBE_SENSE;
+    Result[0] := Format(_(rsKStepT1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]);
+    Result[1] := Format(_(rsKStepT2), [FormatOhm(Res.R), FormatMilliAmp(Res.IAct), FormatPower(Res.PR), RatingT,
+      FormatPercent(Drift)]);
+    Result[2] := Format(_(rsKStepT3), [FormatMilliAmp(Res.IRB), KsqPartName(Res.Part), FormatMilliAmp(Res.IB1),
+      FormatVolt(Res.UMin), FormatMilliAmp(Res.IRB), FormatOhm(Res.RBCalc), FormatOhm(Res.RB)]);
+    Result[3] := Format(_(rsKStepT4), [KsqLedVolt, FormatVolt(Res.UNeed), FormatVolt(Res.UMin), FormatVolt(Res.Reserve)]);
+    Result[4] := Format(_(rsKStepT5), [KsqVoltRange, FormatVolt(Res.ULeds), FormatMilliAmp(Res.IAct),
+      FormatPowerRange(Res.PLossMin, Res.PLossMax), PartShort]);
+  end;
+end;
+
+procedure TFormMain.PaintKsqSchematic;
+var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
+  V: TKsqSchemValues;     // Texte und Werte
+  Col: TBlinkSchemColors; // Farben
+  R: TRect;               // Zeichenfläche
+  Ok: Boolean;            // Resultat gültig
+  Dash: string;           // Platzhalter
+  LedName: string;        // Farbname der LED
+begin
+  Dash := '–';
+  Ok := FKRes.Status = ksOk;
+  LedName := LedColorName;
+  V := Default(TKsqSchemValues);
+  if FKRes.UMin > 0 then V.UBText := 'U_B = ' + KsqVoltRange else V.UBText := 'U_B = ' + Dash;
+  if Ok and (FKRes.Part = kpLM317L) then V.ChipText := 'LM317L' else V.ChipText := 'LM317';
+  V.RefText := 'U_R_E_F = 1,25 V';
+  if LangCode = 'en' then V.RefText := 'U_R_E_F = 1.25 V';
+  if FKInput.Circuit = kcLM317 then V.RText := 'R = ' else V.RText := 'R_S = ';
+  if Ok then
+  begin
+    V.RText := V.RText + FormatOhm(FKRes.R);
+    V.RSubText := 'I = ' + FormatMilliAmp(FKRes.IAct);
+    V.RBText := 'R_B = ' + FormatOhm(FKRes.RB);
+    V.T1Text := 'T1 ' + KsqPartName(FKRes.Part);
+    V.Bands := FKBands;
+    V.BandsB := FKBandsB;
+  end
+  else
+  begin
+    V.RText := V.RText + Dash;
+    V.RSubText := 'I = ' + Dash;
+    V.RBText := 'R_B = ' + Dash;
+    V.T1Text := 'T1';
+  end;
+  V.T2Text := 'T2 BC547';
+  if FKInput.N > 1 then
+  begin
+    V.LedText := Format(_(rsSchemLedN), [FKInput.N, LedName]);
+    V.UFText := Format(_(rsSchemUFN), [FKInput.N, FormatVolt(FKInput.Ud)]);
+  end
+  else
+  begin
+    V.LedText := Format(_(rsSchemLed), [LedName]);
+    V.UFText := Format(_(rsSchemUF), [FormatVolt(FKInput.Ud)]);
+  end;
+  V.TwoLeds := FKInput.N > 1;
+  V.LedColor := LedGlowColor(CurrentLed);
+
+  Col.Line := clrLine;
+  Col.Text := clrLine;
+  Col.Accent := clrAccent;
+  Col.Dim := clrTextDim;
+  Col.Body := clrPanel;
+  Col.LedOff := MixColor(V.LedColor, clrDeep, 0.22);
+
+  R := PaintSchematic.ClientRect;
+  InflateRect(R, -Px(16), -Px(16));
+  if not BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then Exit;
+  if FKInput.Circuit = kcLM317 then
+    DrawSchematicLM317(BC, BR, V, Col)
+  else
+    DrawSchematicKsqT(BC, BR, V, Col);
+  EndSmooth;
+end;
+
+procedure TFormMain.PaintKsqCards;
+var
+  C: TCanvas;          // Zeichenfläche
+  Gap, W, X, I: Integer; // Abstand, Breite einer Karte, Position, Zähler
+  R: TRect;            // aktuelle Karte
+  Pad: Integer;        // Innenabstand
+  Ok: Boolean;         // Resultat gültig
+  LM: Boolean;         // Schaltung LM317
+  T, Sub: string;      // Texte
+  VC: TColor;          // Farbe des Werts
+  TS: TTextStyle;      // Text mit Zeilenumbruch
+  TH, SubTop: Integer; // Zeilenhöhe, Oberkante des Untertexts
+  ResTop, ResBot: Integer; // Lage des gezeichneten Widerstands
+
+  { Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext }
+  procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
+  var
+    Y, Size: Integer; // laufende Zeile, Schriftgrösse
+    H15: Integer;     // Zeilenhöhe bei voller Schriftgrösse
+  begin
+    C.Brush.Style := bsSolid;
+    C.Brush.Color := clrPanel;
+    C.Pen.Color := clrBorder;
+    C.Pen.Width := 1;
+    C.Rectangle(R);
+    C.Brush.Style := bsClear;
+    Y := R.Top + Pad;
+    C.Font.Name := FONT_UI;
+    C.Font.Size := 8;
+    C.Font.Style := [];
+    C.Font.Color := clrTextDim;
+    C.TextOut(R.Left + Pad, Y, ATitle);
+    Inc(Y, C.TextHeight('Ag') + Px(2));
+    C.Font.Style := [fsBold];
+    C.Font.Color := AValueColor;
+    Size := 15;
+    C.Font.Size := Size;
+    H15 := C.TextHeight('Ag');
+    while (Size > 9) and (C.TextWidth(AValue) > R.Right - R.Left - 2 * Pad) do
+    begin
+      Dec(Size);
+      C.Font.Size := Size;
+    end;
+    C.TextOut(R.Left + Pad, Y + H15 - C.TextHeight('Ag'), AValue);
+    Inc(Y, H15);
+    C.Font.Size := 8;
+    C.Font.Style := [];
+    C.Font.Color := clrTextSoft;
+    if ASub <> '' then
+    begin
+      TS := C.TextStyle;
+      TS.Wordbreak := True;
+      TS.SingleLine := False;
+      TS.Clipping := True;
+      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, ASub, TS);
+    end;
+  end;
+
+begin
+  C := PaintCards.Canvas;
+  C.Brush.Color := clrWindow;
+  C.FillRect(PaintCards.ClientRect);
+  Gap := Px(8);
+  Pad := Px(10);
+  W := (PaintCards.Width - 3 * Gap) div 4;
+  Ok := FKRes.Status = ksOk;
+  LM := FKInput.Circuit = kcLM317;
+  X := 0;
+  for I := 0 to 3 do
+  begin
+    if I = 3 then
+      R := Types.Rect(X, 0, PaintCards.Width, PaintCards.Height)
+    else
+      R := Types.Rect(X, 0, X + W, PaintCards.Height);
+    C.ClipRect := R;
+    C.Clipping := True;
+    case I of
+      0:
+        begin
+          T := Format(_(rsKCardR), [SeriesName(FKInput.Series)]);
+          if Ok then
+          begin
+            Card(T, FormatOhm(FKRes.R), '', clrTextBright);
+            // Farbnamen und Bauform unten (bis zwei Zeilen), darüber der Widerstand
+            if FKRes.RRating > 0 then
+              Sub := Format(_(rsKCardRSub), [BandNames(FKBands, ' · '), FormatRating(FKRes.RRating), FormatPower(FKRes.PR)])
+            else
+              Sub := Format(_(rsKCardRSub), [BandNames(FKBands, ' · '), _(rsCardRatingNone), FormatPower(FKRes.PR)]);
+            C.Font.Size := 8;
+            C.Font.Style := [];
+            C.Font.Color := clrTextSoft;
+            TH := C.TextHeight('Ag');
+            if C.TextWidth(Sub) > R.Right - R.Left - 2 * Pad then
+              SubTop := R.Bottom - Pad - 2 * TH
+            else
+              SubTop := R.Bottom - Pad - TH;
+            TS := C.TextStyle;
+            TS.Wordbreak := True;
+            TS.SingleLine := False;
+            TS.Clipping := True;
+            C.Brush.Style := bsClear;
+            C.TextRect(Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, SubTop, Sub, TS);
+            ResBot := Min(R.Top + Px(80), SubTop - Px(4));
+            ResTop := Max(R.Top + Px(58), ResBot - Px(24));
+            if ResBot - ResTop >= Px(10) then
+              DrawResistor(C, Types.Rect(R.Left + Pad, ResTop,
+                R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), ResBot), FKBands);
+          end
+          else
+            Card(T, '–', '', clrTextBright);
+        end;
+      1:
+        if Ok then
+        begin
+          if not LM then
+            Sub := Format(_(rsKCardISubT), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I),
+              FormatPercent(-KSQ_UBE_TC * 10 / KSQ_UBE_SENSE)])
+          else if FKRes.UMax > FKRes.UMin then
+            Sub := Format(_(rsKCardISubL), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I),
+              FormatVolt(FKRes.UMin), FormatVolt(FKRes.UMax)])
+          else
+            Sub := Format(_(rsKCardISubLFix), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I)]);
+          Card(_(rsKCardI), FormatMilliAmp(FKRes.IAct), Sub, clrTextBright);
+        end
+        else
+          Card(_(rsKCardI), '–', '', clrTextBright);
+      2:
+        begin
+          if LM then T := _(rsKCardLossL) else T := _(rsKCardLossT);
+          if Ok then
+          begin
+            if kwTooHot in FKRes.Warnings then VC := clrError
+            else if kwHeatsink in FKRes.Warnings then VC := clrWarn
+            else VC := clrOk;
+            if LM then
+              Sub := KsqPartText
+            else
+              Sub := Format(_(rsKCardLossSubT), [KsqPartText, FormatOhm(FKRes.RB)]);
+            Card(T, FormatPowerRange(FKRes.PLossMin, FKRes.PLossMax), Sub, VC);
+          end
+          else
+            Card(T, '–', '', clrTextBright);
+        end;
+      3:
+        begin
+          if LM then
+            Sub := Format(_(rsKCardNeedSubL), [KsqLedVolt])
+          else
+            Sub := Format(_(rsKCardNeedSubT), [KsqLedVolt]);
+          if Ok then
+            Card(_(rsKCardNeed), FormatVolt(FKRes.UNeed), Sub, clrOk)
+          else if FKRes.Status = ksUTooLow then
+            Card(_(rsKCardNeed), FormatVolt(FKRes.UNeed), Sub, clrError)
+          else
+            Card(_(rsKCardNeed), '–', '', clrTextBright);
+        end;
+    end;
+    C.Clipping := False;
+    Inc(X, W + Gap);
+  end;
+end;
+
+procedure TFormMain.KsqStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
+var
+  Chips, Texts: array of string;  // Hinweise in der Reihenfolge ihrer Wichtigkeit
+  Tab: string;                    // woran die Kühlfahne liegt
+
+  { einen Hinweis anhängen }
+  procedure Add(const AChip, AText: string);
+  begin
+    SetLength(Chips, Length(Chips) + 1);
+    SetLength(Texts, Length(Texts) + 1);
+    Chips[High(Chips)] := AChip;
+    Texts[High(Texts)] := AText;
+  end;
+
+begin
+  Chips := nil;
+  Texts := nil;
+  if FKRes.Status <> ksOk then
+  begin
+    ChipText := '';
+    Sym := 2;
+    Fore := clrError;
+    Back := clrErrorBack;
+    Txt := KsqStatusText(FKRes.Status);
+    Exit;
+  end;
+  if kwTooHot in FKRes.Warnings then
+    Add(_(rsKChipTooHot), Format(_(rsKWarnTooHot), [FormatPower(FKRes.PLossMax)]))
+  else if kwHeatsink in FKRes.Warnings then
+  begin
+    if FKInput.Circuit = kcLM317 then Tab := _(rsKTabOut) else Tab := _(rsKTabCollector);
+    Add(_(rsKChipHeat), Format(_(rsKWarnHeat), [KsqPartName(FKRes.Part), FormatPower(FKRes.PLossMax),
+      IntToStr(Floor(FKRes.HeatsinkRth)), Tab]));
+  end;
+  if kwOverVoltage in FKRes.Warnings then
+    if FKInput.Circuit = kcLM317 then
+      Add(_(rsKChipVolt), _(rsKWarnVoltL))
+    else
+      Add(_(rsKChipVolt), _(rsKWarnVoltT));
+  if kwMinLoad in FKRes.Warnings then
+    Add(_(rsKChipMinLoad), _(rsKWarnMinLoad));
+  if kwBaseHigh in FKRes.Warnings then
+    if FKRes.RBRating > 0 then
+      Add(_(rsKChipBase), Format(_(rsKWarnBase), [FormatOhm(FKRes.RB), FormatPower(FKRes.PRB), FormatRating(FKRes.RBRating)]))
+    else
+      Add(_(rsKChipBase), Format(_(rsKWarnBase), [FormatOhm(FKRes.RB), FormatPower(FKRes.PRB), _(rsCardRatingNone)]));
+  if kwRPower in FKRes.Warnings then
+    Add(_(rsKChipRPower), Format(_(rsKWarnRPower), [FormatPower(FKRes.PR)]));
+  if Length(Chips) > 0 then
+  begin
+    ChipText := Chips[0];
+    Txt := Texts[0];
+    if Length(Chips) > 1 then
+      Txt := Txt + Format(_(rsMoreHints), [Length(Chips) - 1]);
+    Sym := 1;
+    Fore := clrWarn;
+    Back := clrWarnBack;
+  end
+  else
+  begin
+    ChipText := _(rsKChipOk);
+    if FKRes.UMax <= FKRes.UMin then
+      Txt := _(rsKOkFix)
+    else if FKInput.Circuit = kcLM317 then
+      Txt := Format(_(rsKOkRangeL), [FormatPercent(FKRes.RvRise), FormatVolt(FKRes.UMax)])
+    else
+      Txt := Format(_(rsKOkRangeT), [FormatPercent(FKRes.RvRise), FormatVolt(FKRes.UMax), FormatPercent1(FKRes.KsqRise)]);
+    Sym := 0;
+    Fore := clrOk;
+    Back := clrOkBack;
+  end;
+end;
+
+function TFormMain.KsqSummary: string;
+var
+  SL: TStringList;   // Zeilen
+begin
+  if FKRes.Status <> ksOk then
+    Exit(StringReplace(KsqStatusText(FKRes.Status), '_', '', [rfReplaceAll]));
+  SL := TStringList.Create;
+  try
+    SL.Add(Format(_(rsKCopyTitle), [APP_VER, ComboKsq.Text]));
+    SL.Add(StringReplace(Format(_(rsCopyInput), [KsqVoltRange, FKInput.N, ComboColor.Text,
+      FormatVolt(FKInput.Ud), FormatMilliAmp(FKInput.I)]), '_', '', [rfReplaceAll]));
+    SL.Add(Format(_(rsKCopyR), [FormatOhm(FKRes.R), SeriesName(FKInput.Series), BandNames(FKBands, '-'),
+      FormatOhm(FKRes.RCalc)]));
+    SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FKRes.IAct)]));
+    if FKInput.Circuit = kcTransistors then
+      SL.Add(Format(_(rsKCopyRB), [FormatOhm(FKRes.RB), BandNames(FKBandsB, '-')]));
+    SL.Add(Format(_(rsKCopyLoss), [FormatPowerRange(FKRes.PLossMin, FKRes.PLossMax), KsqPartText]));
+    SL.Add(Format(_(rsKCopyNeed), [FormatVolt(FKRes.UNeed)]));
     Result := TrimRight(SL.Text);
   finally
     SL.Free;

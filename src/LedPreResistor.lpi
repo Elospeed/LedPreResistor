@@ -27,8 +27,8 @@
     <VersionInfo>
       <UseVersionInfo Value="True"/>
       <MajorVersionNr Value="2"/>
-      <MinorVersionNr Value="3"/>
-      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.3"/>
+      <MinorVersionNr Value="4"/>
+      <StringTable CompanyName="Elospeed" FileDescription="Elospeed LedPreResistor - Vorwiderstand fuer LEDs berechnen" InternalName="LedPreResistor" LegalCopyright="Elospeed - MIT-Lizenz" OriginalFilename="LedPreResistor.exe" ProductName="Elospeed LedPreResistor" ProductVersion="2.4"/>
     </VersionInfo>
     <BuildModes>
       <Item Name="Default" Default="True"/>
@@ -106,6 +106,18 @@
       </Unit>
       <Unit>
         <Filename Value="uBlinkSchematic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uKsq.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uKsqSchematic.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="uSmooth.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

@@ -416,6 +416,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     <div>
       <h3>Parallel: jede LED mit eigenem Widerstand</h3>
       <p>Auch LEDs aus derselben Charge haben leicht unterschiedliche Durchlassspannungen. Zudem sinkt U<sub>F</sub> mit steigender Temperatur (etwa −2 mV/K). Hängen mehrere LEDs an einem gemeinsamen Widerstand, zieht die «schwächste» den meisten Strom, wird wärmer, zieht noch mehr und fällt zuerst aus.</p>
+      <p>Im Reiter «Vorwiderstand» gibst du unter «Stränge parallel» an, wie viele gleiche Stränge nebeneinander hängen. Das Programm rechnet den Widerstand für einen Strang (jeder Strang bekommt einen davon) und zeigt Gesamtstrom und Gesamtleistung. Bei Konstantstrom gilt dasselbe: eine Stromquelle pro Strang.</p>
     </div>
   </div>
 </section>
@@ -445,12 +446,24 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 <section id="konstantstrom">
   <div class="eyebrow">Alternativen zum Widerstand</div>
   <h2>Konstantstrom und Dimmen</h2>
+  <p>Ein Vorwiderstand ist ideal bei fester Spannung und kleinen Strömen. Schwankt die Versorgung (Batterie, Auto mit 12–14,4 V), hält eine Konstantstromquelle den LED-Strom fest. Im Reiter «Konstantstrom» rechnet das Programm zwei Bastelschaltungen dafür. Gib bei «von» und «bis» den Spannungsbereich ein: Verlust und Mindestspannung gelten dann für den ganzen Bereich, und die Statuszeile zeigt, wie stark der Strom mit einem einfachen Vorwiderstand steigen würde (im Beispiel 12–14,4 V mit zwei weissen LEDs um 43 %).</p>
   <div class="cols">
     <div>
-      <h3>Wann Konstantstrom?</h3>
-      <p>Ein Vorwiderstand ist ideal bei fester Spannung und kleinen Strömen. Schwankt die Versorgung (Batterie, Auto mit 12–14,4 V) oder geht es um Power-LEDs ab etwa 350 mA, ist eine Konstantstromquelle besser.</p>
-      <p>Klassiker: der LM317 als Stromquelle mit <span class="mono">R = 1,25 V / I</span>. Für 20 mA ergibt das 62 Ω. Er braucht etwa 3 V Spannungsreserve und arbeitet zuverlässig ab rund 10 mA.</p>
+      <h3>LM317 als Stromquelle</h3>
+      <p>Der LM317 hält zwischen OUT und ADJ immer 1,25 V. Ein Widerstand dazwischen legt den Strom fest: <span class="mono">R = 1,25 V / I</span>. Er braucht über den LEDs etwa 1,25 V + 2 V; den Rest verheizt er: <span class="mono">P = (U<sub>B</sub> − U<sub>LED</sub> − 1,25 V) × I</span>. Bis 100 mA und wenig Verlust reicht der kleine LM317L (TO-92). Unter etwa 10 mA regelt der LM317 nicht sicher.</p>
+      <p class="mono">20 mA: 62,5 Ω → 68 Ω, 18,4 mA</p>
     </div>
+    <div>
+      <h3>Zwei Transistoren</h3>
+      <p>T1 liegt in Reihe mit den LEDs, R<sub>B</sub> steuert ihn auf. Am Fühlerwiderstand R<sub>S</sub> entsteht I × R<sub>S</sub>; erreicht das etwa 0,6 V, leitet T2 und nimmt T1 Basisstrom weg. So stellt sich <span class="mono">I ≈ 0,6 V / R<sub>S</sub></span> ein. Die Schaltung braucht nur etwa 1,2 V über den LEDs. Dafür sinkt U<sub>BE</sub> um etwa 2 mV/K: pro 10 °C wärmer wird der Strom ca. 3 % kleiner. T1 empfiehlt das Programm nach Strom und Verlust: BC547 bis 100 mA, BC337 bis 500 mA, BD139 bis 1,5 A.</p>
+      <p class="mono">20 mA: 30 Ω → 33 Ω, 18,2 mA; R<sub>B</sub> = 4,7 kΩ</p>
+    </div>
+    <div>
+      <h3>Wärme und Kühlkörper</h3>
+      <p>Frei an der Luft schafft ein TO-92-Gehäuse etwa 0,3 W, TO-126 (BD139) etwa 0,7 W und TO-220 (LM317) etwa 1 W. Darüber schlägt das Programm einen Kühlkörper vor: <span class="mono">R<sub>th</sub> ≤ 70 K / P − R<sub>th,JC</sub> − 1 K/W</span> (Umgebung bis 40 °C, Sperrschicht höchstens 110 °C). Achtung: Beim LM317 liegt die Kühlfahne an OUT, beim BD139 am Kollektor. Darum isoliert montieren.</p>
+    </div>
+  </div>
+  <div class="cols">
     <div>
       <h3>Power-LEDs</h3>
       <p>Für 1-W- und 3-W-LEDs und LED-Streifen mit hoher Leistung nimmt man fertige Schaltregler-Treiber (Buck-Treiber). Sie arbeiten mit über 90 % Wirkungsgrad, während ein Widerstand die Differenzspannung einfach in Wärme umsetzt. Power-LEDs brauchen immer einen Kühlkörper.</p>
@@ -460,7 +473,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>LEDs dimmt man am besten mit Pulsweitenmodulation: Die LED wird sehr schnell ein- und ausgeschaltet, die Farbe bleibt dabei gleich. Damit kein Flimmern sichtbar ist (auch nicht auf Kameras), sollte die Frequenz bei mindestens 1 kHz liegen.</p>
     </div>
   </div>
-  <p class="note"><strong>Im Auto:</strong> Die Bordspannung beträgt beim Laden bis 14,4 V. Rechne den Vorwiderstand mit diesem Wert, sonst fliesst bei laufendem Motor zu viel Strom.</p>
+  <p class="note"><strong>Im Auto:</strong> Die Bordspannung beträgt beim Laden bis 14,4 V. Rechne den Vorwiderstand mit diesem Wert, sonst fliesst bei laufendem Motor zu viel Strom, oder nimm eine Konstantstromquelle.</p>
 </section>
 
 <section id="waerme">

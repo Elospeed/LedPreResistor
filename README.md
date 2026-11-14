@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.3
+# Elospeed LedPreResistor 2.4
 
 **by Elospeed**
 
@@ -20,6 +20,8 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - Presets for red, yellow, green, blue, white and infrared LEDs, or your own forward voltage from the datasheet.
 - **LED preview**: a 5 mm LED in the chosen colour with anode, cathode and flat side labelled.
 - **Blink circuit** tab (since 2.3): NE555 astable (optionally with a diode across R2) or a two-transistor multivibrator (BC547). Calculates frequency, on/off times and the LED series resistor from the parts, or the timing resistors from a desired frequency and duty cycle (NE555) or the on times of both LEDs (multivibrator, 1:1 by default). The preview blinks at the calculated rate, with schematic, "How it is calculated" and checks (supply range, output current, transistor saturation, base reverse voltage).
+- **Constant current** tab (since 2.4): LM317 as a current source or a two-transistor current source. Enter the supply as a range (e.g. 12 … 14.4 V in a car) and see how little the LED current changes compared with a plain series resistor. Calculates the sense resistor, minimum supply voltage, power loss with heatsink hint, and suggests the part (LM317L/LM317, T1 as BC547, BC337 or BD139).
+- **Parallel strings** (since 2.4): several identical LED strings, each with its own resistor, with total current and power.
 - **LED info** "The LED" built in (F1, opens in your browser, also offline).
 - Copy the result with Ctrl+Shift+C. Comma and dot both work as decimal separator.
 - **English and German**: starts in German on a German Windows and in English everywhere else; View → Language switches at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).

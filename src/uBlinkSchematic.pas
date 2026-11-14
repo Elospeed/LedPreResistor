@@ -56,16 +56,46 @@ procedure DrawSchematic555(Canvas: TCanvas; const Rect: TRect;
 procedure DrawSchematicMulti(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 
-implementation
-
-uses
-  Math, uTheme, uRichText;
+{ ---------- Zeichenhilfen, auch für die Konstantstrom-Schaltpläne (uKsqSchematic) ---------- }
 
 type
-  { Umrechnung Vorlage -> Pixel }
+  { Umrechnung Vorlage -> Pixel: Massstab und Verschiebung }
   TMap = record
     S, OX, OY: Double;
   end;
+
+{ Vorlage der Grösse BW × BH mittig in Rect einpassen }
+function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
+{ Vorlage-Koordinaten in Pixel }
+function MX(const M: TMap; V: Double): Integer;
+function MY(const M: TMap; V: Double): Integer;
+function MP(const M: TMap; X, Y: Double): TPoint;
+{ Länge bzw. Strichstärke in Pixel, mindestens 1 }
+function MW(const M: TMap; V: Double): Integer;
+{ Text mit Auszeichnung (uRichText); Align 0 = links, 1 = Mitte, 2 = rechts;
+  BaseY ist die Grundlinie }
+procedure Txt(C: TCanvas; const M: TMap; BX, BaseY: Double; const T: string;
+  Color: TColor; Align: Integer; Bold: Boolean);
+{ Leitung durch die Punkte X1, Y1, X2, Y2, … }
+procedure Wire(C: TCanvas; const M: TMap; const P: array of Double);
+{ Verbindungspunkt }
+procedure Dot(C: TCanvas; const M: TMap; X, Y: Double; Color: TColor);
+{ Widerstand senkrecht als Rechteck ohne Farbringe }
+procedure ResV(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Col: TBlinkSchemColors);
+{ Widerstand senkrecht mit Farbringen }
+procedure ResBands(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Bands: TBandArray;
+  const Col: TBlinkSchemColors);
+{ LED nach unten zeigend, Dreieck von Top bis Top + 24 }
+procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
+  const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
+{ NPN-Transistor (Kreis, Basisbalken, Emitterpfeil) }
+procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
+  const Col: TBlinkSchemColors);
+
+implementation
+
+uses
+  Math, uTheme, uRichText, uSmooth;
 
 function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
 begin
@@ -76,12 +106,12 @@ end;
 
 function MX(const M: TMap; V: Double): Integer;
 begin
-  Result := Round(M.OX + V * M.S);
+  Result := SmoothCoord(M.OX + V * M.S);
 end;
 
 function MY(const M: TMap; V: Double): Integer;
 begin
-  Result := Round(M.OY + V * M.S);
+  Result := SmoothCoord(M.OY + V * M.S);
 end;
 
 function MP(const M: TMap; X, Y: Double): TPoint;
@@ -91,7 +121,7 @@ end;
 
 function MW(const M: TMap; V: Double): Integer;
 begin
-  Result := Max(1, Round(V * M.S));
+  Result := SmoothWidth(V * M.S);
 end;
 
 { Text mit Auszeichnung; Align 0 = links, 1 = Mitte, 2 = rechts;
@@ -102,6 +132,12 @@ var
   TW, TX, TY: Integer;  // Breite und Startpunkt
 begin
   if T = '' then Exit;
+  if SmoothCapturing then
+  begin
+    // geglättet: Text erst nach dem Verkleinern scharf zeichnen
+    SmoothAddText(C, MX(M, BX), MY(M, BaseY), T, Color, Align, Bold);
+    Exit;
+  end;
   if Bold then C.Font.Style := [fsBold] else C.Font.Style := [];
   TW := RichWidth(C, T);
   case Align of
@@ -147,7 +183,7 @@ begin
   C.Brush.Color := Col.Body;
   C.Pen.Color := Col.Accent;
   C.Pen.Width := MW(M, 1.8);
-  C.Rectangle(MX(M, X - 9), MY(M, Y1), MX(M, X + 9), MY(M, Y2));
+  SmoothRectangle(C, MX(M, X - 9), MY(M, Y1), MX(M, X + 9), MY(M, Y2));
   C.Pen.Color := Col.Line;
 end;
 
@@ -159,21 +195,26 @@ var
   T, B: Integer;      // Ober- und Unterkante in Pixeln
   L, R: Integer;      // linke und rechte Kante
   BH: Integer;        // Höhe eines Rings
+  P: Integer;         // ein Bildpunkt (beim Glätten mehrere Pixel)
 begin
+  // Rand und Ringe als gefüllte Flächen auf ganzen Bildpunkten, damit sie
+  // auch geglättet scharf bleiben (Stiftbreite 1: Kanten ohne Versatz)
+  C.Pen.Width := 1;
+  P := SmoothPx(1);
   L := MX(M, X - 9);
   R := MX(M, X + 9);
   T := MY(M, Y1);
   B := MY(M, Y2);
   C.Brush.Style := bsSolid;
+  C.Brush.Color := clrResistorEdge;
+  C.FillRect(L, T, R, B);
   C.Brush.Color := clrResistorBody;
-  C.Pen.Color := clrResistorEdge;
-  C.Pen.Width := 1;
-  C.Rectangle(L, T, R, B);
+  C.FillRect(L + P, T + P, R - P, B - P);
   N := Length(Bands);
   if N >= 3 then
   begin
-    BH := Max(2, (B - T) * 8 div 100);
-    C.Pen.Style := psClear;
+    BH := Max(2 * P, (B - T) * 8 div 100);
+    BH := BH - BH mod P;
     for I := 0 to N - 1 do
     begin
       // Ziffern und Multiplikator oben gruppiert, Toleranz unten abgesetzt
@@ -181,10 +222,10 @@ begin
         Y := T + (B - T) * (12 + I * (52 div (N - 1))) div 100
       else
         Y := T + (B - T) * 80 div 100;
+      Y := Y - (Y - T) mod P;
       C.Brush.Color := BandScreenColor(Bands[I]);
-      C.Rectangle(L + 1, Y, R, Y + BH);
+      C.FillRect(L + P, Y, R - P, Y + BH);
     end;
-    C.Pen.Style := psSolid;
   end;
   C.Pen.Color := Col.Line;
 end;
@@ -254,7 +295,7 @@ begin
   if M.S <= 0 then Exit;
   C := Canvas;
   C.Font.Name := FONT_UI;
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;
@@ -306,7 +347,7 @@ begin
   C.Brush.Color := Col.Body;
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
-  C.Rectangle(MX(M, 250), MY(M, 90), MX(M, 370), MY(M, 250));
+  SmoothRectangle(C, MX(M, 250), MY(M, 90), MX(M, 370), MY(M, 250));
 
   // Ausgang Pin 3 nach rechts
   case V.Conn of
@@ -358,9 +399,9 @@ begin
     Txt(C, M, 156, 158, V.R2Text, Col.Accent, 2, True);
   Txt(C, M, 150, 244, V.CText, Col.Accent, 2, True);
   Txt(C, M, 416, 258, '10 nF', Col.Dim, 0, False);
-  C.Font.Height := -Max(8, Round(16 * M.S));
+  C.Font.Height := SmoothFontHeight(8, 16 * M.S);
   Txt(C, M, 316, 196, 'NE555', Col.Text, 1, True);
-  C.Font.Height := -Max(7, Round(10 * M.S));
+  C.Font.Height := SmoothFontHeight(7, 10 * M.S);
   Txt(C, M, 254, 124, '7 DIS', Col.Dim, 0, False);
   Txt(C, M, 254, 174, '6 THR', Col.Dim, 0, False);
   Txt(C, M, 254, 204, '2 TRI', Col.Dim, 0, False);
@@ -369,7 +410,7 @@ begin
   Txt(C, M, 270, 104, '8', Col.Dim, 0, False);
   Txt(C, M, 331, 104, '4', Col.Dim, 0, False);
   Txt(C, M, 304, 244, '1', Col.Dim, 0, False);
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
   if V.Conn = cnVcc then
     Txt(C, M, 376, 168, V.UOutText, Col.Dim, 0, False)
   else
@@ -440,7 +481,7 @@ begin
   if M.S <= 0 then Exit;
   C := Canvas;
   C.Font.Name := FONT_UI;
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;

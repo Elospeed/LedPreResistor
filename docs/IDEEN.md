@@ -6,12 +6,10 @@ Ideen, die (noch) nicht eingeplant sind. Wird eine davon umgesetzt, wandert sie 
 
 | Idee | Notiz |
 |---|---|
-| **Parallelschaltung mehrerer LEDs** | Jede LED bzw. jeder Strang bekommt einen eigenen Vorwiderstand (nie mehrere LEDs parallel an einem Widerstand). Anzeige: Anzahl Stränge, Gesamtstrom, Gesamtleistung. |
 | Weitere Normreihen (E6, E48, E192) | Tabellen in `uESeries` ergänzen; E48/E192 ebenfalls mit 5 Ringen. |
 | Rückwärtsrechnung | Vorhandenen Widerstand eingeben und Strom durch die LED anzeigen. |
 | AppImage für Linux | Eine Datei, die GTK2 selbst mitbringt (für Systeme ohne GTK2). Braucht linuxdeploy/appimagetool im Build. Erst, wenn jemand nach dem tar.gz danach fragt. |
 | Linux: Flatpak / Paketquellen | Flathub, AUR. Später, falls Nachfrage. |
-| Konstantstromquelle statt Widerstand | Hinweis, ab welcher Leistung ein Widerstand unsinnig wird. |
 
 ## Weitere LED-Schaltungen zum Berechnen
 
@@ -19,10 +17,8 @@ Typische Hobby-Schaltungen rund um LEDs, die LedPreResistor später berechnen k�
 
 | Bereich | Schaltung | Was gerechnet würde |
 |---|---|---|
-| Grundlagen | ⭐ Mehrere LEDs in Reihe und parallel (je Strang ein Widerstand) | Anzahl Stränge, Vorwiderstände, Gesamtstrom, Gesamtleistung (siehe oben «Parallelschaltung») |
 | Grundlagen | LED-Matrix aus Reihen-Strängen | beste Aufteilung in Stränge für eine gegebene Speisespannung |
-| Konstantstrom | ⭐ Konstantstromquelle mit LM317 | R = 1,25 V / I, Leistung am LM317, minimale Speisespannung |
-| Konstantstrom | Zwei-Transistor-KSQ, Konstantstromdiode | Fühlerwiderstand R = 0,6 V / I, Verlustleistung |
+| Konstantstrom | Konstantstromdiode (z. B. CRD) | Strombereich, Mindestspannung (LM317 und zwei Transistoren seit 2.4) |
 | Schalten | ⭐ LED am Mikrocontroller-Pin, mit NPN-Transistor oder MOSFET | Pin-Strom, Basiswiderstand (Sättigung) bzw. Gatewiderstand |
 | Schalten | Optokoppler-Eingang | Vorwiderstand der IR-LED, CTR-Hinweis |
 | Netz/AC | LED an 230 V mit Kondensatornetzteil (X2) | Kapazität aus dem Strom; deutlicher Sicherheitshinweis |

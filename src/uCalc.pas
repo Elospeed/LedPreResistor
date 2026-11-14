@@ -44,6 +44,8 @@ type
     N: Integer;         // Anzahl LEDs in Reihe
     Series: TESeries;   // Normreihe für den Widerstand
     RatingW: Double;    // gewählte Bauform (Nennleistung) in W, z. B. 0.25
+    Strings: Integer;   // Stränge parallel, jeder mit eigenem Widerstand
+                        // (0 = 1 Strang, negativ = ungültige Eingabe)
   end;
 
   { Ergebnis der Prüfung der Eingaben }
@@ -54,7 +56,8 @@ type
     csInvalidI,      // Strom fehlt oder <= 0
     csInvalidN,      // Anzahl LEDs < 1
     csUTooLow,       // U <= n * Ud: es bleibt keine Spannung für den Widerstand
-    csNoStdValue     // kein Normwert gefunden (sollte nicht vorkommen)
+    csNoStdValue,    // kein Normwert gefunden (sollte nicht vorkommen)
+    csInvalidStrings // Stränge parallel < 1
   );
 
   { Bewertung der Auslastung des Widerstands }
@@ -71,10 +74,12 @@ type
     RCalc: Double;        // berechneter Widerstand in Ω
     Std: TStdValue;       // gewählter Normwert (nächsthöher)
     R: Double;            // Normwert in Ω (= Std.Value)
-    IAct: Double;         // tatsächlicher Strom mit dem Normwert in A
-    PR: Double;           // Leistung im Widerstand in W
-    PLed: Double;         // Leistung in allen LEDs zusammen in W
-    PTotal: Double;       // Gesamtleistung aus der Quelle in W
+    IAct: Double;         // tatsächlicher Strom mit dem Normwert in A (je Strang)
+    Strings: Integer;     // Anzahl Stränge (mindestens 1)
+    ITotal: Double;       // Strom aller Stränge zusammen in A
+    PR: Double;           // Leistung in einem Widerstand in W
+    PLed: Double;         // Leistung in allen LEDs zusammen in W (alle Stränge)
+    PTotal: Double;       // Gesamtleistung aus der Quelle in W (alle Stränge)
     Load: Double;         // Auslastung der gewählten Bauform (0.66 = 66 %)
     LoadLevel: TLoadLevel; // Bewertung dieser Auslastung
     RecommendedW: Double; // kleinste Bauform mit Auslastung <= 50 %, 0 = keine bis 1 W
@@ -148,6 +153,8 @@ begin
     Result.Status := csInvalidI
   else if Input.N < 1 then
     Result.Status := csInvalidN
+  else if Input.Strings < 0 then
+    Result.Status := csInvalidStrings
   else if Input.U <= Input.N * Input.Ud then
     Result.Status := csUTooLow;
   if Result.Status <> csOk then
@@ -164,9 +171,12 @@ begin
 
   Result.R := Result.Std.Value;
   Result.IAct := Result.UR / Result.R;
+  // jeder Strang hat seinen eigenen Widerstand mit den gleichen Werten
+  Result.Strings := Max(1, Input.Strings);
+  Result.ITotal := Result.Strings * Result.IAct;
   Result.PR := Result.UR * Result.IAct;
-  Result.PLed := Input.N * Input.Ud * Result.IAct;
-  Result.PTotal := Input.U * Result.IAct;
+  Result.PLed := Input.N * Input.Ud * Result.ITotal;
+  Result.PTotal := Input.U * Result.ITotal;
 
   if Input.RatingW > 0 then
     Result.Load := Result.PR / Input.RatingW;

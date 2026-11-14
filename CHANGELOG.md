@@ -7,6 +7,28 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.4 – noch nicht veröffentlicht
+
+### Konstantstrom
+- Neuer Reiter «Konstantstrom» (Ansicht → Konstantstrom, Strg+3) mit zwei Schaltungen: LM317 als Stromquelle und Konstantstromquelle mit zwei Transistoren. Die gewählte Schaltung bleibt beim nächsten Start erhalten.
+- Speisespannung als Bereich «von … bis» (z. B. 12 … 14,4 V im Auto): Das Programm zeigt, wie wenig sich der Strom über den Bereich ändert, und zum Vergleich, um wie viel er mit einem einfachen Vorwiderstand steigen würde.
+- LM317: Fühlerwiderstand R = 1,25 V / I aus der E-Reihe (nächsthöherer Wert), Leistung und Belastbarkeit von R, Mindestspannung (LEDs + 1,25 V + ca. 2 V Regler), Verlust im Regler. Bis 100 mA wird der LM317L (TO-92) vorgeschlagen, darüber der LM317 (TO-220), mit Hinweis auf einen Kühlkörper samt nötigem Wärmewiderstand. Warnungen unter 10 mA (Mindestlast) und über 40 V am Regler.
+- Zwei Transistoren: Fühlerwiderstand R_S = 0,6 V / I und Basiswiderstand R_B; T1 wird nach Strom und Verlustleistung vorgeschlagen (BC547, BC337 oder BD139), T2 bleibt ein BC547. Schaltplan mit sauberen Transistorsymbolen.
+- Karten, Rechenweg, Statuszeile und Kopieren (Strg+Umschalt+C) wie in den anderen Reitern, Deutsch und Englisch.
+- LED-Info: Kapitel «Konstantstrom» neu geschrieben (LM317, zwei Transistoren, Wärme und Kühlkörper).
+
+### Vorwiderstand
+- Neues Feld «Stränge parallel»: mehrere gleiche LED-Stränge, jeder mit eigenem Vorwiderstand. Karten, Schaltplan und Statuszeile zeigen Gesamtstrom und Gesamtleistung. LED-Info: Abschnitt zu parallelen Strängen.
+
+### Rechenweg
+- In Zeilen mit eingesetzten Zahlen steht jetzt × statt · (z. B. 0,693 × 69 kΩ × 10 µF); Formeln mit Symbolen behalten den Punkt.
+- Ist der Schaltplan zu klein, klappt der Rechenweg automatisch zu.
+
+### Schaltpläne
+- Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.
+
+---
+
 ## 2.3 – 11. November 2026
 
 ### Blinkschaltung
