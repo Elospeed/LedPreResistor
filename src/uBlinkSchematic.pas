@@ -23,7 +23,8 @@
              Emitter schräg, Pfeil am Emitter zeigt nach aussen (NPN).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  geglättet, Transistorsymbole, Kommentare
+  Versionen: 2.4  14.11.2026  geglättet, Transistorsymbole, U_OUT beim
+                              Wechselblinker unten, Kommentare
              2.3  11.11.2026  neu: Schaltpläne NE555 und Multivibrator
 ==============================================================================}
 unit uBlinkSchematic;
@@ -597,7 +598,9 @@ begin
   Txt(C, M, 331, 104, '4', Col.Dim, 0, False);
   Txt(C, M, 304, 244, '1', Col.Dim, 0, False);
   C.Font.Height := SmoothFontHeight(9, 12 * M.S);
-  if V.Conn = cnVcc then
+  // U_OUT unter die Ausgangsleitung, sobald eine LED von +U_B kommt: oben
+  // läge der Text auf deren senkrechter Leitung (x = 430)
+  if V.Conn in [cnVcc, cnBoth] then
     Txt(C, M, 376, 168, V.UOutText, Col.Dim, 0, False)
   else
     Txt(C, M, 376, 142, V.UOutText, Col.Dim, 0, False);
