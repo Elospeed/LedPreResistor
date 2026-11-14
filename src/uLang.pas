@@ -1,27 +1,37 @@
-{ Mehrsprachigkeit (Deutsch und Englisch), Aufbau wie uLang in StemMaker.
+{==============================================================================
+  uLang - Mehrsprachigkeit (Deutsch und Englisch)
+==============================================================================
+  Zweck:     Übersetzt alle sichtbaren Texte. Aufbau wie uLang in StemMaker.
 
-  Das Programm ist auf Deutsch geschrieben. Jeder sichtbare Text läuft durch
-  die kleine Funktion _():
+  Idee:      Das Programm ist auf Deutsch geschrieben. Jeder sichtbare Text
+             läuft durch die kleine Funktion _():
 
-        Caption := _('Speisespannung');
+               Caption := _('Speisespannung');
 
-  _() sucht den deutschen Text in der geladenen Übersetzung. Gibt es eine,
-  kommt sie zurück, sonst einfach der deutsche Text. Es kann also nie
-  «nichts» angezeigt werden, schlimmstenfalls steht etwas auf Deutsch da.
+             _() sucht den deutschen Text in der geladenen Übersetzung. Gibt
+             es eine, kommt sie zurück, sonst der deutsche Text. Es kann also
+             nie «nichts» angezeigt werden; schlimmstenfalls steht etwas auf
+             Deutsch da.
 
-  DIE ÜBERSETZUNG
-  Steht in src/lang/en.po im üblichen gettext-Format (mit Poedit
-  bearbeitbar) und steckt als Ressource LANG_EN in der EXE. So bleibt es
-  eine einzige EXE ohne lang-Ordner.
+  Über-      Steht in src/lang/en.po im üblichen gettext-Format (mit Poedit
+  setzung:   bearbeitbar) und steckt als Ressource LANG_EN in der EXE. So
+             bleibt es eine einzige EXE ohne lang-Ordner.
 
-        msgid "Speisespannung"
-        msgstr "Supply voltage"
+               msgid "Speisespannung"
+               msgstr "Supply voltage"
 
-  DIE SPRACHWAHL
-  Beim ersten Start: Deutsch bei deutschem Windows (Linux: LANG=de...),
-  sonst Englisch. Wählt man oben rechts eine Sprache (DE/EN), steht sie in
-  LedPreResistor.ini neben der EXE (Linux: ~/.config/LedPreResistor/).
-  Logik stützt sich nie auf übersetzten Text, nur auf den Sprachcode. }
+  Sprach-    Beim ersten Start: Deutsch bei deutschem Windows (Linux:
+  wahl:      LANG=de...), sonst Englisch. Wählt man oben rechts DE oder EN,
+             steht die Wahl in LedPreResistor.ini neben der EXE (Linux:
+             ~/.config/LedPreResistor/).
+
+  Regel:     Logik stützt sich nie auf übersetzten Text, nur auf den
+             Sprachcode ('de' oder 'en').
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Sprachwechsel über DE/EN statt Menü, Kommentare
+             2.1  08.11.2026  neu: Deutsch/Englisch
+==============================================================================}
 unit uLang;
 
 {$mode objfpc}{$H+}
@@ -31,73 +41,138 @@ interface
 uses
   Classes, SysUtils;
 
-{ Text übersetzen (deutsch rein -> aktuelle Sprache raus) }
+{==============================================================================
+  ÖFFENTLICHE FUNKTIONEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  _
+------------------------------------------------------------------------------
+  Übersetzt einen Text: deutsch rein, aktuelle Sprache raus.
+  Parameter: S - deutscher Originaltext
+  Rückgabe:  Übersetzung; ohne Übersetzung der deutsche Text
+------------------------------------------------------------------------------}
 function _(const S: string): string;
 
-{ Sprache laden: 'de' = Original (keine Übersetzung nötig), 'en' aus der
-  Ressource LANG_EN. Gibt False zurück, wenn die Übersetzung fehlt; dann
-  bleibt es bei Deutsch. }
+{------------------------------------------------------------------------------
+  LangLoad
+------------------------------------------------------------------------------
+  Lädt eine Sprache.
+  Parameter: Code - 'de' = Original (keine Übersetzung nötig),
+                    'en' = aus der Ressource LANG_EN
+  Rückgabe:  False, wenn die Übersetzung fehlt; dann bleibt es bei Deutsch
+------------------------------------------------------------------------------}
 function LangLoad(const Code: string): Boolean;
 
-{ aktuell geladene Sprache, 'de' oder 'en' }
+{------------------------------------------------------------------------------
+  LangCode
+------------------------------------------------------------------------------
+  Rückgabe:  aktuell geladene Sprache, 'de' oder 'en'
+------------------------------------------------------------------------------}
 function LangCode: string;
 
-{ Sprache von Windows: 'de' bei deutschem Windows, sonst 'en' }
+{------------------------------------------------------------------------------
+  LangSystemDefault
+------------------------------------------------------------------------------
+  Rückgabe:  Sprache des Systems: 'de' bei deutschem Windows (Linux:
+             Umgebungsvariable LANG beginnt mit «de»), sonst 'en'
+------------------------------------------------------------------------------}
 function LangSystemDefault: string;
 
-{ gespeicherte Sprache aus der INI, sonst die Sprache von Windows }
+{------------------------------------------------------------------------------
+  LangStartCode
+------------------------------------------------------------------------------
+  Rückgabe:  Sprache für den Programmstart: die gespeicherte Wahl aus der
+             INI, sonst die Sprache des Systems
+------------------------------------------------------------------------------}
 function LangStartCode: string;
 
-{ gewählte Sprache in der INI speichern (Fehler werden still übergangen,
-  z. B. wenn die EXE in einem schreibgeschützten Ordner liegt) }
+{------------------------------------------------------------------------------
+  LangSaveChoice
+------------------------------------------------------------------------------
+  Speichert die gewählte Sprache in der INI.
+  Parameter: Code - 'de' oder 'en'
+  Fehler werden still übergangen (z. B. EXE in einem schreibgeschützten
+  Ordner); dann gilt die Wahl nur bis zum Beenden.
+------------------------------------------------------------------------------}
 procedure LangSaveChoice(const Code: string);
 
-{ Pfad der Einstellungsdatei (Windows: neben der EXE, Linux:
-  ~/.config/LedPreResistor/); auch für andere Einstellungen als die Sprache }
+{------------------------------------------------------------------------------
+  IniFileName
+------------------------------------------------------------------------------
+  Rückgabe:  vollständiger Pfad der Einstellungsdatei
+             (Windows: neben der EXE, Linux: ~/.config/LedPreResistor/).
+             Auch für andere Einstellungen als die Sprache.
+------------------------------------------------------------------------------}
 function IniFileName: string;
 
-{ Übersetzung aus einem Text im .po-Format lesen; für die Tests offen }
+{------------------------------------------------------------------------------
+  LangLoadFromPo
+------------------------------------------------------------------------------
+  Liest eine Übersetzung aus Zeilen im .po-Format. Öffentlich, damit die
+  Tests sie ohne Ressource prüfen können.
+  Parameter: PoLines - Zeilen der .po-Datei
+             Code    - Sprachcode, der danach gilt
+------------------------------------------------------------------------------}
 procedure LangLoadFromPo(PoLines: TStrings; const Code: string);
 
 implementation
 
 uses
-  IniFiles {$IFDEF WINDOWS}, Windows{$ENDIF};  // Windows: RT_RCDATA
+  IniFiles {$IFDEF WINDOWS}, Windows{$ENDIF};            // Windows: RT_RCDATA
 
+{==============================================================================
+  KONSTANTEN UND VARIABLEN
+==============================================================================}
 const
-  { Name der INI-Datei neben der EXE }
-  INI_NAME = 'LedPreResistor.ini';
-  { Abschnitt und Schlüssel für die Sprache }
-  INI_SECTION = 'Allgemein';
-  INI_KEY = 'Sprache';
+  INI_NAME = 'LedPreResistor.ini';                       // Name der Einstellungsdatei
+  INI_SECTION = 'Allgemein';                             // Abschnitt in der INI
+  INI_KEY = 'Sprache';                                   // Schlüssel für die Sprache
 
 var
-  GCode: string = 'de';        // aktuelle Sprache
-  GTable: TStringList = nil;   // sortierte deutsche Originaltexte; das
-                               // «Objekt» daneben ist die Nummer der
-                               // Übersetzung in GTrans
-  GTrans: TStringList = nil;   // die Übersetzungen
+  GCode: string = 'de';                                  // aktuelle Sprache
+  GTable: TStringList = nil;                             // sortierte deutsche Originaltexte; das
+                                                         // «Objekt» daneben ist die Nummer der
+                                                         // Übersetzung in GTrans
+  GTrans: TStringList = nil;                             // die Übersetzungen
 
+{==============================================================================
+  ÜBERSETZEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  LangCode - siehe Interface
+------------------------------------------------------------------------------}
 function LangCode: string;
 begin
   Result := GCode;
 end;
 
-{ Nachschlagen. GTable ist sortiert -> schnelle Suche mit Find. }
+{------------------------------------------------------------------------------
+  _
+------------------------------------------------------------------------------
+  siehe Interface. GTable ist sortiert, darum ist die Suche mit Find
+  schnell (halbieren statt alle durchgehen).
+------------------------------------------------------------------------------}
 function _(const S: string): string;
 var
-  I: Integer;  // Fundstelle in GTable
+  I: Integer;                                            // Fundstelle in GTable
 begin
   Result := S;
-  if (GTable = nil) or (S = '') then Exit;
+  if (GTable = nil) or (S = '') then Exit;               // Deutsch: nichts zu tun
   if GTable.Find(S, I) then
-    Result := GTrans[PtrInt(GTable.Objects[I])];
+    Result := GTrans[PtrInt(GTable.Objects[I])];         // Nummer -> Übersetzung
 end;
 
-{ Sonderzeichen in Anführungszeichen auflösen: \n \t \" \\ }
+{------------------------------------------------------------------------------
+  Unescape
+------------------------------------------------------------------------------
+  Löst Sonderzeichen in einem .po-Text auf: \n (neue Zeile), \t (Tab),
+  \" (Anführungszeichen), \\ (Rückstrich). Unbekannte bleiben stehen.
+------------------------------------------------------------------------------}
 function Unescape(const S: string): string;
 var
-  I: Integer;  // Position im Text
+  I: Integer;                                            // Position im Text
 begin
   Result := '';
   I := 1;
@@ -121,10 +196,16 @@ begin
   end;
 end;
 
-{ Text zwischen dem ersten und dem letzten Anführungszeichen einer Zeile }
+{------------------------------------------------------------------------------
+  Quoted
+------------------------------------------------------------------------------
+  Rückgabe:  Text zwischen dem ersten und dem letzten Anführungszeichen
+             einer Zeile, Sonderzeichen aufgelöst; ohne zwei
+             Anführungszeichen leer
+------------------------------------------------------------------------------}
 function Quoted(const Line: string): string;
 var
-  A, B: Integer;  // Lage der beiden Anführungszeichen
+  A, B: Integer;                                         // Lage der beiden Anführungszeichen
 begin
   A := Pos('"', Line);
   B := Length(Line);
@@ -135,26 +216,35 @@ begin
     Result := '';
 end;
 
-{ .po lesen. Aufbau (vereinfacht):
-      #, fuzzy                    <- unsicher übersetzt -> weglassen
-      msgid "Erste Zeile "
-      "Fortsetzung"               <- mehrzeilige Texte werden zusammengehängt
-      msgstr "Translation" }
+{------------------------------------------------------------------------------
+  LangLoadFromPo - siehe Interface
+------------------------------------------------------------------------------
+  Aufbau einer .po-Datei (vereinfacht):
+  #, fuzzy                    <- unsicher übersetzt -> weglassen
+  msgid "Erste Zeile "
+  "Fortsetzung"               <- mehrzeilige Texte werden zusammengehängt
+  msgstr "Translation"
+------------------------------------------------------------------------------}
 procedure LangLoadFromPo(PoLines: TStrings; const Code: string);
 var
-  I: Integer;          // Zeilenzähler
-  Mode: Integer;       // 0 = nichts, 1 = in msgid, 2 = in msgstr
-  Line: string;        // aktuelle Zeile ohne Leerraum
-  Id, Str: string;     // deutscher Text und Übersetzung des Eintrags
-  Fuzzy: Boolean;      // Eintrag als unsicher markiert
+  I: Integer;                                            // Zeilenzähler
+  Mode: Integer;                                         // 0 = nichts, 1 = in msgid, 2 = in msgstr
+  Line: string;                                          // aktuelle Zeile ohne Leerraum
+  Id, Str: string;                                       // deutscher Text und Übersetzung des Eintrags
+  Fuzzy: Boolean;                                        // Eintrag als unsicher markiert
 
+  {----------------------------------------------------------------------------
+    Flush
+  ----------------------------------------------------------------------------
+    Übernimmt den fertigen Eintrag (leere und unsichere weglassen) und
+    beginnt einen neuen.
+  ----------------------------------------------------------------------------}
   procedure Flush;
   begin
-    // fertigen Eintrag übernehmen (leere und unsichere weglassen)
     if (Id <> '') and (Str <> '') and not Fuzzy then
     begin
       GTrans.Add(Str);
-      GTable.AddObject(Id, TObject(PtrInt(GTrans.Count - 1)));
+      GTable.AddObject(Id, TObject(PtrInt(GTrans.Count - 1)));  // Nummer der Übersetzung merken
     end;
     Id := ''; Str := ''; Fuzzy := False; Mode := 0;
   end;
@@ -163,24 +253,24 @@ begin
   FreeAndNil(GTable);
   FreeAndNil(GTrans);
   GTable := TStringList.Create;
-  GTable.CaseSensitive := True;
+  GTable.CaseSensitive := True;                          // «Rot» und «rot» sind verschieden
   GTrans := TStringList.Create;
   Id := ''; Str := ''; Fuzzy := False; Mode := 0;
   for I := 0 to PoLines.Count - 1 do
   begin
     Line := Trim(PoLines[I]);
     if Line = '' then
-      Flush
+      Flush                                              // Leerzeile = Eintrag fertig
     else if Copy(Line, 1, 2) = '#,' then
     begin
       if Mode = 2 then Flush;
-      Fuzzy := Pos('fuzzy', Line) > 0;
+      Fuzzy := Pos('fuzzy', Line) > 0;                   // unsicher übersetzt
     end
     else if Line[1] = '#' then
       // Kommentar
     else if Copy(Line, 1, 6) = 'msgid ' then
     begin
-      if Mode = 2 then Flush;  // neuer Eintrag ohne Leerzeile davor
+      if Mode = 2 then Flush;                            // neuer Eintrag ohne Leerzeile davor
       Id := Quoted(Line);
       Mode := 1;
     end
@@ -191,41 +281,52 @@ begin
     end
     else if Line[1] = '"' then
       case Mode of
-        1: Id := Id + Quoted(Line);
-        2: Str := Str + Quoted(Line);
+        1: Id := Id + Quoted(Line);                      // Fortsetzung des Originals
+        2: Str := Str + Quoted(Line);                    // Fortsetzung der Übersetzung
       end;
   end;
   Flush;
-  GTable.Sorted := True;  // erst JETZT sortieren
+  GTable.Sorted := True;                                 // erst JETZT sortieren
   GCode := LowerCase(Code);
 end;
 
+{------------------------------------------------------------------------------
+  LangLoad - siehe Interface
+------------------------------------------------------------------------------
+  Ablauf:
+    1. Alte Übersetzung weg, zuerst Deutsch
+    2. Deutsch gewünscht: fertig
+    3. Sonst Ressource LANG_<CODE> aus der EXE lesen und auswerten
+------------------------------------------------------------------------------}
 function LangLoad(const Code: string): Boolean;
 var
-  ResName: string;          // Name der Ressource, z. B. LANG_EN
-  Res: TResourceStream;     // Übersetzung aus der EXE
-  L: TStringList;           // Zeilen der .po
+  ResName: string;                                       // Name der Ressource, z. B. LANG_EN
+  Res: TResourceStream;                                  // Übersetzung aus der EXE
+  L: TStringList;                                        // Zeilen der .po
 begin
+  // ----- 1. Zuerst Deutsch -----
   FreeAndNil(GTable);
   FreeAndNil(GTrans);
   GCode := 'de';
+  // ----- 2. Deutsch gewünscht? -----
   if (Code = '') or SameText(Code, 'de') then
-    Exit(True);  // Deutsch = Original
+    Exit(True);                                          // Deutsch = Original
   Result := False;
-  ResName := 'LANG_' + UpperCase(Code);
+  // ----- 3. Übersetzung aus der EXE -----
+  ResName := 'LANG_' + UpperCase(Code);                  // z. B. LANG_EN
   if FindResource(HInstance, PChar(ResName), RT_RCDATA) = 0 then
-    Exit;
+    Exit;                                                // nicht eingebaut
   L := TStringList.Create;
   try
     try
       Res := TResourceStream.Create(HInstance, ResName, RT_RCDATA);
       try
-        L.LoadFromStream(Res);  // UTF-8 wie der Rest
+        L.LoadFromStream(Res);                           // UTF-8 wie der Rest
       finally
         Res.Free;
       end;
     except
-      Exit;  // Ressource fehlt: bei Deutsch bleiben
+      Exit;                                              // Ressource fehlt: bei Deutsch bleiben
     end;
     LangLoadFromPo(L, Code);
     Result := True;
@@ -234,18 +335,29 @@ begin
   end;
 end;
 
-{ Windows-Sprache: GetUserDefaultUILanguage liefert z. B. $0807 (Deutsch
-  Schweiz) oder $0409 (Englisch USA). Die unteren 10 Bit sind die
-  Hauptsprache, $07 = Deutsch. }
+{==============================================================================
+  SPRACHWAHL UND EINSTELLUNGEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  GetUserDefaultUILanguage (Windows)
+------------------------------------------------------------------------------
+  Sprache der Windows-Oberfläche, z. B. $0807 (Deutsch Schweiz) oder
+  $0409 (Englisch USA). Die unteren 10 Bit sind die Hauptsprache,
+  $07 = Deutsch.
+------------------------------------------------------------------------------}
 {$IFDEF WINDOWS}
 function GetUserDefaultUILanguage: Word; stdcall; external 'kernel32.dll';
 {$ENDIF}
 
+{------------------------------------------------------------------------------
+  LangSystemDefault - siehe Interface
+------------------------------------------------------------------------------}
 function LangSystemDefault: string;
 begin
   Result := 'en';
   {$IFDEF WINDOWS}
-  if GetUserDefaultUILanguage and $3FF = $07 then
+  if GetUserDefaultUILanguage and $3FF = $07 then        // Hauptsprache Deutsch
     Result := 'de';
   {$ELSE}
   if LowerCase(Copy(GetEnvironmentVariable('LANG'), 1, 2)) = 'de' then
@@ -253,9 +365,13 @@ begin
   {$ENDIF}
 end;
 
-{ Windows: INI neben der EXE (portabel). Linux: Programme liegen oft in
+{------------------------------------------------------------------------------
+  IniFileName - siehe Interface
+------------------------------------------------------------------------------
+  Windows: INI neben der EXE (portabel). Linux: Programme liegen oft in
   schreibgeschützten Ordnern (z. B. /opt, /usr/bin), darum dort im
-  Einstellungsordner des Benutzers: ~/.config/LedPreResistor/ }
+  Einstellungsordner des Benutzers: ~/.config/LedPreResistor/
+------------------------------------------------------------------------------}
 function IniFileName: string;
 begin
   {$IFDEF WINDOWS}
@@ -270,32 +386,38 @@ begin
   {$ENDIF}
 end;
 
+{------------------------------------------------------------------------------
+  LangStartCode - siehe Interface
+------------------------------------------------------------------------------}
 function LangStartCode: string;
 var
-  Ini: TIniFile;  // Einstellungen neben der EXE
+  Ini: TIniFile;                                         // Einstellungen neben der EXE
 begin
   Result := '';
   if FileExists(IniFileName) then
   try
     Ini := TIniFile.Create(IniFileName);
     try
-      Result := LowerCase(Trim(Ini.ReadString(INI_SECTION, INI_KEY, '')));
+      Result := LowerCase(Trim(Ini.ReadString(INI_SECTION, INI_KEY, '')));  // [Allgemein] Sprache=
     finally
       Ini.Free;
     end;
   except
     Result := '';
   end;
-  if (Result <> 'de') and (Result <> 'en') then
+  if (Result <> 'de') and (Result <> 'en') then          // nichts oder Unsinn gespeichert
     Result := LangSystemDefault;
 end;
 
+{------------------------------------------------------------------------------
+  LangSaveChoice - siehe Interface
+------------------------------------------------------------------------------}
 procedure LangSaveChoice(const Code: string);
 var
-  Ini: TIniFile;  // Einstellungen (Windows: neben der EXE)
+  Ini: TIniFile;                                         // Einstellungen (Windows: neben der EXE)
 begin
   try
-    ForceDirectories(ExtractFilePath(IniFileName));  // Linux: ~/.config/...
+    ForceDirectories(ExtractFilePath(IniFileName));      // Linux: ~/.config/...
     Ini := TIniFile.Create(IniFileName);
     try
       Ini.WriteString(INI_SECTION, INI_KEY, Code);
