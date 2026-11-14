@@ -31,6 +31,9 @@
                                 R = 1,25 V / 0,020 A = 62,5 Ω -> 68 Ω (E12)
                                 I = 1,25 V / 68 Ω = 18,4 mA
                                 P = (12 - 3,2 - 1,25) V * 18,4 mA = 139 mW
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  neu: Konstantstrom mit LM317 und zwei Transistoren
 ==============================================================================}
 unit uKsq;
 
@@ -434,7 +437,7 @@ begin
   if U1 > Result.ULeds then
   begin
     Result.RvCalc := (U1 - Result.ULeds) / Input.I;      // z. B. (12 - 3,2) V / 20 mA = 440 Ω
-    Result.RvRise := (U2 - Result.ULeds) / (U1 - Result.ULeds) - 1; // z. B. 11,2 / 8,8 - 1 = +27 %
+    Result.RvRise := (U2 - Result.ULeds) / (U1 - Result.ULeds) - 1;  // z. B. 11,2 / 8,8 - 1 = +27 %
   end;
 end;
 
