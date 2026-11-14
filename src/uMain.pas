@@ -2552,7 +2552,7 @@ begin
     Img.Parent := F;
     Img.SetBounds(20, 20, 48, 48);
     Img.Stretch := True;
-    Img.AntialiasingMode := amOn;                        // geglättet hochrechnen (Symbol hat nur 32 px)
+    Img.AntialiasingMode := amOn;                        // falls doch gerechnet wird: geglättet
     Img.Picture.Icon.Assign(Application.Icon);
     L := TLabel.Create(F);
     L.Parent := F;
@@ -2569,6 +2569,10 @@ begin
     B.Cancel := True;                                    // Esc schliesst auch
     B.SetBounds(356, 148, 84, 28);
     SkaliereDialog(F);
+    // erst jetzt ist die Grösse in Bildschirm-Pixeln bekannt: die passende
+    // Fassung aus der ICO-Datei nehmen (16 bis 256 px), sonst würde die
+    // erste hochgerechnet
+    Img.Picture.Icon.Current := Img.Picture.Icon.GetBestIndexForSize(Size(Img.Width, Img.Height));
     F.ShowModal;
   finally
     F.Free;
