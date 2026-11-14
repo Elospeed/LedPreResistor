@@ -294,51 +294,6 @@ msgid "LED-VORSCHAU"
 msgstr "LED PREVIEW"
 
 
-#: uMain.pas rsMenuFile
-msgid "&Datei"
-msgstr "&File"
-
-#: uMain.pas rsMenuExit
-msgid "&Beenden"
-msgstr "E&xit"
-
-#: uMain.pas rsMenuEdit
-msgid "&Bearbeiten"
-msgstr "&Edit"
-
-#: uMain.pas rsMenuReset
-msgid "Eingaben &zurücksetzen"
-msgstr "&Reset inputs"
-
-#: uMain.pas rsMenuView
-msgid "&Ansicht"
-msgstr "&View"
-
-#: uMain.pas rsMenuRechenweg
-msgid "&Rechenweg"
-msgstr "&Calculation steps"
-
-
-#: uMain.pas rsMenuLang
-msgid "&Sprache (Language)"
-msgstr "&Language (Sprache)"
-
-#: uMain.pas rsMenuHelp
-msgid "&Hilfe"
-msgstr "&Help"
-
-#: uMain.pas rsMenuLedInfo
-msgid "&LED-Info (Die Leuchtdiode) …"
-msgstr "&LED info (The LED) …"
-
-#: uMain.pas rsMenuKofi
-msgid "Einen Kaffee spendieren (Ko-fi) …"
-msgstr "Buy me a coffee (Ko-fi) …"
-
-#: uMain.pas rsMenuAbout
-msgid "Ü&ber LedPreResistor …"
-msgstr "&About LedPreResistor …"
-
 #: uMain.pas rsAbout
 msgid "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004."
 msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware «LED Pre-Resistor»."
@@ -350,14 +305,6 @@ msgstr "Series resistor"
 #: uMain.pas rsTabBlink
 msgid "Blinkschaltung"
 msgstr "Blink circuit"
-
-#: uMain.pas rsMenuModeR
-msgid "&Vorwiderstand"
-msgstr "&Series resistor"
-
-#: uMain.pas rsMenuModeB
-msgid "Blink&schaltung"
-msgstr "&Blink circuit"
 
 #: uMain.pas rsHeadCircuit
 msgid "SCHALTUNG"
@@ -756,10 +703,6 @@ msgstr "Parallel strings: %d, each with its own series resistor; total current %
 msgid "Konstantstrom"
 msgstr "Constant current"
 
-#: uMain.pas rsMenuModeK
-msgid "&Konstantstrom"
-msgstr "&Constant current"
-
 #: uMain.pas rsHeadSupply
 msgid "SPEISESPANNUNG"
 msgstr "SUPPLY VOLTAGE"
@@ -995,6 +938,22 @@ msgstr "Minimum voltage: %s"
 #: uMain.pas rsKCopyRB
 msgid "Basiswiderstand RB: %s (%s)"
 msgstr "Base resistor RB: %s (%s)"
+
+#: uMain.pas rsTipReset
+msgid "Eingaben zurücksetzen"
+msgstr "Reset inputs"
+
+#: uMain.pas rsTipLang
+msgid "Sprache: Deutsch / English"
+msgstr "Language: Deutsch / English"
+
+#: uMain.pas rsTipLedInfo
+msgid "LED-Info: Die Leuchtdiode (F1)"
+msgstr "LED info: the light-emitting diode (F1)"
+
+#: uMain.pas rsTipAbout
+msgid "Über LedPreResistor"
+msgstr "About LedPreResistor"
 
 #: uMain.pas rsCopyBtn
 msgid "Kopieren"

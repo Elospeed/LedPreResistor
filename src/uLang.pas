@@ -19,7 +19,7 @@
 
   DIE SPRACHWAHL
   Beim ersten Start: Deutsch bei deutschem Windows (Linux: LANG=de...),
-  sonst Englisch. Wählt man im Menü eine Sprache, steht sie in
+  sonst Englisch. Wählt man oben rechts eine Sprache (DE/EN), steht sie in
   LedPreResistor.ini neben der EXE (Linux: ~/.config/LedPreResistor/).
   Logik stützt sich nie auf übersetzten Text, nur auf den Sprachcode. }
 unit uLang;

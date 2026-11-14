@@ -10,7 +10,7 @@ unit uMain;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls, Menus,
+  Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls,
   LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uKsq, uSkalierung, uLang;
 
 const
@@ -31,12 +31,11 @@ type
     ComboKsq: TComboBox;          // Konstantstrom: LM317 oder zwei Transistoren
     EditU2: TEdit;                // Konstantstrom: Speisespannung bis (V)
     EditStrings: TEdit;           // Vorwiderstand: Stränge parallel
-    LabelHeadSupply: TLabel;
-    LabelStrings: TLabel;
-    LabelStringsUnit: TLabel;
-    LabelU2: TLabel;
-    LabelU2Unit: TLabel;
-    MenuModeK: TMenuItem;
+    LabelHeadSupply: TLabel;      // Konstantstrom: Überschrift «Speisung»
+    LabelStrings: TLabel;         // Vorwiderstand: «Stränge parallel»
+    LabelStringsUnit: TLabel;     // Einheit «Stk.» der Stränge
+    LabelU2: TLabel;              // Konstantstrom: «bis»
+    LabelU2Unit: TLabel;          // Einheit «V» von «bis»
     ComboConn: TComboBox;         // NE555: Anschluss der LED
     EditT1: TEdit;                // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
     EditT2: TEdit;                // Zeitglied, zweites Feld (R2, R_B2 oder Tastgrad)
@@ -52,9 +51,6 @@ type
     LabelT2Unit: TLabel;
     LabelT3: TLabel;
     LabelT3Unit: TLabel;
-    MenuModeB: TMenuItem;
-    MenuModeR: TMenuItem;
-    MenuSepView: TMenuItem;
     PaintMode: TPaintBox;         // Umschalter «aus Bauteilen / aus Frequenz»
     PaintTabs: TPaintBox;         // Reiter «Vorwiderstand | Blinkschaltung | Konstantstrom»
     ComboColor: TComboBox;        // LED-Farbe
@@ -76,18 +72,6 @@ type
     LabelUd: TLabel;
     LabelUdUnit: TLabel;
     LabelUUnit: TLabel;
-    MainMenu: TMainMenu;
-    MenuAbout: TMenuItem;
-    MenuEdit: TMenuItem;
-    MenuExit: TMenuItem;
-    MenuFile: TMenuItem;
-    MenuHelp: TMenuItem;
-    MenuKofi: TMenuItem;
-    MenuLedInfo: TMenuItem;
-    MenuSepHelp: TMenuItem;
-    MenuRechenweg: TMenuItem;
-    MenuReset: TMenuItem;
-    MenuView: TMenuItem;
     PaintCards: TPaintBox;        // vier Resultatkarten
     PaintLed: TPaintBox;          // LED-Vorschau
     PaintRechenweg: TPaintBox;    // Rechenweg (Kopfzeile und Schritte)
@@ -104,13 +88,15 @@ type
     procedure KsqCircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
     procedure LabelSymClick(Sender: TObject);
-    procedure MenuModeClick(Sender: TObject);
     procedure PaintModeMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PaintModePaint(Sender: TObject);
     procedure PaintTabsMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PaintTabsPaint(Sender: TObject);
+    { Reiterzeile: Hand-Zeiger, Hervorhebung und Tooltip der Symbole oben rechts }
+    procedure PaintTabsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure PaintTabsMouseLeave(Sender: TObject);
     procedure ComboColorChange(Sender: TObject);
     procedure ComboDrawItem(Control: TWinControl; Index: Integer; ARect: TRect;
       State: TOwnerDrawState);
@@ -125,15 +111,22 @@ type
     procedure PaintKofiPaint(Sender: TObject);
     procedure PaintKofiMouseEnter(Sender: TObject);
     procedure PaintKofiMouseLeave(Sender: TObject);
-    procedure MenuAboutClick(Sender: TObject);
-    procedure MenuLedInfoClick(Sender: TObject);
+    { Symbol ⓘ: Fenster «Über LedPreResistor» }
+    procedure AboutClick(Sender: TObject);
+    { LED-Symbol oder F1: LED-Info im Browser öffnen }
+    procedure LedInfoClick(Sender: TObject);
+    { Knopf «Kopieren» oder Strg+Umschalt+C: CopyText in die Zwischenablage }
     procedure CopyClick(Sender: TObject);
+    { «Kopiert ✓» nach kurzer Zeit wieder zu «Kopieren» machen }
     procedure CopyTimerTimer(Sender: TObject);
+    { Tastenkürzel ohne Menü: Strg+1/2/3, F1, Strg+Umschalt+C }
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    { Hand-Zeiger über der Kopfzeile des Rechenwegs }
     procedure PaintRechenwegMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
-    procedure MenuExitClick(Sender: TObject);
-    procedure MenuRechenwegClick(Sender: TObject);
-    procedure MenuResetClick(Sender: TObject);
+    { Rechenweg auf- oder zuklappen }
+    procedure RechenwegToggle(Sender: TObject);
+    { Symbol ↺: alle Eingaben auf die Vorgaben zurücksetzen }
+    procedure ResetClick(Sender: TObject);
     procedure PaintCardsPaint(Sender: TObject);
     procedure PaintLedPaint(Sender: TObject);
     procedure PaintLedResize(Sender: TObject);
@@ -175,15 +168,16 @@ type
     FKRes: TKsqResult;       // Resultat der Konstantstromquelle
     FKBands: TBandArray;     // Farbringe des Fühlerwiderstands
     FKBandsB: TBandArray;    // Farbringe von R_B (zwei Transistoren)
-    MenuLang: TMenuItem;     // Ansicht → Sprache (zur Laufzeit erzeugt)
-    MenuLangDe: TMenuItem;   // Sprache Deutsch
-    MenuLangEn: TMenuItem;   // Sprache Englisch
-    { Menü Ansicht → Sprache mit Deutsch und English anlegen }
+    FIco: array[0..4] of TRect; // Symbole oben rechts: zurücksetzen, DE, EN, LED-Info, Info
+    FIcoHover: Integer;      // Symbol unter der Maus (-1 = keins)
     procedure SyncSymmetric;
     procedure SetFineTimer(AOn: Boolean);
-    procedure CreateLangMenu;
-    { Klick auf eine Sprache im Menü (Tag 0 = Deutsch, 1 = Englisch) }
-    procedure MenuLangClick(Sender: TObject);
+    { Sprache wechseln ('de' oder 'en'), merken und alles neu beschriften }
+    procedure SetLanguage(const Code: string);
+    { Symbole oben rechts in der Reiterzeile zeichnen }
+    procedure DrawTabIcons(C: TCanvas; const R: TRect);
+    { Symbol an der Stelle X/Y in der Reiterzeile (-1 = keins) }
+    function TabIconAt(X, Y: Integer): Integer;
     { alle Beschriftungen in der aktuellen Sprache setzen; Zahlen in den
       Eingabefeldern bekommen das passende Dezimalzeichen }
     procedure ApplyLanguage;
@@ -224,6 +218,7 @@ type
     { Konstantstrom: rechnen, Fehlertext, Rechenweg, Karten, Schaltplan,
       Statuszeile und Zusammenfassung }
     procedure RecalcKsq;
+    { Fehlertext zum Status der Konstantstromquelle }
     function KsqStatusText(S: TKsqStatus): string;
     function KsqRechenwegLines: TStringArray;
     procedure PaintKsqCards;
@@ -322,6 +317,10 @@ resourcestring
   rsCardRatingNone = '> 1 W';
   rsCardRatingNoneSub = 'zu viel für einen Vorwiderstand';
   rsRechenweg = 'Rechenweg';
+  rsTipReset = 'Eingaben zurücksetzen';
+  rsTipLang = 'Sprache: Deutsch / English';
+  rsTipLedInfo = 'LED-Info: Die Leuchtdiode (F1)';
+  rsTipAbout = 'Über LedPreResistor';
   rsCopyBtn = 'Kopieren';
   rsCopiedBtn = 'Kopiert ✓';
   rsCopySteps = 'Rechenweg:';
@@ -380,22 +379,9 @@ resourcestring
   rsLabelN = 'LEDs in Reihe';
   rsUnitN = 'Stk.';
   rsHeadPreview = 'LED-VORSCHAU';
-  rsMenuFile = '&Datei';
-  rsMenuExit = '&Beenden';
-  rsMenuEdit = '&Bearbeiten';
-  rsMenuReset = 'Eingaben &zurücksetzen';
-  rsMenuView = '&Ansicht';
-  rsMenuRechenweg = '&Rechenweg';
-  rsMenuLang = '&Sprache (Language)';
-  rsMenuHelp = '&Hilfe';
-  rsMenuLedInfo = '&LED-Info (Die Leuchtdiode) …';
-  rsMenuKofi = 'Einen Kaffee spendieren (Ko-fi) …';
-  rsMenuAbout = 'Ü&ber LedPreResistor …';
   { Blinkschaltung }
   rsTabResistor = 'Vorwiderstand';
   rsTabBlink = 'Blinkschaltung';
-  rsMenuModeR = '&Vorwiderstand';
-  rsMenuModeB = 'Blink&schaltung';
   rsHeadCircuit = 'SCHALTUNG';
   rsHeadTiming = 'ZEITGLIED';
   rsHeadLed = 'LED AM AUSGANG';
@@ -489,7 +475,6 @@ resourcestring
   rsBCopyRv = 'Vorwiderstand: %s';
   { Konstantstrom }
   rsTabKsq = 'Konstantstrom';
-  rsMenuModeK = '&Konstantstrom';
   rsHeadSupply = 'SPEISESPANNUNG';
   rsLabelFrom = 'von';
   rsLabelTo = 'bis';
@@ -691,7 +676,7 @@ procedure TFormMain.FormCreate(Sender: TObject);
 begin
   // Sprache vor allen Beschriftungen laden (INI, sonst Sprache von Windows)
   LangLoad(LangStartCode);
-  CreateLangMenu;
+  FIcoHover := -1;
   FLedOn := TBitmap.Create;
   FLedOff := TBitmap.Create;
   FLedLit := True;
@@ -806,32 +791,8 @@ begin
   PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, _(rsKofi), PixelsPerInch);
 end;
 
-procedure TFormMain.CreateLangMenu;
-
-  { einen Eintrag der Sprachliste anlegen }
-  function AddItem(const ACaption: string; ATag: Integer): TMenuItem;
-  begin
-    Result := TMenuItem.Create(Self);
-    Result.Caption := ACaption;   // Sprachnamen bleiben unübersetzt
-    Result.Tag := ATag;
-    Result.RadioItem := True;
-    Result.GroupIndex := 1;
-    Result.OnClick := @MenuLangClick;
-    MenuLang.Add(Result);
-  end;
-
+procedure TFormMain.SetLanguage(const Code: string);
 begin
-  MenuLang := TMenuItem.Create(Self);
-  MenuView.Add(MenuLang);
-  MenuLangDe := AddItem('Deutsch', 0);
-  MenuLangEn := AddItem('English', 1);
-end;
-
-procedure TFormMain.MenuLangClick(Sender: TObject);
-var
-  Code: string;  // gewählte Sprache
-begin
-  if (Sender as TMenuItem).Tag = 1 then Code := 'en' else Code := 'de';
   if Code = LangCode then Exit;
   LangLoad(Code);
   LangSaveChoice(Code);
@@ -879,20 +840,6 @@ begin
   LabelN.Caption := _(rsLabelN);
   LabelNUnit.Caption := _(rsUnitN);
   LabelHeadPreview.Caption := _(rsHeadPreview);
-  MenuFile.Caption := _(rsMenuFile);
-  MenuExit.Caption := _(rsMenuExit);
-  MenuEdit.Caption := _(rsMenuEdit);
-  MenuReset.Caption := _(rsMenuReset);
-  MenuView.Caption := _(rsMenuView);
-  MenuRechenweg.Caption := _(rsMenuRechenweg);
-  MenuLang.Caption := _(rsMenuLang);
-  MenuHelp.Caption := _(rsMenuHelp);
-  MenuLedInfo.Caption := _(rsMenuLedInfo);
-  MenuKofi.Caption := _(rsMenuKofi);
-  MenuAbout.Caption := _(rsMenuAbout);
-  MenuModeR.Caption := _(rsMenuModeR);
-  MenuModeB.Caption := _(rsMenuModeB);
-  MenuModeK.Caption := _(rsMenuModeK);
   LabelStrings.Caption := _(rsLabelStrings);
   LabelStringsUnit.Caption := _(rsUnitN);
   LabelHeadSupply.Caption := _(rsHeadSupply);
@@ -905,8 +852,6 @@ begin
   ModeCaptions;
   PaintTabs.Invalidate;
   PaintMode.Invalidate;
-  MenuLangDe.Checked := LangCode <> 'en';
-  MenuLangEn.Checked := LangCode = 'en';
 
   // Auswahllisten neu füllen, gewählte Einträge behalten
   FUpdating := True;
@@ -1709,7 +1654,7 @@ var
   NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
 begin
   if FRechenwegOpen then
-    NeuH := Px(178)  // fünf Schritte und die Zeichen-Erklärung
+    NeuH := Px(200)  // fünf Schritte und die Zeichen-Erklärung (zwei Zeilen)
   else
     NeuH := Px(30);
   Mehr := NeuH - PanelRechenweg.Height;
@@ -1721,7 +1666,6 @@ begin
     Schaltplan und LED-Vorschau (die linke Spalte rollt, wenn es eng wird).
     Ein Mitwachsen des Fensters lief mit Mindesthöhe und Bildschirmgrenze
     bei 150-200 % aus dem Ruder (Live-Test 30.10.) }
-  MenuRechenweg.Checked := FRechenwegOpen;
 end;
 
 procedure TFormMain.PanelLeftResize(Sender: TObject);
@@ -1764,6 +1708,9 @@ var
   BtnText: string;       // Beschriftung des Kopier-Knopfs
   BtnW: Integer;         // Breite des Kopier-Knopfs
   Legend: string;        // Zeichen-Erklärung
+  Teile: TStringArray;   // Einträge der Zeichen-Erklärung
+  Zeile: string;         // Zeile der Zeichen-Erklärung im Aufbau
+  LegX, LegY, LegW: Integer; // Anfang, Zeile und Breite der Zeichen-Erklärung
 begin
   C := PaintRechenweg.Canvas;
   R := PaintRechenweg.ClientRect;
@@ -1843,15 +1790,34 @@ begin
       DrawRich(C, R.Left + Px(14), Y, L[I], clrError, clrError);
     Inc(Y, LineH);
   end;
-  // Erklärung der Zeichen: grau und kleiner, Schrift schrumpft, wenn der Platz fehlt
+  // Erklärung der Zeichen: gleiche Schrift wie der Rechenweg, bei Bedarf
+  // zweizeilig (Umbruch nur zwischen den Einträgen « · »)
   Legend := RechenwegLegend;
   if Legend <> '' then
   begin
-    C.Font.Size := 8;
-    while (C.Font.Size > 7) and (RichWidth(C, Legend) > R.Right - R.Left - Px(54)) do
-      C.Font.Size := C.Font.Size - 1;
-    DrawRich(C, R.Left + Px(40), Y + Px(2), Legend, clrTextSoft, clrTextSoft);
     C.Font.Size := 9;
+    C.Font.Color := clrAccent;
+    C.TextOut(R.Left + Px(14), Y + Px(4), _(rsCopyLegend));
+    LegX := R.Left + Px(14) + C.TextWidth(_(rsCopyLegend)) + Px(8);
+    LegW := R.Right - Px(14) - LegX;
+    Teile := Legend.Split([' · ']);
+    Zeile := '';
+    LegY := Y + Px(4);
+    for I := 0 to High(Teile) do
+    begin
+      if (Zeile <> '') and (RichWidth(C, Zeile + ' · ' + Teile[I]) > LegW) then
+      begin
+        DrawRich(C, LegX, LegY, Zeile, clrText, clrTextBright);
+        Inc(LegY, Px(19));
+        Zeile := Teile[I];
+      end
+      else if Zeile = '' then
+        Zeile := Teile[I]
+      else
+        Zeile := Zeile + ' · ' + Teile[I];
+    end;
+    if Zeile <> '' then
+      DrawRich(C, LegX, LegY, Zeile, clrText, clrTextBright);
   end;
 end;
 
@@ -1863,7 +1829,7 @@ begin
   if PtInRect(FCopyBtn, Point(X, Y)) then
     CopyClick(Sender)
   else if Y <= Px(28) then
-    MenuRechenwegClick(Sender);
+    RechenwegToggle(Sender);
 end;
 
 procedure TFormMain.PaintRechenwegMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
@@ -1874,7 +1840,7 @@ begin
     PaintRechenweg.Cursor := crDefault;
 end;
 
-procedure TFormMain.MenuRechenwegClick(Sender: TObject);
+procedure TFormMain.RechenwegToggle(Sender: TObject);
 begin
   FRechenwegOpen := not FRechenwegOpen;
   UpdateRechenwegHeight;
@@ -2005,7 +1971,7 @@ begin
   PaintKofi.Invalidate;
 end;
 
-{ ---------- Menü ---------- }
+{ ---------- Kopieren, Zurücksetzen, Info ---------- }
 
 function TFormMain.ResultSummary: string;
 var
@@ -2060,15 +2026,22 @@ begin
   begin
     CopyClick(Sender);
     Key := 0;
+  end
+  // Strg+1/2/3: Reiter wählen
+  else if (Shift = [ssCtrl]) and (Key >= VK_1) and (Key <= VK_3) then
+  begin
+    if FMode <> Key - VK_1 then SwitchMode(Key - VK_1, True);
+    Key := 0;
+  end
+  // F1: LED-Info
+  else if (Key = VK_F1) and (Shift = []) then
+  begin
+    LedInfoClick(Sender);
+    Key := 0;
   end;
 end;
 
-procedure TFormMain.MenuExitClick(Sender: TObject);
-begin
-  Close;
-end;
-
-procedure TFormMain.MenuResetClick(Sender: TObject);
+procedure TFormMain.ResetClick(Sender: TObject);
 begin
   FUpdating := True;
   try
@@ -2104,12 +2077,12 @@ begin
   Recalc;
 end;
 
-procedure TFormMain.MenuAboutClick(Sender: TObject);
+procedure TFormMain.AboutClick(Sender: TObject);
 begin
   MessageDlg(Format(_(rsAbout), [APP_VER]), mtInformation, [mbOK], 0);
 end;
 
-procedure TFormMain.MenuLedInfoClick(Sender: TObject);
+procedure TFormMain.LedInfoClick(Sender: TObject);
 begin
   if not ShowLedInfo then
     MessageDlg(_(rsLedInfoFailed), mtError, [mbOK], 0);
@@ -2133,9 +2106,6 @@ end;
 procedure TFormMain.SwitchMode(M: Integer; Save: Boolean);
 begin
   FMode := M;
-  MenuModeR.Checked := M = 0;
-  MenuModeB.Checked := M = 1;
-  MenuModeK.Checked := M = 2;
   LabelBlinkInfo.Visible := M = 1;
   // Platz unter der LED nur im Blinkmodus (Takt-Angabe)
   if M = 1 then
@@ -2472,11 +2442,6 @@ begin
   CheckSym.Checked := not CheckSym.Checked;
 end;
 
-procedure TFormMain.MenuModeClick(Sender: TObject);
-begin
-  SwitchMode((Sender as TMenuItem).Tag, True);
-end;
-
 procedure TFormMain.PaintTabsPaint(Sender: TObject);
 var
   C: TCanvas;          // Zeichenfläche
@@ -2526,18 +2491,250 @@ begin
     Inc(X, W + Px(2));
     FTabX[I + 1] := X;
   end;
+  DrawTabIcons(C, R);
 end;
 
 procedure TFormMain.PaintTabsMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if Button <> mbLeft then Exit;
+  case TabIconAt(X, Y) of
+    0: begin ResetClick(Sender); Exit; end;
+    1: begin SetLanguage('de'); Exit; end;
+    2: begin SetLanguage('en'); Exit; end;
+    3: begin LedInfoClick(Sender); Exit; end;
+    4: begin AboutClick(Sender); Exit; end;
+  end;
   if (X >= FTabX[0]) and (X < FTabX[1]) and (FMode <> 0) then
     SwitchMode(0, True)
   else if (X >= FTabX[1]) and (X < FTabX[2]) and (FMode <> 1) then
     SwitchMode(1, True)
   else if (X >= FTabX[2]) and (X < FTabX[3]) and (FMode <> 2) then
     SwitchMode(2, True);
+end;
+
+function TFormMain.TabIconAt(X, Y: Integer): Integer;
+var
+  I: Integer;  // Symbol
+begin
+  Result := -1;
+  for I := 0 to High(FIco) do
+    if PtInRect(FIco[I], Point(X, Y)) then Exit(I);
+end;
+
+procedure TFormMain.PaintTabsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  I: Integer;  // Symbol unter der Maus
+begin
+  I := TabIconAt(X, Y);
+  if I = FIcoHover then Exit;
+  FIcoHover := I;
+  case I of
+    0: PaintTabs.Hint := _(rsTipReset);
+    1, 2: PaintTabs.Hint := _(rsTipLang);
+    3: PaintTabs.Hint := _(rsTipLedInfo);
+    4: PaintTabs.Hint := _(rsTipAbout);
+  else
+    PaintTabs.Hint := '';
+  end;
+  // Tooltip neu anzeigen, wenn die Maus auf ein anderes Symbol wechselt
+  Application.CancelHint;
+  if (I >= 0) or ((X >= FTabX[0]) and (X < FTabX[3])) then
+    PaintTabs.Cursor := crHandPoint
+  else
+    PaintTabs.Cursor := crDefault;
+  PaintTabs.Invalidate;
+end;
+
+procedure TFormMain.PaintTabsMouseLeave(Sender: TObject);
+begin
+  if FIcoHover < 0 then Exit;
+  FIcoHover := -1;
+  PaintTabs.Invalidate;
+end;
+
+procedure TFormMain.DrawTabIcons(C: TCanvas; const R: TRect);
+var
+  BH, BW, G: Integer;  // Höhe und Breite eines Knopfs, Grösse des Zeichens
+  X, BTop: Integer;     // rechter Rand (läuft nach links), Oberkante der Knöpfe
+  LangW: Integer;      // Breite eines Sprachfelds
+  I: Integer;          // Symbol
+  BC: TCanvas;         // grosse Zeichenfläche (geglättet)
+  BR: TRect;           // Zeichen-Rechteck auf BC
+  S: Double;           // Pixel von BC je Pixel des Zeichens
+  F: TRect;            // Fläche des Zeichens
+
+  { Knopf-Hintergrund: nur beim Darüberfahren sichtbar }
+  procedure Back(const B: TRect; Hover: Boolean);
+  begin
+    if not Hover then Exit;
+    C.Brush.Style := bsSolid;
+    C.Brush.Color := clrPanel;
+    C.Pen.Color := clrBorder;
+    C.Pen.Width := 1;
+    C.RoundRect(B, Px(8), Px(8));
+  end;
+
+  { Fläche des Zeichens mitten im Knopf }
+  function GlyphRect(const B: TRect): TRect;
+  begin
+    Result.Left := (B.Left + B.Right - G) div 2;
+    Result.Top := (B.Top + B.Bottom - G) div 2;
+    Result.Right := Result.Left + G;
+    Result.Bottom := Result.Top + G;
+  end;
+
+  { Punkt im Zeichen (0..1 waagrecht/senkrecht) auf BC }
+  function GX(V: Double): Integer;
+  begin
+    Result := BR.Left + Round(V * (BR.Right - BR.Left));
+  end;
+  function GY(V: Double): Integer;
+  begin
+    Result := BR.Top + Round(V * (BR.Bottom - BR.Top));
+  end;
+
+  { geglättetes Zeichen I zeichnen }
+  procedure Glyph(Idx: Integer; const B: TRect);
+  var
+    Col, BackCol: TColor;  // Strichfarbe, Grund
+    A: Double;          // Winkel
+    CX, CY, Rad: Double; // Kreis (Anteile der Fläche)
+    DX, DY, EX, EY: Double; // Laufrichtung und Ende des Bogens
+    Pts: array[0..24] of TPoint; // Punkte des Bogens
+    K: Integer;         // Punkt
+  begin
+    F := GlyphRect(B);
+    if FIcoHover = Idx then BackCol := clrPanel else BackCol := clrWindow;
+    if FIcoHover = Idx then Col := clrTextBright else Col := clrText;
+    if not BeginSmooth(C, F, BackCol, '', BC, BR) then Exit;
+    S := (BR.Right - BR.Left) / G;
+    BC.Pen.Color := Col;
+    BC.Pen.Width := Max(1, Round(1.6 * S * G / 16));
+    BC.Brush.Color := Col;
+    case Idx of
+      0:
+        begin
+          // Pfeil im Kreis gegen den Uhrzeigersinn (zurücksetzen): Bogen als
+          // Linienzug (Arc mit Winkeln ist unter Windows/GTK nicht einheitlich)
+          CX := 0.5; CY := 0.5; Rad := 0.34;
+          for K := 0 to High(Pts) do
+          begin
+            A := (110 + K * 290 / High(Pts)) * Pi / 180;
+            Pts[K] := Point(GX(CX + Rad * Cos(A)), GY(CY - Rad * Sin(A)));
+          end;
+          BC.Brush.Style := bsClear;
+          BC.Polyline(Pts);
+          // Pfeilspitze am Ende (oben rechts), zeigt in Laufrichtung
+          A := 400 * Pi / 180;
+          DX := -Sin(A); DY := Cos(A);       // Laufrichtung (y nach oben)
+          EX := CX + Rad * Cos(A); EY := CY - Rad * Sin(A);
+          BC.Brush.Style := bsSolid;
+          BC.Pen.Width := 1;
+          BC.Polygon([Point(GX(EX + DX * 0.20), GY(EY - DY * 0.20)),
+            Point(GX(EX + Cos(A) * 0.15 - DX * 0.03), GY(EY - Sin(A) * 0.15 + DY * 0.03)),
+            Point(GX(EX - Cos(A) * 0.15 - DX * 0.03), GY(EY + Sin(A) * 0.15 + DY * 0.03))]);
+        end;
+      3:
+        begin
+          // 5-mm-LED: runde Kappe, Kragen, zwei Beine (das lange = Anode)
+          BC.Brush.Style := bsSolid;
+          BC.Brush.Color := RGBToColor($E5, $48, $4D);
+          BC.Pen.Width := Max(1, Round(1.2 * S * G / 16));
+          BC.Pen.Color := Col;
+          BC.Pie(GX(0.28), GY(0.0), GX(0.72), GY(0.44), GX(0.72), GY(0.22), GX(0.28), GY(0.22));
+          BC.Pen.Style := psClear;
+          BC.FillRect(Types.Rect(GX(0.28), GY(0.22), GX(0.72), GY(0.56)));
+          BC.Pen.Style := psSolid;
+          BC.Line(GX(0.28), GY(0.22), GX(0.28), GY(0.56));
+          BC.Line(GX(0.72), GY(0.22), GX(0.72), GY(0.56));
+          // Kragen
+          BC.Brush.Color := Col;
+          BC.FillRect(Types.Rect(GX(0.22), GY(0.55), GX(0.78), GY(0.63)));
+          // Beine
+          BC.FillRect(Types.Rect(GX(0.37), GY(0.63), GX(0.44), GY(1.0)));
+          BC.FillRect(Types.Rect(GX(0.56), GY(0.63), GX(0.63), GY(0.88)));
+        end;
+      4:
+        begin
+          // ⓘ: Kreis mit kleinem i
+          BC.Brush.Style := bsClear;
+          BC.Ellipse(GX(0.08), GY(0.08), GX(0.92), GY(0.92));
+          BC.Brush.Style := bsSolid;
+          BC.Pen.Style := psClear;
+          BC.Ellipse(GX(0.43), GY(0.22), GX(0.57), GY(0.36));
+          BC.FillRect(Types.Rect(GX(0.44), GY(0.42), GX(0.56), GY(0.76)));
+          BC.Pen.Style := psSolid;
+        end;
+    end;
+    EndSmooth;
+  end;
+
+begin
+  BH := R.Bottom - R.Top - Px(10);
+  BW := BH + Px(4);
+  G := Px(16);
+  BTop := R.Top + Px(5);
+  X := R.Right - Px(12);
+  // von rechts: Info, LED-Info, Sprache, Zurücksetzen
+  FIco[4] := Types.Rect(X - BW, BTop, X, BTop + BH);
+  Dec(X, BW + Px(4));
+  FIco[3] := Types.Rect(X - BW, BTop, X, BTop + BH);
+  Dec(X, BW + Px(10));
+  C.Font.Name := FONT_UI;
+  C.Font.Size := 8;
+  C.Font.Style := [fsBold];
+  LangW := Max(C.TextWidth('DE'), C.TextWidth('EN')) + Px(14);
+  FIco[2] := Types.Rect(X - LangW, BTop + Px(2), X, BTop + BH - Px(2));
+  Dec(X, LangW);
+  FIco[1] := Types.Rect(X - LangW, BTop + Px(2), X, BTop + BH - Px(2));
+  Dec(X, LangW + Px(10));
+  FIco[0] := Types.Rect(X - BW, BTop, X, BTop + BH);
+  // Symbole nicht über die Reiter legen (sehr schmales Fenster)
+  if FIco[0].Left < FTabX[3] + Px(8) then
+  begin
+    for I := 0 to High(FIco) do FIco[I] := Types.Rect(0, 0, 0, 0);
+    Exit;
+  end;
+
+  Back(FIco[0], FIcoHover = 0);
+  Glyph(0, FIco[0]);
+  Back(FIco[3], FIcoHover = 3);
+  Glyph(3, FIco[3]);
+  Back(FIco[4], FIcoHover = 4);
+  Glyph(4, FIco[4]);
+
+  // Sprache: Pille «DE | EN», die aktive Sprache hervorgehoben
+  C.Brush.Style := bsSolid;
+  C.Brush.Color := clrWindow;
+  C.Pen.Color := clrBorder;
+  C.Pen.Width := 1;
+  C.RoundRect(FIco[1].Left, FIco[1].Top, FIco[2].Right, FIco[2].Bottom, Px(8), Px(8));
+  for I := 1 to 2 do
+  begin
+    if (I = 2) = (LangCode = 'en') then
+    begin
+      C.Brush.Color := clrAccent;
+      C.Pen.Color := clrAccent;
+      C.RoundRect(FIco[I].Left + Px(2), FIco[I].Top + Px(2), FIco[I].Right - Px(2),
+        FIco[I].Bottom - Px(2), Px(6), Px(6));
+      C.Font.Color := clrWindow;
+    end
+    else if FIcoHover = I then
+      C.Font.Color := clrTextBright
+    else
+      C.Font.Color := clrTextSoft;
+    C.Brush.Style := bsClear;
+    if I = 1 then
+      C.TextOut((FIco[I].Left + FIco[I].Right - C.TextWidth('DE')) div 2,
+        (FIco[I].Top + FIco[I].Bottom - C.TextHeight('DE')) div 2, 'DE')
+    else
+      C.TextOut((FIco[I].Left + FIco[I].Right - C.TextWidth('EN')) div 2,
+        (FIco[I].Top + FIco[I].Bottom - C.TextHeight('EN')) div 2, 'EN');
+    C.Brush.Style := bsSolid;
+  end;
+  C.Font.Style := [];
+  C.Font.Size := 9;
 end;
 
 procedure TFormMain.PaintModePaint(Sender: TObject);

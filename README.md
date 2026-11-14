@@ -24,7 +24,7 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - **Parallel strings** (since 2.4): several identical LED strings, each with its own resistor, with total current and power.
 - **LED info** "The LED" built in (F1, opens in your browser, also offline).
 - **Copy** button in the "Calculation steps" header (or Ctrl+Shift+C): copies the result, all calculation steps and the symbol legend as plain text. Comma and dot both work as decimal separator.
-- **English and German**: starts in German on a German Windows and in English everywhere else; View → Language switches at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).
+- **English and German**: starts in German on a German Windows and in English everywhere else; the DE/EN switch at the top right changes it at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).
 
 **Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 
