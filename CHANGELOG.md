@@ -29,6 +29,8 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Fenster ohne Menüleiste
 - Die Menüleiste ist weg (sie blieb unter Windows ausserdem hell). Oben rechts in der Reiterzeile stehen jetzt kleine Symbole mit Tooltip: ↺ Eingaben zurücksetzen, DE/EN für die Sprache, ein LED-Symbol für die LED-Info (F1) und ⓘ für «Über LedPreResistor». Ko-fi bleibt der Knopf unten rechts.
 - Tastenkürzel bleiben: Strg+1/2/3 für die Reiter, F1 für die LED-Info, Strg+Umschalt+C zum Kopieren. Beenden mit dem X oder Alt+F4.
+- Das Fenster «Über LedPreResistor» ist jetzt dunkel wie das Hauptfenster.
+- Behoben: Die Beschriftung neben «Diode über R2» bzw. «Symmetrisch 1:1» war bei 125–200 % unten abgeschnitten. In den Resultatkarten rutscht eine Einheit nicht mehr allein auf die nächste Zeile (z. B. «½» / «W»).
 
 ### Schaltpläne
 - Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.

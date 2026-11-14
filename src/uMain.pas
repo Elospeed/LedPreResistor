@@ -713,6 +713,32 @@ begin
 end;
 
 {------------------------------------------------------------------------------
+  KeepUnits
+------------------------------------------------------------------------------
+  Ersetzt den Leerschlag zwischen Zahl und Einheit durch einen geschützten
+  Leerschlag (U+00A0). So bricht der Untertext einer Karte nie zwischen
+  «20,0» und «mA» oder zwischen «½» und «W» um.
+  Parameter: S - Text (UTF-8)
+  Rückgabe:  Text mit geschützten Leerschlägen nach Ziffern, ¼ und ½
+------------------------------------------------------------------------------}
+function KeepUnits(const S: string): string;
+var
+  I: Integer;                                            // Position im Text
+  Prev: Boolean;                                         // davor steht eine Ziffer, ¼ oder ½
+begin
+  Result := '';
+  for I := 1 to Length(S) do
+  begin
+    Prev := (I > 1) and ((S[I - 1] in ['0'..'9']) or
+      ((I > 2) and (S[I - 2] = #$C2) and (S[I - 1] in [#$BC, #$BD]))); // ¼ = C2 BC, ½ = C2 BD
+    if (S[I] = ' ') and Prev and (I < Length(S)) and not (S[I + 1] in ['0'..'9', ' ']) then
+      Result := Result + #$C2#$A0                         // geschützter Leerschlag
+    else
+      Result := Result + S[I];
+  end;
+end;
+
+{------------------------------------------------------------------------------
   MixColor
 ------------------------------------------------------------------------------
   Farbe C mit dem Hintergrund Back mischen (A = Anteil von C, 0..1)
@@ -1695,7 +1721,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad - Px(8)), R.Left + Pad, Y, ASub, TS);
+      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad - Px(8)), R.Left + Pad, Y, KeepUnits(ASub), TS);
     end;
   end;
 
@@ -2498,11 +2524,53 @@ end;
 {------------------------------------------------------------------------------
   AboutClick
 ------------------------------------------------------------------------------
-  Symbol ⓘ: Fenster «Über LedPreResistor»
+  Symbol ⓘ: Fenster «Über LedPreResistor», dunkel wie das Hauptfenster.
+  Ablauf: Fenster mit Symbol, Text und Knopf OK für 96 dpi aufbauen,
+  mit SkaliereDialog umrechnen, anzeigen, freigeben.
 ------------------------------------------------------------------------------}
 procedure TFormMain.AboutClick(Sender: TObject);
+var
+  F: TForm;                                              // das Info-Fenster
+  Img: TImage;                                           // Programm-Symbol links
+  L: TLabel;                                             // Text
+  B: TButton;                                            // Knopf OK
 begin
-  MessageDlg(Format(_(rsAbout), [APP_VER]), mtInformation, [mbOK], 0);
+  // dunkel wie das Hauptfenster (MessageDlg wäre hell); Masse für 96 dpi,
+  // SkaliereDialog rechnet sie danach auf die Windows-Skalierung um
+  F := TForm.CreateNew(nil);
+  try
+    F.Caption := _(rsTipAbout);
+    F.BorderStyle := bsDialog;
+    F.Position := poOwnerFormCenter;
+    F.Color := clrPanel;
+    F.Font.Name := FONT_UI;
+    F.Font.Color := clrText;
+    F.Font.Height := -13;
+    F.SetBounds(0, 0, 420, 170);
+    Img := TImage.Create(F);
+    Img.Parent := F;
+    Img.SetBounds(20, 20, 48, 48);
+    Img.Stretch := True;
+    Img.Picture.Icon.Assign(Application.Icon);
+    L := TLabel.Create(F);
+    L.Parent := F;
+    L.SetBounds(88, 20, 312, 90);
+    L.AutoSize := False;
+    L.WordWrap := True;
+    L.Font.Color := clrTextBright;
+    L.Caption := Format(_(rsAbout), [APP_VER]);
+    B := TButton.Create(F);
+    B.Parent := F;
+    B.Caption := 'OK';
+    B.ModalResult := mrOK;
+    B.Default := True;
+    B.Cancel := True;                                    // Esc schliesst auch
+    B.SetBounds(316, 126, 84, 28);
+    SkaliereDialog(F);
+    F.ShowModal;
+  finally
+    F.Free;
+  end;
 end;
 
 {------------------------------------------------------------------------------
@@ -2733,6 +2801,7 @@ begin
         Put(CheckDiode, 16, Y, 0);
         LabelDiode.AutoSize := False;                    // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
         Put(LabelDiode, 36, Y + 2, 217);
+        LabelDiode.Height := Px(19);                     // Höhe selbst setzen: bei 125-200 % war die Schrift unten abgeschnitten
         Tab(CheckDiode);
         Inc(Y, 26);
       end
@@ -2741,6 +2810,7 @@ begin
         Put(CheckSym, 16, Y, 0);
         LabelSym.AutoSize := False;                      // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
         Put(LabelSym, 36, Y + 2, 217);
+        LabelSym.Height := Px(19);                       // Höhe selbst setzen: bei 125-200 % war die Schrift unten abgeschnitten
         Tab(CheckSym);
         Inc(Y, 26);
       end;
@@ -3736,7 +3806,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, ASub, TS);
+      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, KeepUnits(ASub), TS);
     end;
   end;
 
@@ -4444,7 +4514,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, ASub, TS);
+      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, KeepUnits(ASub), TS);
     end;
   end;
 
@@ -4491,7 +4561,7 @@ begin
             TS.SingleLine := False;
             TS.Clipping := True;
             C.Brush.Style := bsClear;
-            C.TextRect(Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, SubTop, Sub, TS);
+            C.TextRect(Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, SubTop, KeepUnits(Sub), TS);
             ResBot := Min(R.Top + Px(80), SubTop - Px(4));
             ResTop := Max(R.Top + Px(58), ResBot - Px(24));
             if ResBot - ResTop >= Px(10) then
