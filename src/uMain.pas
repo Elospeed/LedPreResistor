@@ -31,7 +31,8 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare
+  Versionen: 2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
+                              dunkles Info-Fenster
              2.3  11.11.2026  Reiter Blinkschaltung
              2.2  09.11.2026  Linux
              2.1  08.11.2026  Englisch
@@ -2546,15 +2547,16 @@ begin
     F.Font.Name := FONT_UI;
     F.Font.Color := clrText;
     F.Font.Height := -13;
-    F.SetBounds(0, 0, 420, 170);
+    F.SetBounds(0, 0, 460, 192);
     Img := TImage.Create(F);
     Img.Parent := F;
     Img.SetBounds(20, 20, 48, 48);
     Img.Stretch := True;
+    Img.AntialiasingMode := amOn;                        // geglättet hochrechnen (Symbol hat nur 32 px)
     Img.Picture.Icon.Assign(Application.Icon);
     L := TLabel.Create(F);
     L.Parent := F;
-    L.SetBounds(88, 20, 312, 90);
+    L.SetBounds(88, 20, 352, 112);                       // Platz für sechs Zeilen
     L.AutoSize := False;
     L.WordWrap := True;
     L.Font.Color := clrTextBright;
@@ -2565,7 +2567,7 @@ begin
     B.ModalResult := mrOK;
     B.Default := True;
     B.Cancel := True;                                    // Esc schliesst auch
-    B.SetBounds(316, 126, 84, 28);
+    B.SetBounds(356, 148, 84, 28);
     SkaliereDialog(F);
     F.ShowModal;
   finally

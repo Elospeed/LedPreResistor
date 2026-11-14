@@ -21,7 +21,8 @@
              Konstruktor.
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+  Versionen: 2.4  14.11.2026  Kommentare ausführlicher; SkaliereDialog rechnet
+                              auch die Schrift des Fensters selbst um
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit uSkalierung;
@@ -222,6 +223,9 @@ begin
   if PPI = 96 then Exit;                                 // 100 %: nichts umzurechnen
   F.DisableAutoSizing;
   try
+    // Schrift des Fensters selbst: Knöpfe und Labels ohne eigene Schrift erben sie
+    if F.Font.Height <> 0 then
+      F.Font.Height := MulDiv(F.Font.Height, PPI, 96);
     for I := 0 to F.ControlCount - 1 do
       SkaliereSchriften(F.Controls[I], PPI);
     for I := 0 to F.ControlCount - 1 do
