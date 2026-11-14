@@ -298,10 +298,6 @@ msgstr "LED PREVIEW"
 msgid "&Datei"
 msgstr "&File"
 
-#: uMain.pas rsMenuCopy
-msgid "Resultat &kopieren"
-msgstr "&Copy result"
-
 #: uMain.pas rsMenuExit
 msgid "&Beenden"
 msgstr "E&xit"
@@ -999,3 +995,43 @@ msgstr "Minimum voltage: %s"
 #: uMain.pas rsKCopyRB
 msgid "Basiswiderstand RB: %s (%s)"
 msgstr "Base resistor RB: %s (%s)"
+
+#: uMain.pas rsCopyBtn
+msgid "Kopieren"
+msgstr "Copy"
+
+#: uMain.pas rsCopiedBtn
+msgid "Kopiert ✓"
+msgstr "Copied ✓"
+
+#: uMain.pas rsCopySteps
+msgid "Rechenweg:"
+msgstr "Calculation steps:"
+
+#: uMain.pas rsCopyLegend
+msgid "Zeichen:"
+msgstr "Symbols:"
+
+#: uMain.pas rsLegendR
+msgid "U_B Speisespannung · U_F Durchlassspannung einer LED · U_R Spannung am Widerstand · R Vorwiderstand · I LED-Strom · P Leistung im Widerstand · R_t_h Wärmewiderstand"
+msgstr "U_B supply voltage · U_F forward voltage of one LED · U_R voltage across the resistor · R series resistor · I LED current · P power in the resistor · R_t_h thermal resistance"
+
+#: uMain.pas rsLegendRN
+msgid "U_B Speisespannung · n LEDs in Reihe · U_F Durchlassspannung einer LED · U_R Spannung am Widerstand · R Vorwiderstand · I LED-Strom · P Leistung im Widerstand · R_t_h Wärmewiderstand"
+msgstr "U_B supply voltage · n LEDs in series · U_F forward voltage of one LED · U_R voltage across the resistor · R series resistor · I LED current · P power in the resistor · R_t_h thermal resistance"
+
+#: uMain.pas rsLegend555
+msgid "U_B Speisespannung · t_H Zeit Ausgang High · t_L Zeit Ausgang Low · f Frequenz · C Zeitkondensator · U_O_U_T Spannung am Ausgang · U_F Durchlassspannung · R Vorwiderstand · I LED-Strom"
+msgstr "U_B supply voltage · t_H output high time · t_L output low time · f frequency · C timing capacitor · U_O_U_T output voltage · U_F forward voltage · R series resistor · I LED current"
+
+#: uMain.pas rsLegendMulti
+msgid "U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 und 2 · k Zeitfaktor · R_B_1, R_B_2 Basiswiderstände · C Kondensator · I_B Basisstrom · I_C Kollektorstrom · β Stromverstärkung"
+msgstr "U_B supply voltage · U_F forward voltage · t_1, t_2 on time of LED 1 and 2 · k time factor · R_B_1, R_B_2 base resistors · C capacitor · I_B base current · I_C collector current · β current gain"
+
+#: uMain.pas rsLegendLM
+msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Fühlerwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung"
+msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R sense resistor · I LED current · P power · U_m_i_n minimum supply voltage"
+
+#: uMain.pas rsLegendKT
+msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Fühlerwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung"
+msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R_S sense resistor · R_B base resistor · U_B_E base-emitter voltage · β current gain · P power · U_m_i_n minimum supply voltage"

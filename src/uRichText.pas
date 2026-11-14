@@ -19,6 +19,10 @@ function DrawRich(Canvas: TCanvas; X, Y: Integer; const S: string;
 { Liefert die Breite, die DrawRich für S brauchen würde, ohne zu zeichnen. }
 function RichWidth(Canvas: TCanvas; const S: string): Integer;
 
+{ S ohne Auszeichnung als einfacher Text (zum Kopieren):
+  "**" fällt weg, "_X" wird zu "X" (U_R -> UR). }
+function RichPlain(const S: string): string;
+
 implementation
 
 uses
@@ -120,6 +124,26 @@ end;
 function RichWidth(Canvas: TCanvas; const S: string): Integer;
 begin
   Result := WalkRich(Canvas, 0, 0, S, clBlack, clBlack, False);
+end;
+
+function RichPlain(const S: string): string;
+var
+  I: Integer;  // Position im Text (Bytes)
+begin
+  Result := '';
+  I := 1;
+  while I <= Length(S) do
+  begin
+    if (S[I] = '*') and (I < Length(S)) and (S[I + 1] = '*') then
+      Inc(I, 2)
+    else if (S[I] = '_') and (I < Length(S)) then
+      Inc(I)
+    else
+    begin
+      Result := Result + S[I];
+      Inc(I);
+    end;
+  end;
 end;
 
 end.

@@ -23,6 +23,8 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Rechenweg
 - In Zeilen mit eingesetzten Zahlen steht jetzt × statt · (z. B. 0,693 × 69 kΩ × 10 µF); Formeln mit Symbolen behalten den Punkt.
 - Ist der Schaltplan zu klein, klappt der Rechenweg automatisch zu.
+- Unter den Schritten erklärt eine Zeile die Zeichen des aktuellen Reiters (z. B. U_F Durchlassspannung einer LED, R_S Fühlerwiderstand).
+- Knopf «Kopieren» in der Kopfzeile des Rechenwegs: kopiert das Resultat, den kompletten Rechenweg und die Zeichen-Erklärung als einfachen Text. Strg+Umschalt+C macht dasselbe; der Menüeintrag «Resultat kopieren» (Datei und Bearbeiten) ist entfallen.
 
 ### Schaltpläne
 - Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.

@@ -78,8 +78,6 @@ type
     LabelUUnit: TLabel;
     MainMenu: TMainMenu;
     MenuAbout: TMenuItem;
-    MenuCopy: TMenuItem;
-    MenuCopy2: TMenuItem;
     MenuEdit: TMenuItem;
     MenuExit: TMenuItem;
     MenuFile: TMenuItem;
@@ -89,7 +87,6 @@ type
     MenuSepHelp: TMenuItem;
     MenuRechenweg: TMenuItem;
     MenuReset: TMenuItem;
-    MenuSep1: TMenuItem;
     MenuView: TMenuItem;
     PaintCards: TPaintBox;        // vier Resultatkarten
     PaintLed: TPaintBox;          // LED-Vorschau
@@ -130,7 +127,10 @@ type
     procedure PaintKofiMouseLeave(Sender: TObject);
     procedure MenuAboutClick(Sender: TObject);
     procedure MenuLedInfoClick(Sender: TObject);
-    procedure MenuCopyClick(Sender: TObject);
+    procedure CopyClick(Sender: TObject);
+    procedure CopyTimerTimer(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure PaintRechenwegMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure MenuExitClick(Sender: TObject);
     procedure MenuRechenwegClick(Sender: TObject);
     procedure MenuResetClick(Sender: TObject);
@@ -157,6 +157,9 @@ type
     FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
     KofiCaptionShown: string; // Text des Ko-fi-Knopfs in der aktuellen Sprache
     FRechenwegOpen: Boolean; // Rechenweg aufgeklappt
+    FCopyBtn: TRect;         // Knopf «Kopieren» in der Kopfzeile des Rechenwegs
+    FCopied: Boolean;        // kurz «Kopiert» statt «Kopieren» anzeigen
+    FCopyTimer: TTimer;      // stellt den Knopftext nach dem Kopieren zurück
     FMode: Integer;          // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
     FReverse: Boolean;       // Blinkschaltung: aus Frequenz und Tastgrad rechnen
     FCircuitShown: TBlinkCircuit; // Schaltung, deren Werte in den Feldern stehen
@@ -256,6 +259,10 @@ type
     function SeriesName(S: TESeries): string;
     { Schritte des Rechenwegs mit den aktuellen Zahlen }
     function RechenwegLines: TStringArray;
+    { Erklärung der Zeichen im Rechenweg des aktuellen Reiters (mit Auszeichnung) }
+    function RechenwegLegend: string;
+    { Resultat, kompletter Rechenweg und Zeichen-Erklärung als einfacher Text }
+    function CopyText: string;
     { Zusammenfassung für die Zwischenablage }
     function ResultSummary: string;
     { Rechnet einen Wert aus 96-dpi-Pixeln auf die aktuelle Bildschirmskalierung um }
@@ -315,6 +322,16 @@ resourcestring
   rsCardRatingNone = '> 1 W';
   rsCardRatingNoneSub = 'zu viel für einen Vorwiderstand';
   rsRechenweg = 'Rechenweg';
+  rsCopyBtn = 'Kopieren';
+  rsCopiedBtn = 'Kopiert ✓';
+  rsCopySteps = 'Rechenweg:';
+  rsCopyLegend = 'Zeichen:';
+  rsLegendR = 'U_B Speisespannung · U_F Durchlassspannung einer LED · U_R Spannung am Widerstand · R Vorwiderstand · I LED-Strom · P Leistung im Widerstand · R_t_h Wärmewiderstand';
+  rsLegendRN = 'U_B Speisespannung · n LEDs in Reihe · U_F Durchlassspannung einer LED · U_R Spannung am Widerstand · R Vorwiderstand · I LED-Strom · P Leistung im Widerstand · R_t_h Wärmewiderstand';
+  rsLegend555 = 'U_B Speisespannung · t_H Zeit Ausgang High · t_L Zeit Ausgang Low · f Frequenz · C Zeitkondensator · U_O_U_T Spannung am Ausgang · U_F Durchlassspannung · R Vorwiderstand · I LED-Strom';
+  rsLegendMulti = 'U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 und 2 · k Zeitfaktor · R_B_1, R_B_2 Basiswiderstände · C Kondensator · I_B Basisstrom · I_C Kollektorstrom · β Stromverstärkung';
+  rsLegendLM = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Fühlerwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung';
+  rsLegendKT = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Fühlerwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung';
   rsHintDatasheet = 'Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
@@ -364,7 +381,6 @@ resourcestring
   rsUnitN = 'Stk.';
   rsHeadPreview = 'LED-VORSCHAU';
   rsMenuFile = '&Datei';
-  rsMenuCopy = 'Resultat &kopieren';
   rsMenuExit = '&Beenden';
   rsMenuEdit = '&Bearbeiten';
   rsMenuReset = 'Eingaben &zurücksetzen';
@@ -681,6 +697,10 @@ begin
   FLedLit := True;
   FLedDirty := True;
   FRechenwegOpen := True;
+  FCopyTimer := TTimer.Create(Self);
+  FCopyTimer.Enabled := False;
+  FCopyTimer.Interval := 1500;
+  FCopyTimer.OnTimer := @CopyTimerTimer;
   FOnLevel := 1.0;
   FBTexts := BLINK_DEFAULTS;
   FCircuitShown := bcNE555;
@@ -860,8 +880,6 @@ begin
   LabelNUnit.Caption := _(rsUnitN);
   LabelHeadPreview.Caption := _(rsHeadPreview);
   MenuFile.Caption := _(rsMenuFile);
-  MenuCopy.Caption := _(rsMenuCopy);
-  MenuCopy2.Caption := _(rsMenuCopy);
   MenuExit.Caption := _(rsMenuExit);
   MenuEdit.Caption := _(rsMenuEdit);
   MenuReset.Caption := _(rsMenuReset);
@@ -1621,12 +1639,77 @@ begin
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
 end;
 
+function TFormMain.RechenwegLegend: string;
+begin
+  if FMode = 1 then
+  begin
+    if FBRes.Status <> bsOk then Exit('');
+    if FBInput.Circuit = bcMulti then Result := _(rsLegendMulti) else Result := _(rsLegend555);
+  end
+  else if FMode = 2 then
+  begin
+    if FKRes.Status <> ksOk then Exit('');
+    if FKInput.Circuit = kcLM317 then Result := _(rsLegendLM) else Result := _(rsLegendKT);
+  end
+  else
+  begin
+    if FRes.Status <> csOk then Exit('');
+    if FInput.N > 1 then Result := _(rsLegendRN) else Result := _(rsLegendR);
+  end;
+end;
+
+function TFormMain.CopyText: string;
+var
+  SL: TStringList;   // Zeilen
+  L: TStringArray;   // Schritte des Rechenwegs
+  Legend: string;    // Zeichen-Erklärung
+  Ok: Boolean;       // Rechnung gültig
+  I: Integer;        // Zähler
+begin
+  if FMode = 1 then
+  begin
+    Result := BlinkSummary;
+    L := BlinkRechenwegLines;
+    Ok := FBRes.Status = bsOk;
+  end
+  else if FMode = 2 then
+  begin
+    Result := KsqSummary;
+    L := KsqRechenwegLines;
+    Ok := FKRes.Status = ksOk;
+  end
+  else
+  begin
+    Result := ResultSummary;
+    L := RechenwegLines;
+    Ok := FRes.Status = csOk;
+  end;
+  if not Ok then Exit;  // nur die Fehlermeldung
+  SL := TStringList.Create;
+  try
+    SL.Text := Result;
+    SL.Add('');
+    SL.Add(_(rsCopySteps));
+    for I := 0 to High(L) do
+      SL.Add(IntToStr(I + 1) + '. ' + RichPlain(L[I]));
+    Legend := RechenwegLegend;
+    if Legend <> '' then
+    begin
+      SL.Add('');
+      SL.Add(_(rsCopyLegend) + ' ' + RichPlain(Legend));
+    end;
+    Result := SL.Text;
+  finally
+    SL.Free;
+  end;
+end;
+
 procedure TFormMain.UpdateRechenwegHeight;
 var
   NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
 begin
   if FRechenwegOpen then
-    NeuH := Px(158)
+    NeuH := Px(178)  // fünf Schritte und die Zeichen-Erklärung
   else
     NeuH := Px(30);
   Mehr := NeuH - PanelRechenweg.Height;
@@ -1677,6 +1760,10 @@ var
   Ok: Boolean;           // Rechnung gültig
   HintText: string;          // Hinweis zum Datenblatt
   HintX: Integer;        // frühester Anfang des Hinweises
+  HintRight: Integer;    // rechter Rand des Hinweises (vor dem Knopf)
+  BtnText: string;       // Beschriftung des Kopier-Knopfs
+  BtnW: Integer;         // Breite des Kopier-Knopfs
+  Legend: string;        // Zeichen-Erklärung
 begin
   C := PaintRechenweg.Canvas;
   R := PaintRechenweg.ClientRect;
@@ -1701,13 +1788,26 @@ begin
   C.TextOut(R.Left + Px(24), R.Top + (HeadH - C.TextHeight('Ag')) div 2, _(rsRechenweg));
   // Hinweis rechts in der Kopfzeile, auch zugeklappt sichtbar: Vorgaben sind
   // nur Richtwerte. Schrift wird kleiner, wenn der Platz nicht reicht.
-  HintText := _(rsHintDatasheet);
   HintX := R.Left + Px(24) + C.TextWidth(_(rsRechenweg)) + Px(24);
+  // Knopf «Kopieren» ganz rechts (auch zugeklappt): kopiert Resultat und Rechenweg
+  if FCopied then BtnText := _(rsCopiedBtn) else BtnText := _(rsCopyBtn);
+  BtnW := Max(C.TextWidth(_(rsCopyBtn)), C.TextWidth(_(rsCopiedBtn))) + Px(20);
+  FCopyBtn := Rect(R.Right - Px(8) - BtnW, R.Top + Px(4), R.Right - Px(8), R.Top + HeadH - Px(4));
+  C.Brush.Style := bsSolid;
+  C.Brush.Color := clrPanel;
+  C.Pen.Color := clrBorder;
+  C.RoundRect(FCopyBtn, Px(8), Px(8));
+  C.Brush.Style := bsClear;
+  if FCopied then C.Font.Color := clrOk else C.Font.Color := clrText;
+  C.TextOut((FCopyBtn.Left + FCopyBtn.Right - C.TextWidth(BtnText)) div 2,
+    (FCopyBtn.Top + FCopyBtn.Bottom - C.TextHeight('Ag')) div 2, BtnText);
+  HintRight := FCopyBtn.Left - Px(14);
+  HintText := _(rsHintDatasheet);
   C.Font.Color := clrTextSoft;
-  while (C.Font.Size > 7) and (C.TextWidth(HintText) > R.Right - Px(12) - HintX) do
+  while (C.Font.Size > 7) and (C.TextWidth(HintText) > HintRight - HintX) do
     C.Font.Size := C.Font.Size - 1;
-  if C.TextWidth(HintText) <= R.Right - Px(12) - HintX then
-    C.TextOut(R.Right - Px(12) - C.TextWidth(HintText),
+  if C.TextWidth(HintText) <= HintRight - HintX then
+    C.TextOut(HintRight - C.TextWidth(HintText),
       R.Top + (HeadH - C.TextHeight('Ag')) div 2, HintText);
   C.Font.Size := 9;
   C.Font.Color := clrText;
@@ -1743,14 +1843,35 @@ begin
       DrawRich(C, R.Left + Px(14), Y, L[I], clrError, clrError);
     Inc(Y, LineH);
   end;
+  // Erklärung der Zeichen: grau und kleiner, Schrift schrumpft, wenn der Platz fehlt
+  Legend := RechenwegLegend;
+  if Legend <> '' then
+  begin
+    C.Font.Size := 8;
+    while (C.Font.Size > 7) and (RichWidth(C, Legend) > R.Right - R.Left - Px(54)) do
+      C.Font.Size := C.Font.Size - 1;
+    DrawRich(C, R.Left + Px(40), Y + Px(2), Legend, clrTextSoft, clrTextSoft);
+    C.Font.Size := 9;
+  end;
 end;
 
 procedure TFormMain.PaintRechenwegMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  // Klick auf die Kopfzeile klappt auf oder zu
-  if (Button = mbLeft) and (Y <= Px(28)) then
+  if Button <> mbLeft then Exit;
+  // Klick auf den Knopf kopiert, sonst klappt die Kopfzeile auf oder zu
+  if PtInRect(FCopyBtn, Point(X, Y)) then
+    CopyClick(Sender)
+  else if Y <= Px(28) then
     MenuRechenwegClick(Sender);
+end;
+
+procedure TFormMain.PaintRechenwegMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  if (Y <= Px(28)) then
+    PaintRechenweg.Cursor := crHandPoint
+  else
+    PaintRechenweg.Cursor := crDefault;
 end;
 
 procedure TFormMain.MenuRechenwegClick(Sender: TObject);
@@ -1915,14 +2036,31 @@ begin
   end;
 end;
 
-procedure TFormMain.MenuCopyClick(Sender: TObject);
+procedure TFormMain.CopyClick(Sender: TObject);
 begin
-  if FMode = 1 then
-    Clipboard.AsText := BlinkSummary
-  else if FMode = 2 then
-    Clipboard.AsText := KsqSummary
-  else
-    Clipboard.AsText := ResultSummary;
+  Clipboard.AsText := CopyText;
+  // kurz «Kopiert ✓» anzeigen
+  FCopied := True;
+  FCopyTimer.Enabled := False;
+  FCopyTimer.Enabled := True;
+  PaintRechenweg.Invalidate;
+end;
+
+procedure TFormMain.CopyTimerTimer(Sender: TObject);
+begin
+  FCopyTimer.Enabled := False;
+  FCopied := False;
+  PaintRechenweg.Invalidate;
+end;
+
+procedure TFormMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  // Strg+Umschalt+C: wie der Knopf «Kopieren» im Rechenweg
+  if (Key = VK_C) and (Shift = [ssCtrl, ssShift]) then
+  begin
+    CopyClick(Sender);
+    Key := 0;
+  end;
 end;
 
 procedure TFormMain.MenuExitClick(Sender: TObject);
