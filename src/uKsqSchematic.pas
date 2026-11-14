@@ -42,7 +42,7 @@ procedure DrawSchematicKsqT(Canvas: TCanvas; const Rect: TRect;
 implementation
 
 uses
-  Math, uTheme;
+  Math, uTheme, uSmooth;
 
 { eine oder zwei LEDs senkrecht ab Top; liefert die Unterkante }
 function Leds(C: TCanvas; const M: TMap; X, Top: Double; const V: TKsqSchemValues;
@@ -73,7 +73,7 @@ begin
   if M.S <= 0 then Exit;
   C := Canvas;
   C.Font.Name := FONT_UI;
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;
@@ -97,7 +97,7 @@ begin
   C.Brush.Style := bsSolid;
   C.Brush.Color := Col.Body;
   C.Pen.Width := MW(M, 1.6);
-  C.Rectangle(MX(M, 190), MY(M, 30), MX(M, 310), MY(M, 100));
+  SmoothRectangle(C, MX(M, 190), MY(M, 30), MX(M, 310), MY(M, 100));
 
   // Beschriftung
   Txt(C, M, 22, 64, '+Ub', Col.Text, 0, False);
@@ -116,13 +116,13 @@ begin
     Txt(C, M, 462, 198, V.LedText, Col.Text, 0, False);
     Txt(C, M, 462, 218, V.UFText, Col.Dim, 0, False);
   end;
-  C.Font.Height := -Max(8, Round(16 * M.S));
+  C.Font.Height := SmoothFontHeight(8, 16 * M.S);
   Txt(C, M, 250, 74, V.ChipText, Col.Text, 1, True);
-  C.Font.Height := -Max(7, Round(10 * M.S));
+  C.Font.Height := SmoothFontHeight(7, 10 * M.S);
   Txt(C, M, 196, 52, 'IN', Col.Dim, 0, False);
   Txt(C, M, 304, 52, 'OUT', Col.Dim, 2, False);
   Txt(C, M, 250, 95, 'ADJ', Col.Dim, 1, False);
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
 end;
 
 procedure DrawSchematicKsqT(Canvas: TCanvas; const Rect: TRect;
@@ -136,7 +136,7 @@ begin
   if M.S <= 0 then Exit;
   C := Canvas;
   C.Font.Name := FONT_UI;
-  C.Font.Height := -Max(9, Round(12 * M.S));
+  C.Font.Height := SmoothFontHeight(9, 12 * M.S);
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;

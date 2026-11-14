@@ -542,7 +542,7 @@ implementation
 
 uses
   Math, Clipbrd, LCLIntf, Dialogs, IniFiles, uTheme, uFormat, uLedView, uSchematic, uRichText,
-  uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic{$IFDEF WINDOWS}, MMSystem{$ENDIF};
+  uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic, uSmooth{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
 
@@ -1334,6 +1334,8 @@ end;
 
 procedure TFormMain.PaintSchematicPaint(Sender: TObject);
 var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
   V: TSchematicValues;  // Texte und Farben für den Schaltplan
   R: TRect;             // Zeichenfläche
   LedName: string;      // Farbname der LED im Text
@@ -1388,7 +1390,11 @@ begin
     V.IText := 'I = ' + Dash;
   end;
   InflateRect(R, -Px(20), -Px(20));
-  DrawSchematic(PaintSchematic.Canvas, R, V, clrLine, clrLine, clrAccent, clrPanel);
+  if BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then
+  begin
+    DrawSchematic(BC, BR, V, clrLine, clrLine, clrAccent, clrPanel);
+    EndSmooth;
+  end;
 end;
 
 { ---------- Resultatkarten ---------- }
@@ -2554,8 +2560,34 @@ begin
   end;
 end;
 
+{ Alles, was den Blink-Schaltplan verändert, als Text (Schlüssel für das
+  Zwischenspeichern des geglätteten Bilds) }
+function BlinkSchemKey(const V: TBlinkSchemValues; const Col: TBlinkSchemColors;
+  Multi: Boolean): string;
+
+  { Farbringe als Text }
+  function BandsKey(const B: TBandArray): string;
+  var
+    I: Integer;  // Zähler
+  begin
+    Result := '';
+    for I := 0 to High(B) do
+      Result := Result + IntToStr(Ord(B[I])) + ',';
+  end;
+
+begin
+  Result := Format('%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%s',
+    [V.UBText, V.R1Text, V.R2Text, V.CText, V.C2Text, V.RV1Text, V.RV2Text,
+     V.Led1Text, V.Led2Text, V.UOutText, V.T1Text, V.T2Text,
+     V.LedColor, Ord(V.Led1Lit), Ord(V.Led2Lit), Ord(V.Diode), Ord(V.Conn), Ord(V.Elko),
+     Col.Line, Col.Text, Col.Accent, Col.Dim, Col.Body, Col.LedOff, Ord(Multi),
+     BandsKey(V.Bands1), BandsKey(V.Bands2)]);
+end;
+
 procedure TFormMain.PaintBlinkSchematic;
 var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
   V: TBlinkSchemValues;   // Texte und Zustände
   Col: TBlinkSchemColors; // Farben
   R: TRect;               // Zeichenfläche
@@ -2666,10 +2698,13 @@ begin
 
   R := PaintSchematic.ClientRect;
   InflateRect(R, -Px(16), -Px(16));
+  // Schlüssel fürs Zwischenspeichern: beim Blinken wechseln nur zwei Bilder
+  if not BeginSmooth(PaintSchematic.Canvas, R, clrDeep, BlinkSchemKey(V, Col, Multi), BC, BR) then Exit;
   if Multi then
-    DrawSchematicMulti(PaintSchematic.Canvas, R, V, Col)
+    DrawSchematicMulti(BC, BR, V, Col)
   else
-    DrawSchematic555(PaintSchematic.Canvas, R, V, Col);
+    DrawSchematic555(BC, BR, V, Col);
+  EndSmooth;
 end;
 
 procedure TFormMain.PaintBlinkCards;
@@ -3215,6 +3250,8 @@ end;
 
 procedure TFormMain.PaintKsqSchematic;
 var
+  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
+  BR: TRect;             // Zeichenfläche darauf
   V: TKsqSchemValues;     // Texte und Werte
   Col: TBlinkSchemColors; // Farben
   R: TRect;               // Zeichenfläche
@@ -3270,10 +3307,12 @@ begin
 
   R := PaintSchematic.ClientRect;
   InflateRect(R, -Px(16), -Px(16));
+  if not BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then Exit;
   if FKInput.Circuit = kcLM317 then
-    DrawSchematicLM317(PaintSchematic.Canvas, R, V, Col)
+    DrawSchematicLM317(BC, BR, V, Col)
   else
-    DrawSchematicKsqT(PaintSchematic.Canvas, R, V, Col);
+    DrawSchematicKsqT(BC, BR, V, Col);
+  EndSmooth;
 end;
 
 procedure TFormMain.PaintKsqCards;

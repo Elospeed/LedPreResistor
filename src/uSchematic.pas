@@ -37,7 +37,7 @@ procedure DrawResistor(Canvas: TCanvas; const Rect: TRect; const Bands: TBandArr
 implementation
 
 uses
-  Math, uTheme, uRichText;
+  Math, uTheme, uRichText, uSmooth;
 
 procedure DrawResistor(Canvas: TCanvas; const Rect: TRect; const Bands: TBandArray);
 var
@@ -60,7 +60,7 @@ begin
   BodyR := Rect.Left + W * 80 div 100;
   BodyT := Rect.Top + H div 7;
   BodyB := Rect.Bottom - H div 7;
-  Canvas.Pen.Width := 1;
+  Canvas.Pen.Width := SmoothPx(1);
   Canvas.Pen.Color := clrResistorEdge;
   Canvas.Brush.Style := bsSolid;
   Canvas.Brush.Color := clrResistorBody;
@@ -91,19 +91,19 @@ var
   { Vorlagen-X in Pixel }
   function X(V: Double): Integer;
   begin
-    Result := Round(OX + V * S);
+    Result := SmoothCoord(OX + V * S);
   end;
 
   { Vorlagen-Y in Pixel }
   function Y(V: Double): Integer;
   begin
-    Result := Round(OY + V * S);
+    Result := SmoothCoord(OY + V * S);
   end;
 
   { Strichstärke in Pixel }
   function PW(V: Double): Integer;
   begin
-    Result := Max(1, Round(V * S));
+    Result := SmoothWidth(V * S);
   end;
 
   { Text mit Auszeichnung; Align: 0 = links, 1 = Mitte, 2 = rechts.
@@ -112,6 +112,13 @@ var
   var
     TW, TX, TY: Integer;  // Breite und Startpunkt
   begin
+    if T = '' then Exit;
+    if SmoothCapturing then
+    begin
+      // geglättet: Text erst nach dem Verkleinern scharf zeichnen
+      SmoothAddText(Canvas, X(BX), Y(BaseY), T, C, Align, Bold);
+      Exit;
+    end;
     if Bold then Canvas.Font.Style := [fsBold] else Canvas.Font.Style := [];
     TW := RichWidth(Canvas, T);
     case Align of
@@ -135,7 +142,7 @@ begin
   OY := Rect.Top + ((Rect.Bottom - Rect.Top) - 240 * S) / 2;
 
   Canvas.Font.Name := FONT_UI;
-  Canvas.Font.Height := -Max(9, Round(12 * S));
+  Canvas.Font.Height := SmoothFontHeight(9, 12 * S);
   Canvas.Brush.Style := bsClear;
   Canvas.Pen.Color := LineColor;
   Canvas.Pen.Width := PW(2);
@@ -155,7 +162,7 @@ begin
   Canvas.Pen.Width := PW(2);
   Canvas.Brush.Style := bsSolid;
   Canvas.Brush.Color := BodyColor;
-  Canvas.Rectangle(X(160), Y(29), X(250), Y(51));
+  SmoothRectangle(Canvas, X(160), Y(29), X(250), Y(51));
   if Length(V.Bands) >= 3 then
   begin
     RBands := Types.Rect(X(162), Y(31), X(248), Y(49));
@@ -164,7 +171,7 @@ begin
   Canvas.Pen.Color := LineColor;
   Canvas.Pen.Width := PW(2);
   Canvas.Brush.Style := bsClear;
-  Canvas.Rectangle(X(160), Y(29), X(250), Y(51));
+  SmoothRectangle(Canvas, X(160), Y(29), X(250), Y(51));
 
   // LED-Symbol: Dreieck mit Querstrich und zwei Lichtpfeilen
   Canvas.Brush.Style := bsSolid;
@@ -190,10 +197,10 @@ begin
   Canvas.Brush.Style := bsClear;
 
   // Beschriftung
-  Canvas.Font.Height := -Max(10, Round(14 * S));
+  Canvas.Font.Height := SmoothFontHeight(10, 14 * S);
   Txt(40, 104, '+', TextColor, 2, False);
   Txt(40, 134, '−', TextColor, 2, False);
-  Canvas.Font.Height := -Max(9, Round(12 * S));
+  Canvas.Font.Height := SmoothFontHeight(9, 12 * S);
   Txt(96, 123, V.UBText, TextColor, 0, False);
   Txt(205, 22, V.RText, AccentColor, 1, True);
   Txt(205, 70, V.URText, TextColor, 1, False);

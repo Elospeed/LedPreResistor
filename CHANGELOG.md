@@ -24,6 +24,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - In Zeilen mit eingesetzten Zahlen steht jetzt × statt · (z. B. 0,693 × 69 kΩ × 10 µF); Formeln mit Symbolen behalten den Punkt.
 - Ist der Schaltplan zu klein, klappt der Rechenweg automatisch zu.
 
+### Schaltpläne
+- Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.
+
 ---
 
 ## 2.3 – 11. November 2026
