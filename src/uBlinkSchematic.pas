@@ -1,8 +1,31 @@
-{ Schaltpläne der Blinkschaltungen: NE555 astabil (Vorlage 580 × 320 Punkte)
-  und astabiler Multivibrator mit zwei Transistoren (Vorlage 600 × 300).
-  Wie uSchematic nur LCL-Canvas; die Vorlage wird in das übergebene
-  Rechteck eingepasst, Strichstärken und Schrift wachsen mit. Die LEDs
-  werden hell oder dunkel gezeichnet, so blinkt der Schaltplan mit. }
+{==============================================================================
+  uBlinkSchematic - Schaltpläne der Blinkschaltungen und Zeichenhilfen
+==============================================================================
+  Zweck:     Zeichnet im Reiter «Blinkschaltung» den Schaltplan mit den
+             aktuellen Werten:
+               - NE555 astabil            (Vorlage 580 × 320 Punkte)
+               - Multivibrator, zwei
+                 Transistoren             (Vorlage 600 × 300 Punkte)
+             Die LEDs werden hell oder dunkel gezeichnet; so blinkt der
+             Schaltplan im Takt der Schaltung mit.
+
+  Idee:      Jeder Plan ist für eine feste Vorlage entworfen. TMap rechnet
+             Vorlagen-Punkte in Pixel um (Massstab S, Versatz OX/OY), damit
+             der Plan in jedes Rechteck passt. Strichstärken und Schrift
+             wachsen mit.
+
+  Zeichen-   Leitung (Wire), Punkt (Dot), Widerstand ohne/mit Ringen (ResV,
+  hilfen:    ResBands), LED (LedDown), Kondensator (CapV, CapH), NPN-
+             Transistor (Npn), Text (Txt). Sie werden auch von uKsqSchematic
+             benutzt, damit alle Schaltpläne gleich aussehen.
+
+  Symbole:   Transistor immer sauber: Kreis, Basisbalken, Kollektor und
+             Emitter schräg, Pfeil am Emitter zeigt nach aussen (NPN).
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  geglättet, Transistorsymbole, Kommentare
+             2.3  11.11.2026  neu: Schaltpläne NE555 und Multivibrator
+==============================================================================}
 unit uBlinkSchematic;
 
 {$mode objfpc}{$H+}
@@ -12,83 +35,170 @@ interface
 uses
   Types, Graphics, uColorCode, uBlink;
 
+{==============================================================================
+  TYPEN
+==============================================================================}
 type
-  { Alles, was die Blink-Schaltpläne anzeigen, als fertiger Text.
-    Tiefgestellte Zeichen mit "_" (siehe uRichText). }
+  // Alles, was die Blink-Schaltpläne anzeigen, als fertiger Text.
+  // Tiefgestellte Zeichen mit «_» (siehe uRichText), z. B. «R_V».
   TBlinkSchemValues = record
-    UBText: string;      // "U_B = 9 V"
-    R1Text: string;      // "R1 = 1 kΩ" bzw. "R_B_1 = 33 kΩ"
-    R2Text: string;      // "R2 = 68 kΩ" bzw. "R_B_2 = 33 kΩ"
-    CText: string;       // "C = 10 µF"
-    C2Text: string;      // Multivibrator: "C2 = 10 µF"
-    RV1Text: string;     // "R_V = 390 Ω"
-    RV2Text: string;     // zweiter Vorwiderstand
-    Led1Text: string;    // "LED rot" bzw. "LED 1"
-    Led2Text: string;    // "LED 2"
-    UOutText: string;    // NE555: "U_O_U_T ≈ 7,3 V"
-    T1Text: string;      // Multivibrator: "T1 BC547"
-    T2Text: string;      // Multivibrator: "T2 BC547"
-    LedColor: TColor;    // Leuchtfarbe der LEDs
-    Led1Lit: Boolean;    // LED 1 leuchtet gerade
-    Led2Lit: Boolean;    // LED 2 leuchtet gerade
-    Bands1: TBandArray;  // Farbringe Vorwiderstand 1 (leer = ohne)
-    Bands2: TBandArray;  // Farbringe Vorwiderstand 2
-    Diode: Boolean;      // NE555: Diode über R2 eingezeichnet
-    Conn: TLedConn;      // NE555: Anschluss der LED(s)
-    Elko: Boolean;       // Zeitkondensator ist ein Elko (Plus-Zeichen)
+    UBText: string;                                      // Speisespannung, "U_B = 9 V"
+    R1Text: string;                                      // "R1 = 1 kΩ" bzw. "R_B_1 = 33 kΩ"
+    R2Text: string;                                      // "R2 = 68 kΩ" bzw. "R_B_2 = 33 kΩ"
+    CText: string;                                       // "C = 10 µF"
+    C2Text: string;                                      // Multivibrator: "C2 = 10 µF"
+    RV1Text: string;                                     // Vorwiderstand, "R_V = 390 Ω"
+    RV2Text: string;                                     // zweiter Vorwiderstand
+    Led1Text: string;                                    // "LED rot" bzw. "LED 1"
+    Led2Text: string;                                    // "LED 2"
+    UOutText: string;                                    // NE555: "U_O_U_T ≈ 7,3 V"
+    T1Text: string;                                      // Multivibrator: "T1 BC547"
+    T2Text: string;                                      // Multivibrator: "T2 BC547"
+    LedColor: TColor;                                    // Leuchtfarbe der LEDs
+    Led1Lit: Boolean;                                    // LED 1 leuchtet gerade
+    Led2Lit: Boolean;                                    // LED 2 leuchtet gerade
+    Bands1: TBandArray;                                  // Farbringe Vorwiderstand 1 (leer = ohne)
+    Bands2: TBandArray;                                  // Farbringe Vorwiderstand 2
+    Diode: Boolean;                                      // NE555: Diode über R2 eingezeichnet
+    Conn: TLedConn;                                      // NE555: Anschluss der LED(s)
+    Elko: Boolean;                                       // Zeitkondensator ist ein Elko (Plus-Zeichen)
   end;
 
-  { Farben für die Zeichnung }
+  // Farben für die Zeichnung
   TBlinkSchemColors = record
-    Line: TColor;     // Leitungen
-    Text: TColor;     // Beschriftung
-    Accent: TColor;   // Werte der Bauteile
-    Dim: TColor;      // Pin-Nummern, Nebentext
-    Body: TColor;     // Füllung der Bauteile (Hintergrund)
-    LedOff: TColor;   // LED dunkel
+    Line: TColor;                                        // Leitungen
+    Text: TColor;                                        // Beschriftung
+    Accent: TColor;                                      // Werte der Bauteile
+    Dim: TColor;                                         // Pin-Nummern, Nebentext
+    Body: TColor;                                        // Füllung der Bauteile (Hintergrund)
+    LedOff: TColor;                                      // LED dunkel
   end;
 
-{ NE555 astabil mit LED(s) am Ausgang }
+{==============================================================================
+  ÖFFENTLICHE FUNKTIONEN: SCHALTPLÄNE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  DrawSchematic555
+------------------------------------------------------------------------------
+  Zeichnet den NE555 als astabilen Kippschalter mit R1, R2, C (Zeitglied)
+  und der LED bzw. den LEDs am Ausgang (Pin 3). Je nach Anschluss (V.Conn)
+  liegt die LED nach Masse, nach +U_B oder beides (Wechselblinker).
+  Parameter: Canvas - Leinwand
+             Rect   - verfügbarer Platz; die Vorlage wird eingepasst
+             V      - Texte, Farbringe, LED-Zustand, Diode, Anschluss
+             Col    - Farben
+------------------------------------------------------------------------------}
 procedure DrawSchematic555(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 
-{ Astabiler Multivibrator mit zwei Transistoren und zwei LEDs }
+{------------------------------------------------------------------------------
+  DrawSchematicMulti
+------------------------------------------------------------------------------
+  Zeichnet den astabilen Multivibrator: zwei Transistoren, die sich über
+  die Kondensatoren C1 und C2 gegenseitig ein- und ausschalten. In jedem
+  Kollektorzweig liegen Vorwiderstand und LED; sie blinken abwechselnd.
+  Parameter: wie DrawSchematic555
+------------------------------------------------------------------------------}
 procedure DrawSchematicMulti(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 
-{ ---------- Zeichenhilfen, auch für die Konstantstrom-Schaltpläne (uKsqSchematic) ---------- }
+{==============================================================================
+  ZEICHENHILFEN (auch für uKsqSchematic)
+==============================================================================}
 
 type
-  { Umrechnung Vorlage -> Pixel: Massstab und Verschiebung }
+  // Umrechnung Vorlage -> Pixel: Pixel = Versatz + Vorlagen-Punkt × S
   TMap = record
-    S, OX, OY: Double;
+    S: Double;                                           // Massstab: Pixel pro Vorlagen-Punkt
+    OX, OY: Double;                                      // Versatz links/oben, damit der Plan mittig sitzt
   end;
 
-{ Vorlage der Grösse BW × BH mittig in Rect einpassen }
+{------------------------------------------------------------------------------
+  MakeMap
+------------------------------------------------------------------------------
+  Passt eine Vorlage der Grösse BW × BH so gross wie möglich und mittig
+  in Rect ein.
+  Rückgabe:  Umrechnung; S <= 0 heisst: kein Platz, nichts zeichnen
+------------------------------------------------------------------------------}
 function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
-{ Vorlage-Koordinaten in Pixel }
+{------------------------------------------------------------------------------
+  MX
+------------------------------------------------------------------------------
+  MX, MY und MP rechnen Vorlagen-Koordinaten in Pixel um:
+  MX waagrecht, MY senkrecht, MP beides als Punkt.
+------------------------------------------------------------------------------}
 function MX(const M: TMap; V: Double): Integer;
 function MY(const M: TMap; V: Double): Integer;
 function MP(const M: TMap; X, Y: Double): TPoint;
-{ Länge bzw. Strichstärke in Pixel, mindestens 1 }
+{------------------------------------------------------------------------------
+  MW
+------------------------------------------------------------------------------
+  Rechnet eine Länge bzw. Strichstärke der Vorlage in Pixel um
+  (mindestens 1).
+------------------------------------------------------------------------------}
 function MW(const M: TMap; V: Double): Integer;
-{ Text mit Auszeichnung (uRichText); Align 0 = links, 1 = Mitte, 2 = rechts;
-  BaseY ist die Grundlinie }
+{------------------------------------------------------------------------------
+  Txt
+------------------------------------------------------------------------------
+  Schreibt einen Text mit Auszeichnung (uRichText, Tiefstellung mit «_»).
+  Parameter: BX, BaseY - Ankerpunkt in der Vorlage; BaseY = Grundlinie
+             T         - Text; leer = nichts
+             Color     - Farbe
+             Align     - 0 = links, 1 = Mitte, 2 = rechts am Ankerpunkt
+             Bold      - fett
+------------------------------------------------------------------------------}
 procedure Txt(C: TCanvas; const M: TMap; BX, BaseY: Double; const T: string;
   Color: TColor; Align: Integer; Bold: Boolean);
-{ Leitung durch die Punkte X1, Y1, X2, Y2, … }
+{------------------------------------------------------------------------------
+  Wire
+------------------------------------------------------------------------------
+  Zeichnet eine Leitung durch die Punkte der Vorlage.
+  Parameter: P - Koordinaten paarweise: [X1, Y1, X2, Y2, ...]
+------------------------------------------------------------------------------}
 procedure Wire(C: TCanvas; const M: TMap; const P: array of Double);
-{ Verbindungspunkt }
+{------------------------------------------------------------------------------
+  Dot
+------------------------------------------------------------------------------
+  Zeichnet einen Verbindungspunkt (Knoten, an dem Leitungen verbunden
+  sind) bei (X, Y) in der Vorlage.
+------------------------------------------------------------------------------}
 procedure Dot(C: TCanvas; const M: TMap; X, Y: Double; Color: TColor);
-{ Widerstand senkrecht als Rechteck ohne Farbringe }
+{------------------------------------------------------------------------------
+  ResV
+------------------------------------------------------------------------------
+  Zeichnet einen Widerstand senkrecht als Rechteck ohne Farbringe
+  (Zeitglied), Mitte X, von Y1 bis Y2.
+------------------------------------------------------------------------------}
 procedure ResV(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Col: TBlinkSchemColors);
-{ Widerstand senkrecht mit Farbringen }
+{------------------------------------------------------------------------------
+  ResBands
+------------------------------------------------------------------------------
+  Zeichnet einen Widerstand senkrecht mit Farbringen (beiger Körper wie
+  im Hauptschaltplan), Mitte X, von Y1 bis Y2. Bands leer = ohne Ringe.
+------------------------------------------------------------------------------}
 procedure ResBands(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Bands: TBandArray;
   const Col: TBlinkSchemColors);
-{ LED nach unten zeigend, Dreieck von Top bis Top + 24 }
+{------------------------------------------------------------------------------
+  LedDown
+------------------------------------------------------------------------------
+  Zeichnet eine LED, Spitze nach unten (Anode oben), von Top bis Top + 24.
+  Parameter: Lit - True: in der Leuchtfarbe mit Lichtpfeilen,
+                   False: dunkel (ausgeschaltet)
+             V   - davon wird nur V.LedColor gebraucht
+------------------------------------------------------------------------------}
 procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
-{ NPN-Transistor (Kreis, Basisbalken, Emitterpfeil) }
+{------------------------------------------------------------------------------
+  Npn
+------------------------------------------------------------------------------
+  Zeichnet einen NPN-Transistor: Kreis, Basisbalken, Kollektor oben,
+  Emitter unten mit Pfeil nach aussen.
+  Parameter: CX, CY   - Mitte des Kreises (Vorlage)
+             PX       - senkrechte Leitung, an der Kollektor und Emitter
+                        enden
+             FromLeft - True: Basis kommt von links, sonst von rechts
+------------------------------------------------------------------------------}
 procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
   const Col: TBlinkSchemColors);
 
@@ -97,39 +207,62 @@ implementation
 uses
   Math, uTheme, uRichText, uSmooth;
 
+{==============================================================================
+  ZEICHENHILFEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  MakeMap - siehe Interface
+------------------------------------------------------------------------------}
 function MakeMap(const Rect: TRect; BW, BH: Double): TMap;
 begin
-  Result.S := Min((Rect.Right - Rect.Left) / BW, (Rect.Bottom - Rect.Top) / BH);
+  Result.S := Min((Rect.Right - Rect.Left) / BW, (Rect.Bottom - Rect.Top) / BH);  // knappere Richtung
   Result.OX := Rect.Left + ((Rect.Right - Rect.Left) - BW * Result.S) / 2;
   Result.OY := Rect.Top + ((Rect.Bottom - Rect.Top) - BH * Result.S) / 2;
 end;
 
+{------------------------------------------------------------------------------
+  MX - siehe Interface
+------------------------------------------------------------------------------}
 function MX(const M: TMap; V: Double): Integer;
 begin
   Result := SmoothCoord(M.OX + V * M.S);
 end;
 
+{------------------------------------------------------------------------------
+  MY - siehe Interface (MX)
+------------------------------------------------------------------------------}
 function MY(const M: TMap; V: Double): Integer;
 begin
   Result := SmoothCoord(M.OY + V * M.S);
 end;
 
+{------------------------------------------------------------------------------
+  MP - siehe Interface (MX)
+------------------------------------------------------------------------------}
 function MP(const M: TMap; X, Y: Double): TPoint;
 begin
   Result := Point(MX(M, X), MY(M, Y));
 end;
 
+{------------------------------------------------------------------------------
+  MW - siehe Interface
+------------------------------------------------------------------------------}
 function MW(const M: TMap; V: Double): Integer;
 begin
   Result := SmoothWidth(V * M.S);
 end;
 
-{ Text mit Auszeichnung; Align 0 = links, 1 = Mitte, 2 = rechts;
-  BaseY ist die Grundlinie wie im SVG }
+{------------------------------------------------------------------------------
+  Txt
+------------------------------------------------------------------------------
+  siehe Interface. Beim Glätten (uSmooth) wird der Text nur gemerkt und
+  nach dem Verkleinern scharf gezeichnet.
+------------------------------------------------------------------------------}
 procedure Txt(C: TCanvas; const M: TMap; BX, BaseY: Double; const T: string;
   Color: TColor; Align: Integer; Bold: Boolean);
 var
-  TW, TX, TY: Integer;  // Breite und Startpunkt
+  TW, TX, TY: Integer;                                   // Breite und Startpunkt
 begin
   if T = '' then Exit;
   if SmoothCapturing then
@@ -146,37 +279,50 @@ begin
   else
     TX := MX(M, BX);
   end;
-  TY := MY(M, BaseY) - C.TextHeight('Ag') * 4 div 5;
+  TY := MY(M, BaseY) - C.TextHeight('Ag') * 4 div 5;     // Grundlinie -> Oberkante
   C.Brush.Style := bsClear;
   DrawRich(C, TX, TY, T, Color, Color);
   C.Font.Style := [];
 end;
 
-{ Leitung durch mehrere Punkte der Vorlage }
+{------------------------------------------------------------------------------
+  Wire
+------------------------------------------------------------------------------
+  siehe Interface
+------------------------------------------------------------------------------}
 procedure Wire(C: TCanvas; const M: TMap; const P: array of Double);
 var
-  Pts: array of TPoint;  // Punkte in Pixeln
-  I: Integer;            // Zähler
+  Pts: array of TPoint;                                  // Punkte in Pixeln
+  I: Integer;                                            // Zähler
 begin
-  SetLength(Pts, Length(P) div 2);
+  SetLength(Pts, Length(P) div 2);                       // je 2 Zahlen = 1 Punkt
   for I := 0 to High(Pts) do
     Pts[I] := MP(M, P[2 * I], P[2 * I + 1]);
   C.PolyLine(Pts);
 end;
 
-{ Verbindungspunkt }
+{------------------------------------------------------------------------------
+  Dot
+------------------------------------------------------------------------------
+  siehe Interface
+------------------------------------------------------------------------------}
 procedure Dot(C: TCanvas; const M: TMap; X, Y: Double; Color: TColor);
 var
-  R: Integer;  // Radius in Pixeln
+  R: Integer;                                            // Radius in Pixeln
 begin
-  R := Max(2, Round(2.8 * M.S));
+  R := Max(2, Round(2.8 * M.S));                         // Radius 2,8 Punkte, mind. 2 Pixel
   C.Brush.Style := bsSolid;
   C.Brush.Color := Color;
   C.Pen.Color := Color;
   C.Ellipse(MX(M, X) - R, MY(M, Y) - R, MX(M, X) + R + 1, MY(M, Y) + R + 1);
 end;
 
-{ Widerstand senkrecht als Rechteck (Zeitglied) von Y1 bis Y2 }
+{------------------------------------------------------------------------------
+  ResV
+------------------------------------------------------------------------------
+  siehe Interface. Rand in der Hervorhebungsfarbe, weil die Werte der
+  Zeitglieder hervorgehoben beschriftet sind.
+------------------------------------------------------------------------------}
 procedure ResV(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Col: TBlinkSchemColors);
 begin
   C.Brush.Style := bsSolid;
@@ -187,16 +333,25 @@ begin
   C.Pen.Color := Col.Line;
 end;
 
-{ Vorwiderstand senkrecht mit Farbringen (Körper beige wie im Hauptschaltplan) }
+{------------------------------------------------------------------------------
+  ResBands
+------------------------------------------------------------------------------
+  siehe Interface
+  Ablauf:
+    1. Rand und Körper als gefüllte Flächen auf ganzen Bildpunkten
+    2. Ringe: Ziffern und Multiplikator oben gruppiert, Toleranz unten
+       abgesetzt (Leserichtung von oben nach unten)
+------------------------------------------------------------------------------}
 procedure ResBands(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Bands: TBandArray;
   const Col: TBlinkSchemColors);
 var
-  I, N, Y: Integer;   // Ring-Zähler, Anzahl, Lage
-  T, B: Integer;      // Ober- und Unterkante in Pixeln
-  L, R: Integer;      // linke und rechte Kante
-  BH: Integer;        // Höhe eines Rings
-  P: Integer;         // ein Bildpunkt (beim Glätten mehrere Pixel)
+  I, N, Y: Integer;                                      // Ring-Zähler, Anzahl, Lage
+  T, B: Integer;                                         // Ober- und Unterkante in Pixeln
+  L, R: Integer;                                         // linke und rechte Kante
+  BH: Integer;                                           // Höhe eines Rings
+  P: Integer;                                            // ein Bildpunkt (beim Glätten mehrere Pixel)
 begin
+  // ----- 1. Rand und Körper -----
   // Rand und Ringe als gefüllte Flächen auf ganzen Bildpunkten, damit sie
   // auch geglättet scharf bleiben (Stiftbreite 1: Kanten ohne Versatz)
   C.Pen.Width := 1;
@@ -207,22 +362,22 @@ begin
   B := MY(M, Y2);
   C.Brush.Style := bsSolid;
   C.Brush.Color := clrResistorEdge;
-  C.FillRect(L, T, R, B);
+  C.FillRect(L, T, R, B);                                // Rand (ganze Fläche)
   C.Brush.Color := clrResistorBody;
-  C.FillRect(L + P, T + P, R - P, B - P);
+  C.FillRect(L + P, T + P, R - P, B - P);                // Körper 1 Bildpunkt kleiner
+  // ----- 2. Ringe -----
   N := Length(Bands);
   if N >= 3 then
   begin
-    BH := Max(2 * P, (B - T) * 8 div 100);
-    BH := BH - BH mod P;
+    BH := Max(2 * P, (B - T) * 8 div 100);               // Ring = 8 % der Länge
+    BH := BH - BH mod P;                                 // auf ganze Bildpunkte
     for I := 0 to N - 1 do
     begin
-      // Ziffern und Multiplikator oben gruppiert, Toleranz unten abgesetzt
       if I < N - 1 then
-        Y := T + (B - T) * (12 + I * (52 div (N - 1))) div 100
+        Y := T + (B - T) * (12 + I * (52 div (N - 1))) div 100  // gleichmässig ab 12 %
       else
-        Y := T + (B - T) * 80 div 100;
-      Y := Y - (Y - T) mod P;
+        Y := T + (B - T) * 80 div 100;                   // Toleranzring bei 80 %
+      Y := Y - (Y - T) mod P;                            // auf ganze Bildpunkte
       C.Brush.Color := BandScreenColor(Bands[I]);
       C.FillRect(L + P, Y, R - P, Y + BH);
     end;
@@ -230,8 +385,11 @@ begin
   C.Pen.Color := Col.Line;
 end;
 
-{ LED nach unten zeigend (Anode oben), Dreieck von Top bis Top + 24;
-  leuchtend mit Lichtpfeilen nach rechts oben }
+{------------------------------------------------------------------------------
+  LedDown
+------------------------------------------------------------------------------
+  siehe Interface. Die Lichtpfeile zeigen nach rechts oben.
+------------------------------------------------------------------------------}
 procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 begin
@@ -239,25 +397,31 @@ begin
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsSolid;
   if Lit then C.Brush.Color := V.LedColor else C.Brush.Color := Col.LedOff;
-  C.Polygon([MP(M, X - 14, Top), MP(M, X + 14, Top), MP(M, X, Top + 24)]);
+  C.Polygon([MP(M, X - 14, Top), MP(M, X + 14, Top), MP(M, X, Top + 24)]);  // Dreieck
   C.Pen.Width := MW(M, 2.2);
-  C.Line(MX(M, X - 14), MY(M, Top + 24), MX(M, X + 14), MY(M, Top + 24));
+  C.Line(MX(M, X - 14), MY(M, Top + 24), MX(M, X + 14), MY(M, Top + 24));  // Querstrich (Kathode)
   if Lit then
   begin
     C.Pen.Color := V.LedColor;
     C.Pen.Width := MW(M, 1.6);
-    C.Line(MX(M, X + 18), MY(M, Top + 6), MX(M, X + 32), MY(M, Top - 4));
+    C.Line(MX(M, X + 18), MY(M, Top + 6), MX(M, X + 32), MY(M, Top - 4));  // Lichtpfeile
     C.Line(MX(M, X + 22), MY(M, Top + 16), MX(M, X + 36), MY(M, Top + 6));
     C.Brush.Color := V.LedColor;
     C.Pen.Width := 1;
-    C.Polygon([MP(M, X + 32, Top - 4), MP(M, X + 24, Top - 3), MP(M, X + 28, Top + 3)]);
+    C.Polygon([MP(M, X + 32, Top - 4), MP(M, X + 24, Top - 3), MP(M, X + 28, Top + 3)]);  // Pfeilspitzen
     C.Polygon([MP(M, X + 36, Top + 6), MP(M, X + 28, Top + 7), MP(M, X + 32, Top + 13)]);
   end;
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
 end;
 
-{ Kondensator waagrecht liegende Platten (Leitung senkrecht), Platten bei Y und Y + 8 }
+{------------------------------------------------------------------------------
+  CapV
+------------------------------------------------------------------------------
+  Zeichnet einen Kondensator in einer senkrechten Leitung: zwei
+  waagrechte Platten bei Y und Y + 8.
+  Parameter: Elko - True: Plus-Zeichen an die obere Platte
+------------------------------------------------------------------------------}
 procedure CapV(C: TCanvas; const M: TMap; X, Y: Double; Elko: Boolean; const Col: TBlinkSchemColors);
 begin
   C.Pen.Width := MW(M, 2.4);
@@ -268,8 +432,14 @@ begin
     Txt(C, M, X + 17, Y - 1, '+', Col.Dim, 0, False);
 end;
 
-{ Kondensator in waagrechter Leitung, Platten bei X und X + 8;
-  PlusRight: Pluspol (Elko) an der rechten Platte }
+{------------------------------------------------------------------------------
+  CapH
+------------------------------------------------------------------------------
+  Zeichnet einen Kondensator in einer waagrechten Leitung: zwei
+  senkrechte Platten bei X und X + 8.
+  Parameter: Elko      - True: Plus-Zeichen zeichnen
+             PlusRight - Pluspol an der rechten Platte (sonst links)
+------------------------------------------------------------------------------}
 procedure CapH(C: TCanvas; const M: TMap; X, Y: Double; Elko, PlusRight: Boolean;
   const Col: TBlinkSchemColors);
 begin
@@ -284,13 +454,29 @@ begin
       Txt(C, M, X - 4, Y - 14, '+', Col.Dim, 2, False);
 end;
 
+{==============================================================================
+  SCHALTPLÄNE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  DrawSchematic555 - siehe Interface
+------------------------------------------------------------------------------
+  Ablauf:
+    1. Massstab bestimmen (Vorlage 580 × 320 einpassen)
+    2. Speiseleitungen und Zeitglied R1, R2, C (optional Diode über R2)
+    3. Pins 8, 4, 1 und 5 anschliessen
+    4. IC-Gehäuse
+    5. Ausgang Pin 3 mit LED(s) und Vorwiderstand
+    6. Beschriftung
+------------------------------------------------------------------------------}
 procedure DrawSchematic555(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 var
-  M: TMap;        // Vorlage -> Pixel
-  C: TCanvas;     // Abkürzung
-  OutEnd: Double; // rechtes Ende der Ausgangsleitung
+  M: TMap;                                               // Vorlage -> Pixel
+  C: TCanvas;                                            // Abkürzung
+  OutEnd: Double;                                        // rechtes Ende der Ausgangsleitung
 begin
+  // ----- 1. Massstab -----
   M := MakeMap(Rect, 580, 320);
   if M.S <= 0 then Exit;
   C := Canvas;
@@ -300,17 +486,17 @@ begin
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;
 
-  // Speiseleitungen
-  Wire(C, M, [60, 30, 520, 30]);
-  Wire(C, M, [60, 295, 520, 295]);
+  // ----- 2. Speiseleitungen und Zeitglied -----
+  Wire(C, M, [60, 30, 520, 30]);                         // +U_B
+  Wire(C, M, [60, 295, 520, 295]);                       // Masse
   // R1 und R2 in Reihe, dazwischen Pin 7
-  Wire(C, M, [170, 30, 170, 48]);
-  Wire(C, M, [170, 92, 170, 132]);
-  Wire(C, M, [170, 120, 250, 120]);
-  Wire(C, M, [170, 176, 170, 236]);
-  Wire(C, M, [170, 185, 220, 185]);
-  Wire(C, M, [250, 170, 220, 170, 220, 200, 250, 200]);
-  Wire(C, M, [170, 244, 170, 295]);
+  Wire(C, M, [170, 30, 170, 48]);                        // +U_B -> R1
+  Wire(C, M, [170, 92, 170, 132]);                       // R1 -> R2
+  Wire(C, M, [170, 120, 250, 120]);                      // Knoten -> Pin 7
+  Wire(C, M, [170, 176, 170, 236]);                      // R2 -> C
+  Wire(C, M, [170, 185, 220, 185]);                      // Knoten -> Pin 6/2
+  Wire(C, M, [250, 170, 220, 170, 220, 200, 250, 200]);  // Pin 6 und Pin 2 verbunden
+  Wire(C, M, [170, 244, 170, 295]);                      // C -> Masse
   // Diode über R2 (Anode unten an Pin 6/2, Kathode oben an Pin 7)
   if V.Diode then
   begin
@@ -318,7 +504,7 @@ begin
     Wire(C, M, [136, 166, 136, 181, 170, 181]);
     C.Brush.Style := bsSolid;
     C.Brush.Color := Col.Line;
-    C.Polygon([MP(M, 126, 166), MP(M, 146, 166), MP(M, 136, 146)]);
+    C.Polygon([MP(M, 126, 166), MP(M, 146, 166), MP(M, 136, 146)]);  // Dreieck, Spitze oben
     C.Pen.Width := MW(M, 2.2);
     C.Line(MX(M, 126), MY(M, 145), MX(M, 146), MY(M, 145));
     C.Pen.Width := MW(M, 1.6);
@@ -334,7 +520,7 @@ begin
   Dot(C, M, 220, 185, Col.Line);
   C.Pen.Color := Col.Line;
 
-  // Pins 8 und 4 an +Ub, Pin 1 an Masse, Pin 5 über 10 nF an Masse
+  // ----- 3. Pins 8 und 4 an +U_B, Pin 1 an Masse, Pin 5 über 10 nF an Masse -----
   Wire(C, M, [276, 90, 276, 30]);
   Wire(C, M, [336, 90, 336, 30]);
   Wire(C, M, [310, 250, 310, 295]);
@@ -342,17 +528,17 @@ begin
   Wire(C, M, [400, 258, 400, 295]);
   CapV(C, M, 400, 250, False, Col);
 
-  // IC-Gehäuse
+  // ----- 4. IC-Gehäuse -----
   C.Brush.Style := bsSolid;
   C.Brush.Color := Col.Body;
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   SmoothRectangle(C, MX(M, 250), MY(M, 90), MX(M, 370), MY(M, 250));
 
-  // Ausgang Pin 3 nach rechts
+  // ----- 5. Ausgang Pin 3 nach rechts -----
   case V.Conn of
-    cnGnd: OutEnd := 470;
-    cnVcc: OutEnd := 430;
+    cnGnd: OutEnd := 470;                                // LED nach Masse (rechts)
+    cnVcc: OutEnd := 430;                                // LED nach +U_B (weiter links)
   else
     OutEnd := 470;
   end;
@@ -388,7 +574,7 @@ begin
     Dot(C, M, 430, 150, Col.Line);
   C.Pen.Color := Col.Line;
 
-  // Beschriftung
+  // ----- 6. Beschriftung -----
   Txt(C, M, 22, 34, '+Ub', Col.Text, 0, False);
   Txt(C, M, 22, 299, 'GND', Col.Text, 0, False);
   Txt(C, M, 70, 22, V.UBText, Col.Dim, 0, False);
@@ -400,8 +586,8 @@ begin
   Txt(C, M, 150, 244, V.CText, Col.Accent, 2, True);
   Txt(C, M, 416, 258, '10 nF', Col.Dim, 0, False);
   C.Font.Height := SmoothFontHeight(8, 16 * M.S);
-  Txt(C, M, 316, 196, 'NE555', Col.Text, 1, True);
-  C.Font.Height := SmoothFontHeight(7, 10 * M.S);
+  Txt(C, M, 316, 196, 'NE555', Col.Text, 1, True);       // gross im Gehäuse
+  C.Font.Height := SmoothFontHeight(7, 10 * M.S);        // Pin-Namen klein
   Txt(C, M, 254, 124, '7 DIS', Col.Dim, 0, False);
   Txt(C, M, 254, 174, '6 THR', Col.Dim, 0, False);
   Txt(C, M, 254, 204, '2 TRI', Col.Dim, 0, False);
@@ -432,32 +618,41 @@ begin
   end;
 end;
 
-{ NPN-Transistor: Kreis um (CX, CY), Basis kommt von links (FromLeft) oder
-  rechts; Kollektor oben und Emitter unten auf der Linie X = PX }
+{------------------------------------------------------------------------------
+  Npn
+------------------------------------------------------------------------------
+  siehe Interface
+  Ablauf:
+    1. Kreis und Basisbalken
+    2. Kollektor und Emitter schräg zur Leitung X = PX
+    3. Pfeil am Emitter: Richtung der Emitterlinie als Einheitsvektor
+       (DX, DY), Spitze 3 Punkte vor dem Ende, Basis 12 Punkte dahinter,
+       5 Punkte breit nach jeder Seite
+------------------------------------------------------------------------------}
 procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
   const Col: TBlinkSchemColors);
 var
-  BX: Double;        // Lage des Basisbalkens
-  DX, DY, L: Double; // Richtung des Emitters
-  TX, TY: Double;    // Pfeilspitze
-  Bx2, By2: Double;  // Mitte der Pfeilbasis
+  BX: Double;                                            // Lage des Basisbalkens
+  DX, DY, L: Double;                                     // Richtung des Emitters
+  TX, TY: Double;                                        // Pfeilspitze
+  Bx2, By2: Double;                                      // Mitte der Pfeilbasis
 begin
+  // ----- 1. Kreis und Basisbalken -----
   if FromLeft then BX := CX - 14 else BX := CX + 14;
   C.Brush.Style := bsClear;
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
-  C.Ellipse(MX(M, CX - 25), MY(M, CY - 25), MX(M, CX + 25), MY(M, CY + 25));
-  // Basisbalken
+  C.Ellipse(MX(M, CX - 25), MY(M, CY - 25), MX(M, CX + 25), MY(M, CY + 25));  // Kreis, Radius 25
   C.Pen.Width := MW(M, 3);
   C.Line(MX(M, BX), MY(M, CY - 17), MX(M, BX), MY(M, CY + 17));
   C.Pen.Width := MW(M, 1.6);
-  // Kollektor und Emitter schräg zur senkrechten Leitung
-  Wire(C, M, [BX, CY - 8, PX, CY - 22]);
-  Wire(C, M, [BX, CY + 8, PX, CY + 22]);
-  // Pfeil am Emitter zeigt nach aussen (NPN)
+  // ----- 2. Kollektor und Emitter schräg zur senkrechten Leitung -----
+  Wire(C, M, [BX, CY - 8, PX, CY - 22]);                 // Kollektor
+  Wire(C, M, [BX, CY + 8, PX, CY + 22]);                 // Emitter
+  // ----- 3. Pfeil am Emitter zeigt nach aussen (NPN) -----
   DX := PX - BX;
-  DY := 14;
-  L := Sqrt(DX * DX + DY * DY);
+  DY := 14;                                              // Emitter fällt 14 Punkte
+  L := Sqrt(DX * DX + DY * DY);                          // Länge -> Einheitsvektor
   DX := DX / L;
   DY := DY / L;
   TX := PX - DX * 3;
@@ -467,16 +662,26 @@ begin
   C.Brush.Style := bsSolid;
   C.Brush.Color := Col.Line;
   C.Pen.Width := 1;
-  C.Polygon([MP(M, TX, TY), MP(M, Bx2 + DY * 5, By2 - DX * 5), MP(M, Bx2 - DY * 5, By2 + DX * 5)]);
+  C.Polygon([MP(M, TX, TY), MP(M, Bx2 + DY * 5, By2 - DX * 5), MP(M, Bx2 - DY * 5, By2 + DX * 5)]);  // Spitze, zwei Ecken quer
   C.Pen.Width := MW(M, 1.6);
 end;
 
+{------------------------------------------------------------------------------
+  DrawSchematicMulti - siehe Interface
+------------------------------------------------------------------------------
+  Ablauf:
+    1. Massstab bestimmen (Vorlage 600 × 300 einpassen)
+    2. Leitungen: zwei Kollektorzweige, Basiswiderstände, Kreuzkopplung
+    3. Bauteile und Verbindungspunkte
+    4. Beschriftung
+------------------------------------------------------------------------------}
 procedure DrawSchematicMulti(Canvas: TCanvas; const Rect: TRect;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 var
-  M: TMap;     // Vorlage -> Pixel
-  C: TCanvas;  // Abkürzung
+  M: TMap;                                               // Vorlage -> Pixel
+  C: TCanvas;                                            // Abkürzung
 begin
+  // ----- 1. Massstab -----
   M := MakeMap(Rect, 600, 300);
   if M.S <= 0 then Exit;
   C := Canvas;
@@ -486,8 +691,9 @@ begin
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsClear;
 
-  Wire(C, M, [60, 25, 560, 25]);
-  Wire(C, M, [60, 285, 560, 285]);
+  // ----- 2. Leitungen -----
+  Wire(C, M, [60, 25, 560, 25]);                         // +U_B
+  Wire(C, M, [60, 285, 560, 285]);                       // Masse
   // linker Kollektorzweig: R_V1, LED 1, T1
   Wire(C, M, [120, 25, 120, 40]);
   Wire(C, M, [120, 78, 120, 94]);
@@ -508,7 +714,8 @@ begin
   Wire(C, M, [188, 150, 360, 150]);
   Wire(C, M, [480, 180, 420, 180]);
   Wire(C, M, [412, 180, 240, 180]);
-  // Pluspol jeweils auf der Seite des Kollektors
+  // ----- 3. Bauteile -----
+  // Pluspol jeweils auf der Seite des Kollektors (dort ist die Spannung höher)
   CapH(C, M, 180, 150, V.Elko, False, Col);
   CapH(C, M, 412, 180, V.Elko, True, Col);
   ResBands(C, M, 120, 40, 78, V.Bands1, Col);
@@ -517,8 +724,8 @@ begin
   LedDown(C, M, 480, 94, V.Led2Lit, V, Col);
   ResV(C, M, 240, 45, 95, Col);
   ResV(C, M, 360, 45, 95, Col);
-  Npn(C, M, 132, 230, 120, False, Col);
-  Npn(C, M, 468, 230, 480, True, Col);
+  Npn(C, M, 132, 230, 120, False, Col);                  // T1, Basis von rechts
+  Npn(C, M, 468, 230, 480, True, Col);                   // T2, Basis von links
   Dot(C, M, 120, 150, Col.Line);
   Dot(C, M, 360, 150, Col.Line);
   Dot(C, M, 480, 180, Col.Line);
@@ -527,6 +734,7 @@ begin
   Dot(C, M, 360, 25, Col.Line);
   C.Pen.Color := Col.Line;
 
+  // ----- 4. Beschriftung -----
   Txt(C, M, 22, 29, '+Ub', Col.Text, 0, False);
   Txt(C, M, 22, 289, 'GND', Col.Text, 0, False);
   Txt(C, M, 70, 17, V.UBText, Col.Dim, 0, False);
