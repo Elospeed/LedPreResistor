@@ -33,6 +33,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Schaltpläne
 - Alle Schaltpläne werden geglättet gezeichnet: schräge Linien, Transistorkreise, LED-Dreiecke und Pfeile ohne Treppenstufen. Gerade Leitungen, Widerstände und Beschriftungen bleiben gestochen scharf.
 
+### Quelltext
+- Alle Units und Tests ausführlich kommentiert: Kopf mit Zweck, Idee, Formeln und Rechenbeispiel, Autor und Versionen; Abschnitte als Kästen; vor jeder Prozedur und Funktion ein Kasten mit Parametern, Rückgabe und Ablauf; Zeilenkommentare rechts in einer eigenen Spalte.
+
 ---
 
 ## 2.3 – 11. November 2026
