@@ -7,7 +7,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.4 – noch nicht veröffentlicht
+## 2.4 – 14. November 2026
 
 ### Konstantstrom
 - Neuer Reiter «Konstantstrom» (Strg+3) mit zwei Schaltungen: LM317 als Stromquelle und Konstantstromquelle mit zwei Transistoren. Die gewählte Schaltung bleibt beim nächsten Start erhalten.
