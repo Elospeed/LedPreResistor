@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LedPreResistor – kostenloser LED-Vorwiderstandsrechner für Windows und Linux</title>
-<meta name="description" content="Elospeed LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs: Normwert aus E12/E24/E96, Farbringe, tatsächlicher Strom, Leistung und passende Bauform, mit Rechenweg Schritt für Schritt, dazu ein Rechner für Blinkschaltungen mit NE555 und Multivibrator. Kostenlos, Open Source, für Windows und Linux.">
+<meta name="description" content="Elospeed LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs: Normwert aus E12/E24/E96, Farbringe, tatsächlicher Strom, Leistung und passende Bauform, mit Rechenweg Schritt für Schritt, dazu ein Rechner für Blinkschaltungen mit NE555 und Multivibrator sowie Konstantstromquellen mit LM317 oder zwei Transistoren. Kostenlos, Open Source, für Windows und Linux.">
 <meta name="keywords" content="LED Vorwiderstand berechnen, Vorwiderstand Rechner, LED Widerstand, E12, E24, E96, Farbcode Widerstand, NE555 Blinker, astabiler Multivibrator, LED Blinkschaltung, Elektronik, Windows, Linux, kostenlos, Open Source">
 <meta name="author" content="Elospeed">
 <meta name="robots" content="index, follow">
@@ -41,10 +41,10 @@
   "name": "Elospeed LedPreResistor",
   "operatingSystem": "Windows 10, Windows 11 (64-bit), Linux (x86_64)",
   "applicationCategory": "UtilitiesApplication",
-  "description": "Berechnet den Vorwiderstand für eine oder mehrere LEDs in Reihe: nächsthöherer Normwert aus E12, E24 oder E96, Farbringe, tatsächlicher Strom, Leistung und empfohlene Bauform, mit Rechenweg Schritt für Schritt. Rechnet auch LED-Blinkschaltungen mit NE555 oder Multivibrator mit zwei Transistoren.",
+  "description": "Berechnet den Vorwiderstand für eine oder mehrere LEDs in Reihe: nächsthöherer Normwert aus E12, E24 oder E96, Farbringe, tatsächlicher Strom, Leistung und empfohlene Bauform, mit Rechenweg Schritt für Schritt. Rechnet auch LED-Blinkschaltungen mit NE555 oder Multivibrator mit zwei Transistoren sowie Konstantstromquellen mit LM317 oder zwei Transistoren.",
   "url": "https://elospeed.github.io/LedPreResistor/de/",
   "downloadUrl": "https://github.com/Elospeed/LedPreResistor/releases/latest",
-  "softwareVersion": "2.3",
+  "softwareVersion": "2.4",
   "inLanguage": "de",
   "license": "https://opensource.org/licenses/MIT",
   "isAccessibleForFree": true,
@@ -62,6 +62,7 @@
     <nav>
       <a class="hide-m" href="#funktionen">Funktionen</a>
       <a class="hide-m" href="#blinken">Blinken</a>
+      <a class="hide-m" href="#konstantstrom">Konstantstrom</a>
       <a class="hide-m" href="#so-gehts">So geht's</a>
       <a class="hide-m" href="#faq">Fragen</a>
       <a class="hide-m" href="https://github.com/Elospeed/LedPreResistor">GitHub</a>
@@ -79,8 +80,8 @@
     <h1>Der richtige Widerstand<br>für <span class="grad">jede LED</span></h1>
     <p class="lead">Speisespannung eingeben, LED-Farbe und Strom wählen. LedPreResistor sucht den nächsten Normwiderstand, zeigt seine Farbringe, den tatsächlichen Strom und die Leistung und sagt dir, welche Bauform du brauchst. Jeder Rechenschritt steht mit deinen eigenen Zahlen da. Ein kleines Programm für Windows und Linux, kostenlos und Open Source.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3.zip">⬇ Download für Windows</a>
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3-linux-x86_64.tar.gz">⬇ Download für Linux</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.4/LedPreResistor-2.4.zip">⬇ Download für Windows</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.4/LedPreResistor-2.4-linux-x86_64.tar.gz">⬇ Download für Linux</a>
       <a class="btn" href="https://github.com/Elospeed/LedPreResistor">Quelltext auf GitHub</a>
     </div>
     <ul class="facts">
@@ -90,9 +91,10 @@
       <li>Läuft offline</li>
       <li>E12, E24 und E96</li>
       <li>Blinkschaltungen: NE555 und Multivibrator</li>
+      <li>Konstantstrom: LM317 und zwei Transistoren</li>
     </ul>
     <figure class="shot hero-shot">
-      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.4</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
       <img src="../img/ledpreresistor-main.png" width="900" height="839" alt="Hauptfenster von LedPreResistor: 12 V, weisse LED, 20 mA. Schaltplan mit 470-Ohm-Widerstand, Farbringe gelb violett braun gold, 18,72 mA, 164,8 mW, empfohlene Bauform ein halbes Watt, darunter der Rechenweg">
     </figure>
   </div>
@@ -107,7 +109,7 @@
       <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span>Leistung und Bauform</h3><p>Tatsächlicher Strom, Leistung im Widerstand und in den LEDs. LedPreResistor empfiehlt ⅛, ¼, ½ oder 1 W und warnt ab 50 % Auslastung, mit geschätzter Erwärmung des Widerstands.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--green)"></span>Rechenweg Schritt für Schritt</h3><p>Ein aufklappbarer Bereich zeigt die fünf Schritte mit deinen Werten: Spannung am Widerstand, idealer Wert, Normwert, tatsächlicher Strom, Leistung und Erwärmung. Zum Lernen und zum Nachprüfen.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED-Vorschau</h3><p>Eine realistische 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet, damit sie richtig herum eingelötet wird. Im Reiter «Blinkschaltung» blinkt sie mit den berechneten Zeiten.</p></div>
-      <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schaltplan mit allen Werten</h3><p>Spannungsquelle, Widerstand und LED in einem übersichtlichen Schaltplan, mit Spannung, Strom und Widerstand an jedem Bauteil. Auch mehrere LEDs in Reihe.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schaltplan mit allen Werten</h3><p>Spannungsquelle, Widerstand und LED in einem übersichtlichen Schaltplan, mit Spannung, Strom und Widerstand an jedem Bauteil. Auch mehrere LEDs in Reihe und mehrere gleiche Stränge parallel, jeder mit eigenem Vorwiderstand.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--accent)"></span>LED-Info eingebaut</h3><p>Mit F1 öffnet sich «Die Leuchtdiode»: wie eine LED funktioniert, Farben und Durchlassspannungen, Polarität, Vorwiderstand, Konstantstrom und Praxistipps. Im Browser, auch offline.</p></div>
     </div>
   </div>
@@ -122,13 +124,13 @@
         <li><strong>Grün, gelb, rot</strong> in der Statuszeile: Auslastung eines normalen ¼-W-Widerstands und geschätzte Erwärmung</li>
         <li><strong>Ab 50 % Auslastung</strong> wird die nächstgrössere Bauform empfohlen, wie es erfahrene Bastler machen</li>
         <li><strong>Zu viel Leistung für einen Widerstand?</strong> Das Programm sagt es und schlägt eine Konstantstromquelle vor</li>
-        <li><strong>Resultat kopieren</strong> mit Strg+Umschalt+C, für Notizen oder einen Forumsbeitrag</li>
+        <li><strong>Resultat kopieren</strong> mit dem Knopf «Kopieren» oder Strg+Umschalt+C: Resultat, Rechenweg und Zeichen-Erklärung als einfacher Text, für Notizen oder einen Forumsbeitrag</li>
         <li>Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs, oder die eigene Durchlassspannung aus dem Datenblatt</li>
         <li>Komma und Punkt gehen beide; Pfeiltasten und Mausrad ändern die Werte</li>
       </ul>
     </div>
     <figure class="shot">
-      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.4</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
       <img src="../img/ledpreresistor-warning.png" width="900" height="839" alt="LedPreResistor mit 9 V, roter LED, 25 mA: 330 Ohm, 148,5 mW, ein Viertelwatt-Widerstand wäre zu 59 Prozent ausgelastet, die Statuszeile warnt gelb und empfiehlt ein halbes Watt" loading="lazy">
     </figure>
   </div>
@@ -138,7 +140,7 @@
   <div class="wrap split rev">
     <div>
       <h2>Die LED blinken lassen</h2>
-      <p class="sub" style="margin-bottom:0">Neu in Version 2.3: Der Reiter «Blinkschaltung» rechnet die zwei klassischen Bastel-Blinker, mit Schaltplan, Rechenweg und Prüfungen.</p>
+      <p class="sub" style="margin-bottom:0">Seit Version 2.3: Der Reiter «Blinkschaltung» rechnet die zwei klassischen Bastel-Blinker, mit Schaltplan, Rechenweg und Prüfungen.</p>
       <ul class="ticks">
         <li><strong>NE555 astabil:</strong> An- und Aus-Zeit, Frequenz und Tastgrad aus R1, R2 und C, wahlweise mit Diode über R2 für kurze Blitze</li>
         <li><strong>Multivibrator mit zwei BC547:</strong> zwei LEDs blinken im Wechsel, standardmässig symmetrisch 1:1</li>
@@ -149,13 +151,33 @@
       </ul>
     </div>
     <figure class="shot">
-      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.3</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.4</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
       <img src="../img/ledpreresistor-blink.png" width="900" height="839" alt="LedPreResistor Reiter Blinkschaltung: NE555 astabil mit R1 1 Kiloohm, R2 68 Kiloohm und 10 Mikrofarad an 12 V, 1,05 Hz, Tastgrad 50,4 Prozent, Vorwiderstand 390 Ohm für eine weisse LED, Schaltplan und Rechenweg" loading="lazy">
     </figure>
   </div>
 </section>
 
-<section id="so-gehts">
+<section id="konstantstrom">
+  <div class="wrap split">
+    <div>
+      <h2>Konstantstrom für die LEDs</h2>
+      <p class="sub" style="margin-bottom:0">Neu in Version 2.4: Der Reiter «Konstantstrom» hält den LED-Strom fest, auch wenn die Speisespannung schwankt, zum Beispiel 12 bis 14,4 V im Auto.</p>
+      <ul class="ticks">
+        <li><strong>LM317 als Stromquelle:</strong> Fühlerwiderstand R = 1,25 V / I aus der E-Reihe, seine Leistung, die nötige Mindestspannung und der Verlust im Regler; Vorschlag LM317L oder LM317, bei Bedarf mit Hinweis auf einen Kühlkörper</li>
+        <li><strong>Zwei Transistoren:</strong> Fühlerwiderstand R_S = 0,6 V / I und Basiswiderstand R_B; T1 wird nach Strom und Leistung vorgeschlagen (BC547, BC337 oder BD139)</li>
+        <li><strong>Speisespannung als Bereich «von … bis»:</strong> zeigt, wie wenig sich der Strom ändert, im Vergleich zu einem einfachen Vorwiderstand</li>
+        <li>Schaltplan mit allen Werten, Rechenweg, Zeichen-Erklärung und Warnungen wie in den anderen Reitern</li>
+        <li>Die LED-Info erklärt Konstantstrom, Wärme und Kühlkörper in einem eigenen Kapitel</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <div class="bar"><img src="../img/icon-32.png" alt=""><span>LedPreResistor · Elospeed 2.4</span><i class="min"></i><i class="max"></i><i class="cls"></i></div>
+      <img src="../img/ledpreresistor-ksq.png" width="900" height="839" alt="LedPreResistor Reiter Konstantstrom: LM317 als Stromquelle für zwei weisse LEDs mit 20 mA, Speisespannung 12 bis 14,4 V, Fühlerwiderstand, Schaltplan und Rechenweg" loading="lazy">
+    </figure>
+  </div>
+</section>
+
+<section id="so-gehts" class="alt">
   <div class="wrap">
     <h2>So geht's</h2>
     <p class="sub">In drei Schritten vom Datenblatt zum richtigen Widerstand.</p>
@@ -176,7 +198,7 @@
   </div>
 </section>
 
-<section class="alt">
+<section>
   <div class="wrap split">
     <div>
       <h2>Rechnen und dabei lernen</h2>
@@ -197,7 +219,7 @@
   </div>
 </section>
 
-<section id="faq">
+<section id="faq" class="alt">
   <div class="wrap">
     <h2>Fragen und Antworten</h2>
     <details>
@@ -222,11 +244,11 @@
     </details>
     <details>
       <summary>Gibt es LedPreResistor auch auf Englisch?</summary>
-      <p>Ja, seit Version 2.1. Programm und LED-Info gibt es auf Deutsch und Englisch. Auf einem deutschen Windows startet LedPreResistor deutsch, sonst englisch; unter Ansicht → Sprache lässt sich jederzeit umschalten.</p>
+      <p>Ja, seit Version 2.1. Programm und LED-Info gibt es auf Deutsch und Englisch. Auf einem deutschen Windows startet LedPreResistor deutsch, sonst englisch; mit dem Schalter DE/EN oben rechts lässt sich jederzeit umschalten.</p>
     </details>
     <details>
       <summary>Gibt es eine Linux-Version?</summary>
-      <p>Ja, seit Version 2.2: eine eigene Linux-Version (x86_64, GTK2), ohne Wine. <code>LedPreResistor-2.3-linux-x86_64.tar.gz</code> entpacken und <code>./LedPreResistor</code> starten. <code>./install.sh</code> nimmt das Programm ohne root ins Startmenü auf. Es braucht GTK2, das auf den meisten Systemen schon da ist (sonst <code>sudo apt install libgtk2.0-0</code>, <code>sudo dnf install gtk2</code> oder <code>sudo pacman -S gtk2</code>). Die Einstellungen liegen in <code>~/.config/LedPreResistor/</code>.</p>
+      <p>Ja, seit Version 2.2: eine eigene Linux-Version (x86_64, GTK2), ohne Wine. <code>LedPreResistor-2.4-linux-x86_64.tar.gz</code> entpacken und <code>./LedPreResistor</code> starten. <code>./install.sh</code> nimmt das Programm ohne root ins Startmenü auf. Es braucht GTK2, das auf den meisten Systemen schon da ist (sonst <code>sudo apt install libgtk2.0-0</code>, <code>sudo dnf install gtk2</code> oder <code>sudo pacman -S gtk2</code>). Die Einstellungen liegen in <code>~/.config/LedPreResistor/</code>.</p>
     </details>
     <details>
       <summary>Woher kommt LedPreResistor?</summary>
@@ -239,13 +261,13 @@
   </div>
 </section>
 
-<section class="alt">
+<section>
   <div class="wrap" style="text-align:center">
     <h2>Bereit für das nächste LED-Projekt?</h2>
     <p class="sub" style="margin:0 auto 26px">Für Windows oder Linux herunterladen, entpacken und losrechnen.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3.zip">⬇ Windows (ZIP)</a>
-      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.3/LedPreResistor-2.3-linux-x86_64.tar.gz">⬇ Linux (tar.gz)</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.4/LedPreResistor-2.4.zip">⬇ Windows (ZIP)</a>
+      <a class="btn primary" href="https://github.com/Elospeed/LedPreResistor/releases/download/v2.4/LedPreResistor-2.4-linux-x86_64.tar.gz">⬇ Linux (tar.gz)</a>
       <a class="btn" href="https://github.com/Elospeed/LedPreResistor/blob/main/LIESMICH.md">Anleitung lesen</a>
     </div>
     <p class="support">LedPreResistor ist ein Ein-Personen-Hobbyprojekt und bleibt kostenlos. Wenn es dir hilft, kannst du mir auf <a href="https://ko-fi.com/elospeed">Ko-fi einen Kaffee spendieren</a> ☕ oder einfach <a href="https://github.com/Elospeed/LedPreResistor">auf GitHub einen Stern geben</a>. Beides ganz freiwillig.</p>
