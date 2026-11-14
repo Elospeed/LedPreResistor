@@ -1,8 +1,42 @@
-{ Hauptfenster von LedPreResistor (Entwurf A «Labor 2» mit LED-Vorschau).
-  Verbindet Eingaben, Rechnung (uCalc) und Anzeige: Schaltplan, vier
-  Resultatkarten, aufklappbarer Rechenweg und Statuszeile. Gerechnet wird
-  live bei jeder Eingabe. Alle sichtbaren Texte stehen als resourcestring
-  unten, damit sie später übersetzt werden können (src/lang). }
+{==============================================================================
+  uMain - Hauptfenster von LedPreResistor
+==============================================================================
+  Zweck:     Verbindet Eingaben, Rechnung und Anzeige. Drei Reiter:
+               - Vorwiderstand   (Rechnung in uCalc)
+               - Blinkschaltung  (Rechnung in uBlink)
+               - Konstantstrom   (Rechnung in uKsq)
+             Gerechnet wird live bei jeder Eingabe.
+
+  Aufbau:    Entwurf A «Labor 2» mit LED-Vorschau:
+               links    Eingaben und darunter die LED-Vorschau
+               rechts   Schaltplan, vier Resultatkarten, aufklappbarer
+                        Rechenweg (mit «Kopieren» und Zeichen-Erklärung)
+               oben     Reiterzeile; rechts darin die Symbole
+                        ↺ (zurücksetzen), DE/EN, LED-Info (F1), ⓘ (Info)
+               unten    Statuszeile und Ko-fi-Knopf
+             Es gibt keine Menüleiste; Tastenkürzel: Strg+1/2/3 (Reiter),
+             F1 (LED-Info), Strg+Umschalt+C (kopieren).
+
+  Zeichnen:  Fast alles rechts ist selbst gezeichnet (TPaintBox): Schaltpläne
+             in uSchematic, uBlinkSchematic, uKsqSchematic; die LED in
+             uLedView; Farben und Schriften aus uTheme. Alle Masse gelten für
+             96 dpi und werden mit Px() auf die Windows-Skalierung
+             umgerechnet (100 bis 200 %).
+
+  Texte:     Alle sichtbaren Texte stehen als resourcestring im Abschnitt
+             TEXTE und laufen durch _() (uLang). Die englische Übersetzung
+             steht in src/lang/en.po.
+
+  Einstel-   Gewählter Reiter, Blinkschaltung und Konstantstromquelle stehen
+  lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
+
+  Autor:     Elospeed
+  Versionen: 2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare
+             2.3  11.11.2026  Reiter Blinkschaltung
+             2.2  09.11.2026  Linux
+             2.1  08.11.2026  Englisch
+             2.0  29.10.2026  erste Fassung
+==============================================================================}
 unit uMain;
 
 {$mode objfpc}{$H+}
@@ -13,34 +47,37 @@ uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls,
   LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uKsq, uSkalierung, uLang;
 
+{==============================================================================
+  KONSTANTEN
+==============================================================================}
 const
-  { Programmversion für Titelleiste und Info }
-  APP_VER = '2.4';
+  APP_VER = '2.4';                                       // Programmversion für Titelleiste und Info
+  KOFI_URL = 'https://ko-fi.com/elospeed';               // Ko-fi-Seite von Elospeed
 
-  { Ko-fi-Seite von Elospeed }
-  KOFI_URL = 'https://ko-fi.com/elospeed';
-
+{==============================================================================
+  HAUPTFENSTER
+==============================================================================}
 type
-
-  { TFormMain – das Hauptfenster }
+  // TFormMain - das Hauptfenster. Oben die Elemente aus uMain.lfm und ihre
+  // Ereignisse, unter «private» die eigenen Felder und Hilfsroutinen.
   TFormMain = class(TForm)
-    CheckDiode: TCheckBox;        // NE555: Diode über R2
-    CheckSym: TCheckBox;          // Multivibrator: symmetrisch 1:1
+    CheckDiode: TCheckBox;                               // NE555: Diode über R2
+    CheckSym: TCheckBox;                                 // Multivibrator: symmetrisch 1:1
     LabelSym: TLabel;
-    ComboCircuit: TComboBox;      // Blinkschaltung: NE555 oder Multivibrator
-    ComboKsq: TComboBox;          // Konstantstrom: LM317 oder zwei Transistoren
-    EditU2: TEdit;                // Konstantstrom: Speisespannung bis (V)
-    EditStrings: TEdit;           // Vorwiderstand: Stränge parallel
-    LabelHeadSupply: TLabel;      // Konstantstrom: Überschrift «Speisung»
-    LabelStrings: TLabel;         // Vorwiderstand: «Stränge parallel»
-    LabelStringsUnit: TLabel;     // Einheit «Stk.» der Stränge
-    LabelU2: TLabel;              // Konstantstrom: «bis»
-    LabelU2Unit: TLabel;          // Einheit «V» von «bis»
-    ComboConn: TComboBox;         // NE555: Anschluss der LED
-    EditT1: TEdit;                // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
-    EditT2: TEdit;                // Zeitglied, zweites Feld (R2, R_B2 oder Tastgrad)
-    EditT3: TEdit;                // Zeitglied, drittes Feld (C)
-    LabelBlinkInfo: TLabel;       // Blinkschaltung: Takt unter der LED-Vorschau
+    ComboCircuit: TComboBox;                             // Blinkschaltung: NE555 oder Multivibrator
+    ComboKsq: TComboBox;                                 // Konstantstrom: LM317 oder zwei Transistoren
+    EditU2: TEdit;                                       // Konstantstrom: Speisespannung bis (V)
+    EditStrings: TEdit;                                  // Vorwiderstand: Stränge parallel
+    LabelHeadSupply: TLabel;                             // Konstantstrom: Überschrift «Speisung»
+    LabelStrings: TLabel;                                // Vorwiderstand: «Stränge parallel»
+    LabelStringsUnit: TLabel;                            // Einheit «Stk.» der Stränge
+    LabelU2: TLabel;                                     // Konstantstrom: «bis»
+    LabelU2Unit: TLabel;                                 // Einheit «V» von «bis»
+    ComboConn: TComboBox;                                // NE555: Anschluss der LED
+    EditT1: TEdit;                                       // Zeitglied, erstes Feld (R1, R_B1 oder Frequenz)
+    EditT2: TEdit;                                       // Zeitglied, zweites Feld (R2, R_B2 oder Tastgrad)
+    EditT3: TEdit;                                       // Zeitglied, drittes Feld (C)
+    LabelBlinkInfo: TLabel;                              // Blinkschaltung: Takt unter der LED-Vorschau
     LabelConn: TLabel;
     LabelDiode: TLabel;
     LabelHeadLed: TLabel;
@@ -51,20 +88,20 @@ type
     LabelT2Unit: TLabel;
     LabelT3: TLabel;
     LabelT3Unit: TLabel;
-    PaintMode: TPaintBox;         // Umschalter «aus Bauteilen / aus Frequenz»
-    PaintTabs: TPaintBox;         // Reiter «Vorwiderstand | Blinkschaltung | Konstantstrom»
-    ComboColor: TComboBox;        // LED-Farbe
-    ComboSeries: TComboBox;       // E-Reihe
-    EditI: TEdit;                 // LED-Strom in mA
-    EditN: TEdit;                 // Anzahl LEDs in Reihe
-    EditU: TEdit;                 // Speisespannung in V
-    EditUd: TEdit;                // Durchlassspannung in V
+    PaintMode: TPaintBox;                                // Umschalter «aus Bauteilen / aus Frequenz»
+    PaintTabs: TPaintBox;                                // Reiter «Vorwiderstand | Blinkschaltung | Konstantstrom»
+    ComboColor: TComboBox;                               // LED-Farbe
+    ComboSeries: TComboBox;                              // E-Reihe
+    EditI: TEdit;                                        // LED-Strom in mA
+    EditN: TEdit;                                        // Anzahl LEDs in Reihe
+    EditU: TEdit;                                        // Speisespannung in V
+    EditUd: TEdit;                                       // Durchlassspannung in V
     LabelColor: TLabel;
     LabelHeadInputs: TLabel;
     LabelHeadPreview: TLabel;
     LabelI: TLabel;
     LabelIUnit: TLabel;
-    PaintKofi: TPaintBox;         // Ko-fi-Knopf «Kaffee spendieren» unten rechts
+    PaintKofi: TPaintBox;                                // Ko-fi-Knopf «Kaffee spendieren» unten rechts
     LabelN: TLabel;
     LabelNUnit: TLabel;
     LabelSeries: TLabel;
@@ -72,17 +109,17 @@ type
     LabelUd: TLabel;
     LabelUdUnit: TLabel;
     LabelUUnit: TLabel;
-    PaintCards: TPaintBox;        // vier Resultatkarten
-    PaintLed: TPaintBox;          // LED-Vorschau
-    PaintRechenweg: TPaintBox;    // Rechenweg (Kopfzeile und Schritte)
-    PaintSchematic: TPaintBox;    // Schaltplan
-    PaintStatus: TPaintBox;       // Statuszeile
-    PanelLeft: TScrollBox;  // rollt, wenn bei 200 % die Höhe nicht reicht
+    PaintCards: TPaintBox;                               // vier Resultatkarten
+    PaintLed: TPaintBox;                                 // LED-Vorschau
+    PaintRechenweg: TPaintBox;                           // Rechenweg (Kopfzeile und Schritte)
+    PaintSchematic: TPaintBox;                           // Schaltplan
+    PaintStatus: TPaintBox;                              // Statuszeile
+    PanelLeft: TScrollBox;                               // rollt, wenn bei 200 % die Höhe nicht reicht
     PanelPreview: TPanel;
     PanelRechenweg: TPanel;
     PanelRight: TPanel;
     PanelStatus: TPanel;
-    TimerBlink: TTimer;           // schaltet die LED beim Blinken um
+    TimerBlink: TTimer;                                  // schaltet die LED beim Blinken um
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
     procedure KsqCircuitChange(Sender: TObject);
@@ -137,39 +174,39 @@ type
     procedure PaintStatusPaint(Sender: TObject);
     procedure TimerBlinkTimer(Sender: TObject);
   private
-    FInput: TCalcInput;      // aktuelle Eingaben (SI-Einheiten)
-    FRes: TCalcResult;       // aktuelles Resultat
-    FBands: TBandArray;      // Farbringe des Normwerts
-    FLedOn: TBitmap;         // LED-Bild leuchtend (zwischengespeichert)
-    FLedOff: TBitmap;        // LED-Bild aus (für das Blinken)
-    FLedLit: Boolean;        // LED gerade an (beim Blinken wechselnd)
-    FBlinkStart: LongWord;   // Startzeit des Blinkens in ms (BlinkClockMs)
-    FFineTimer: Boolean;     // feine Timer-Auflösung ist eingeschaltet
-    FLedDirty: Boolean;      // LED-Bilder müssen neu gerechnet werden
-    FKofiHover: Boolean;     // Maus ist über dem Ko-fi-Knopf
-    FUpdating: Boolean;      // Eingaben werden gerade per Code gesetzt
-    KofiCaptionShown: string; // Text des Ko-fi-Knopfs in der aktuellen Sprache
-    FRechenwegOpen: Boolean; // Rechenweg aufgeklappt
-    FCopyBtn: TRect;         // Knopf «Kopieren» in der Kopfzeile des Rechenwegs
-    FCopied: Boolean;        // kurz «Kopiert» statt «Kopieren» anzeigen
-    FCopyTimer: TTimer;      // stellt den Knopftext nach dem Kopieren zurück
-    FMode: Integer;          // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
-    FReverse: Boolean;       // Blinkschaltung: aus Frequenz und Tastgrad rechnen
-    FCircuitShown: TBlinkCircuit; // Schaltung, deren Werte in den Feldern stehen
-    FReverseShown: Boolean;  // Richtung, deren Werte in den Feldern stehen
-    FBTexts: array[TBlinkCircuit, Boolean, 0..2] of string; // gemerkte Feldinhalte
-    FBInput: TBlinkInput;    // Eingaben der Blinkschaltung
-    FBRes: TBlinkResult;     // Resultat der Blinkschaltung
-    FBBands1: TBandArray;    // Farbringe Vorwiderstand LED 1
-    FBBands2: TBandArray;    // Farbringe Vorwiderstand LED 2
-    FOnLevel: Double;        // Helligkeit der leuchtenden LED (Dauerlicht bei schnellem Takt)
-    FTabX: array[0..3] of Integer; // Grenzen der Reiter (für Mausklicks)
-    FKInput: TKsqInput;      // Eingaben der Konstantstromquelle
-    FKRes: TKsqResult;       // Resultat der Konstantstromquelle
-    FKBands: TBandArray;     // Farbringe des Fühlerwiderstands
-    FKBandsB: TBandArray;    // Farbringe von R_B (zwei Transistoren)
-    FIco: array[0..4] of TRect; // Symbole oben rechts: zurücksetzen, DE, EN, LED-Info, Info
-    FIcoHover: Integer;      // Symbol unter der Maus (-1 = keins)
+    FInput: TCalcInput;                                  // aktuelle Eingaben (SI-Einheiten)
+    FRes: TCalcResult;                                   // aktuelles Resultat
+    FBands: TBandArray;                                  // Farbringe des Normwerts
+    FLedOn: TBitmap;                                     // LED-Bild leuchtend (zwischengespeichert)
+    FLedOff: TBitmap;                                    // LED-Bild aus (für das Blinken)
+    FLedLit: Boolean;                                    // LED gerade an (beim Blinken wechselnd)
+    FBlinkStart: LongWord;                               // Startzeit des Blinkens in ms (BlinkClockMs)
+    FFineTimer: Boolean;                                 // feine Timer-Auflösung ist eingeschaltet
+    FLedDirty: Boolean;                                  // LED-Bilder müssen neu gerechnet werden
+    FKofiHover: Boolean;                                 // Maus ist über dem Ko-fi-Knopf
+    FUpdating: Boolean;                                  // Eingaben werden gerade per Code gesetzt
+    KofiCaptionShown: string;                            // Text des Ko-fi-Knopfs in der aktuellen Sprache
+    FRechenwegOpen: Boolean;                             // Rechenweg aufgeklappt
+    FCopyBtn: TRect;                                     // Knopf «Kopieren» in der Kopfzeile des Rechenwegs
+    FCopied: Boolean;                                    // kurz «Kopiert» statt «Kopieren» anzeigen
+    FCopyTimer: TTimer;                                  // stellt den Knopftext nach dem Kopieren zurück
+    FMode: Integer;                                      // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
+    FReverse: Boolean;                                   // Blinkschaltung: aus Frequenz und Tastgrad rechnen
+    FCircuitShown: TBlinkCircuit;                        // Schaltung, deren Werte in den Feldern stehen
+    FReverseShown: Boolean;                              // Richtung, deren Werte in den Feldern stehen
+    FBTexts: array[TBlinkCircuit, Boolean, 0..2] of string;  // gemerkte Feldinhalte
+    FBInput: TBlinkInput;                                // Eingaben der Blinkschaltung
+    FBRes: TBlinkResult;                                 // Resultat der Blinkschaltung
+    FBBands1: TBandArray;                                // Farbringe Vorwiderstand LED 1
+    FBBands2: TBandArray;                                // Farbringe Vorwiderstand LED 2
+    FOnLevel: Double;                                    // Helligkeit der leuchtenden LED (Dauerlicht bei schnellem Takt)
+    FTabX: array[0..3] of Integer;                       // Grenzen der Reiter (für Mausklicks)
+    FKInput: TKsqInput;                                  // Eingaben der Konstantstromquelle
+    FKRes: TKsqResult;                                   // Resultat der Konstantstromquelle
+    FKBands: TBandArray;                                 // Farbringe des Fühlerwiderstands
+    FKBandsB: TBandArray;                                // Farbringe von R_B (zwei Transistoren)
+    FIco: array[0..4] of TRect;                          // Symbole oben rechts: zurücksetzen, DE, EN, LED-Info, Info
+    FIcoHover: Integer;                                  // Symbol unter der Maus (-1 = keins)
     procedure SyncSymmetric;
     procedure SetFineTimer(AOn: Boolean);
     { Sprache wechseln ('de' oder 'en'), merken und alles neu beschriften }
@@ -265,8 +302,11 @@ type
   end;
 
 var
-  FormMain: TFormMain;  // die einzige Instanz des Hauptfensters
+  FormMain: TFormMain;                                   // die einzige Instanz des Hauptfensters
 
+{==============================================================================
+  TEXTE (übersetzbar, siehe src/lang/en.po)
+==============================================================================}
 resourcestring
   rsCaption = 'LedPreResistor · Elospeed %s';
   rsLedRed = 'Rot';
@@ -547,6 +587,9 @@ uses
 
 {$R *.lfm}
 
+{==============================================================================
+  HILFSFUNKTIONEN UND EINSTELLUNGEN
+==============================================================================}
 const
   { Kürzeste An- oder Aus-Zeit, die die Vorschau noch sauber blinken kann.
     Beim Blinken läuft der Timer mit feiner Auflösung (1 ms statt etwa
@@ -558,10 +601,14 @@ const
     gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
   BLINK_ANIM_MIN_PHASE = 0.05;
 
-{ Laufende Zeit in ms mit feiner Auflösung. GetTickCount64 springt unter
+{------------------------------------------------------------------------------
+  BlinkClockMs
+------------------------------------------------------------------------------
+  Laufende Zeit in ms mit feiner Auflösung. GetTickCount64 springt unter
   Windows nur in Schritten von etwa 16 ms, timeGetTime ist bei
   eingeschalteter feiner Auflösung auf 1 ms genau. Gerechnet wird nur mit
-  Differenzen in 32 Bit, darum stört der Überlauf nach 49 Tagen nicht. }
+  Differenzen in 32 Bit, darum stört der Überlauf nach 49 Tagen nicht.
+------------------------------------------------------------------------------}
 function BlinkClockMs: LongWord;
 begin
   {$IFDEF WINDOWS}
@@ -572,17 +619,20 @@ begin
 end;
 
 const
+  // Einstellungen in LedPreResistor.ini, Abschnitt [Ansicht]
+  INI_SECTION_VIEW = 'Ansicht';                          // Abschnitt
+  INI_KEY_TAB = 'Reiter';                                // zuletzt gewählter Reiter (0 ... 2)
+  INI_KEY_CIRCUIT = 'Schaltung';                         // Blinkschaltung (0 = NE555, 1 = Multivibrator)
+  INI_KEY_KSQ = 'Konstantstrom';                         // 0 = LM317, 1 = zwei Transistoren
 
-  { Einstellung für den zuletzt gewählten Reiter }
-  INI_SECTION_VIEW = 'Ansicht';
-  INI_KEY_TAB = 'Reiter';
-  INI_KEY_CIRCUIT = 'Schaltung';
-  INI_KEY_KSQ = 'Konstantstrom';
-
-{ Zahl aus der Einstellungsdatei lesen (Fehler: Vorgabe) }
+{------------------------------------------------------------------------------
+  ReadViewSetting
+------------------------------------------------------------------------------
+  Zahl aus der Einstellungsdatei lesen (Fehler: Vorgabe)
+------------------------------------------------------------------------------}
 function ReadViewSetting(const Key: string; Default: Integer): Integer;
 var
-  Ini: TIniFile;  // Einstellungen
+  Ini: TIniFile;                                         // Einstellungen
 begin
   Result := Default;
   try
@@ -597,11 +647,15 @@ begin
   end;
 end;
 
-{ Zahl in die Einstellungsdatei schreiben (Fehler werden still übergangen,
-  z. B. bei einem schreibgeschützten Ordner) }
+{------------------------------------------------------------------------------
+  WriteViewSetting
+------------------------------------------------------------------------------
+  Zahl in die Einstellungsdatei schreiben (Fehler werden still übergangen,
+  z. B. bei einem schreibgeschützten Ordner)
+------------------------------------------------------------------------------}
 procedure WriteViewSetting(const Key: string; Value: Integer);
 var
-  Ini: TIniFile;  // Einstellungen
+  Ini: TIniFile;                                         // Einstellungen
 begin
   try
     ForceDirectories(ExtractFilePath(IniFileName));
@@ -627,11 +681,15 @@ const
   { Normwerte für Pfeiltasten und Mausrad: E12 für Widerstände, E6 für Kondensatoren }
   E6_DIGITS: array[0..5] of Integer = (10, 15, 22, 33, 47, 68);
 
-{ nächster Wert der Reihe (Ziffern Digits, zweistellig) über bzw. unter V }
+{------------------------------------------------------------------------------
+  StepStd
+------------------------------------------------------------------------------
+  nächster Wert der Reihe (Ziffern Digits, zweistellig) über bzw. unter V
+------------------------------------------------------------------------------}
 function StepStd(V: Double; Up: Boolean; const Digits: array of Integer): Double;
 var
-  E, I: Integer;  // Zehnerpotenz und Index
-  W: Double;      // Kandidat
+  E, I: Integer;                                         // Zehnerpotenz und Index
+  W: Double;                                             // Kandidat
 begin
   if not (V > 0) then
     Exit(Digits[0] / 10);
@@ -654,10 +712,14 @@ begin
   Result := V;
 end;
 
-{ Farbe C mit dem Hintergrund Back mischen (A = Anteil von C, 0..1) }
+{------------------------------------------------------------------------------
+  MixColor
+------------------------------------------------------------------------------
+  Farbe C mit dem Hintergrund Back mischen (A = Anteil von C, 0..1)
+------------------------------------------------------------------------------}
 function MixColor(C, Back: TColor; A: Double): TColor;
 var
-  C1, C2: LongInt;  // RGB-Werte
+  C1, C2: LongInt;                                       // RGB-Werte
 begin
   C1 := ColorToRGB(C);
   C2 := ColorToRGB(Back);
@@ -667,15 +729,39 @@ begin
     Round(Blue(C1) * A + Blue(C2) * (1 - A)));
 end;
 
+{==============================================================================
+  FENSTER: ERZEUGEN, FARBEN, SPRACHE
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  Px
+------------------------------------------------------------------------------
+  Rechnet einen Wert aus 96-dpi-Pixeln (100 %) auf die aktuelle Bildschirm-
+  Skalierung um. Beispiel: Px(10) = 15 bei 150 %.
+------------------------------------------------------------------------------}
 function TFormMain.Px(V: Integer): Integer;
 begin
   Result := Scale96ToForm(V);
 end;
 
+{------------------------------------------------------------------------------
+  FormCreate
+------------------------------------------------------------------------------
+  Fenster wird erzeugt: Sprache laden, Bilder und Timer anlegen,
+  Auswahllisten füllen, gespeicherte Wahl (Reiter, Schaltung) laden, Farben
+  setzen und zum ersten Mal rechnen.
+  Ablauf:
+    1. Sprache laden (vor allen Beschriftungen)
+    2. Bilder, Timer und Anfangszustand anlegen
+    3. Auswahllisten füllen und gespeicherte Wahl setzen
+    4. Beschriften, Farben setzen, rechnen
+    5. Zuletzt gewählten Reiter öffnen
+------------------------------------------------------------------------------}
 procedure TFormMain.FormCreate(Sender: TObject);
 begin
-  // Sprache vor allen Beschriftungen laden (INI, sonst Sprache von Windows)
+  // ----- 1. Sprache (INI, sonst Sprache von Windows) -----
   LangLoad(LangStartCode);
+  // ----- 2. Bilder, Timer, Anfangszustand -----
   FIcoHover := -1;
   FLedOn := TBitmap.Create;
   FLedOff := TBitmap.Create;
@@ -684,13 +770,14 @@ begin
   FRechenwegOpen := True;
   FCopyTimer := TTimer.Create(Self);
   FCopyTimer.Enabled := False;
-  FCopyTimer.Interval := 1500;
+  FCopyTimer.Interval := 1500;                           // «Kopiert ✓» 1,5 s lang
   FCopyTimer.OnTimer := @CopyTimerTimer;
   FOnLevel := 1.0;
-  FBTexts := BLINK_DEFAULTS;
+  FBTexts := BLINK_DEFAULTS;                             // Vorgaben der Zeitglied-Felder
   FCircuitShown := bcNE555;
   FReverseShown := False;
-  FUpdating := True;
+  // ----- 3. Auswahllisten und gespeicherte Wahl -----
+  FUpdating := True;                                     // währenddessen nicht rechnen
   try
     FillCombos;
     ComboColor.ItemIndex := Ord(lcWhite);
@@ -702,16 +789,23 @@ begin
   finally
     FUpdating := False;
   end;
+  // ----- 4. Beschriften, Farben, rechnen -----
   ApplyLanguage;
   ApplyTheme;
   UpdateRechenwegHeight;
   Recalc;
-  // zuletzt gewählten Reiter wieder öffnen
+  // ----- 5. Zuletzt gewählten Reiter wieder öffnen -----
   SwitchMode(EnsureRange(ReadViewSetting(INI_KEY_TAB, 0), 0, 2), False);
-  OnShow := @FormShowPlatz;
-  PanelLeft.OnResize := @PanelLeftResize;
+  OnShow := @FormShowPlatz;                              // Platz prüfen, wenn sichtbar
+  PanelLeft.OnResize := @PanelLeftResize;                // LED-Vorschau füllt die Spalte
 end;
 
+{------------------------------------------------------------------------------
+  FormDestroy
+------------------------------------------------------------------------------
+  Fenster wird geschlossen: feine Timer-Auflösung ausschalten, LED-Bilder
+  freigeben.
+------------------------------------------------------------------------------}
 procedure TFormMain.FormDestroy(Sender: TObject);
 begin
   SetFineTimer(False);
@@ -719,11 +813,22 @@ begin
   FLedOff.Free;
 end;
 
+{------------------------------------------------------------------------------
+  ApplyTheme
+------------------------------------------------------------------------------
+  Farben und Schriften aus uTheme auf alle Bedienelemente anwenden
+  Ablauf:
+    1. Fenster und Bereiche
+    2. Eingabefelder, Auswahllisten und Beschriftungen der linken Spalte
+    3. Einheiten und Überschriften gedämpft
+    4. Breite des Ko-fi-Knopfs
+------------------------------------------------------------------------------}
 procedure TFormMain.ApplyTheme;
 var
-  I: Integer;   // Zähler über die Bedienelemente der linken Spalte
-  C: TControl;  // aktuelles Bedienelement
+  I: Integer;                                            // Zähler über die Bedienelemente der linken Spalte
+  C: TControl;                                           // aktuelles Bedienelement
 begin
+  // ----- 1. Fenster und Bereiche -----
   Color := clrWindow;
   Font.Name := FONT_UI;
   Font.Color := clrText;
@@ -733,6 +838,7 @@ begin
   PanelStatus.Color := clrBar;
   PanelPreview.Color := clrDeep;
 
+  // ----- 2. Linke Spalte -----
   for I := 0 to PanelLeft.ControlCount - 1 do
   begin
     C := PanelLeft.Controls[I];
@@ -748,7 +854,7 @@ begin
       // (clDefault, nicht die helle Schrift des Fensters erben).
       TEdit(C).Font.Color := clDefault;
       {$ENDIF}
-      TEdit(C).Font.Name := FONT_MONO;
+      TEdit(C).Font.Name := FONT_MONO;                   // Zahlen in fester Breite
       TEdit(C).Font.Size := 10;
     end
     else if C is TComboBox then
@@ -759,7 +865,7 @@ begin
     else if C is TLabel then
       TLabel(C).Font.Color := clrText;
   end;
-  // Einheiten und Überschriften gedämpft
+  // ----- 3. Einheiten und Überschriften gedämpft -----
   LabelUUnit.Font.Color := clrTextDim;
   LabelUdUnit.Font.Color := clrTextDim;
   LabelIUnit.Font.Color := clrTextDim;
@@ -781,7 +887,7 @@ begin
   LabelT3Unit.Font.Color := clrTextDim;
   LabelBlinkInfo.Font.Color := clrTextSoft;
   LabelBlinkInfo.Font.Size := 8;
-  // Breite des Ko-fi-Links: Herz + Text + Rand
+  // ----- 4. Breite des Ko-fi-Knopfs: Symbol + Herz + Text + Rand -----
   PaintKofi.Canvas.Font.Name := FONT_UI;
   PaintKofi.Canvas.Font.Size := 9;
   PaintKofi.Canvas.Font.Style := [fsBold];
@@ -791,31 +897,52 @@ begin
   PaintKofi.Width := KofiButtonWidth(PaintKofi.Canvas, _(rsKofi), PixelsPerInch);
 end;
 
+{------------------------------------------------------------------------------
+  SetLanguage
+------------------------------------------------------------------------------
+  Sprache wechseln ('de' oder 'en'), merken und alles neu beschriften
+------------------------------------------------------------------------------}
 procedure TFormMain.SetLanguage(const Code: string);
 begin
-  if Code = LangCode then Exit;
+  if Code = LangCode then Exit;                          // schon gewählt
   LangLoad(Code);
-  LangSaveChoice(Code);
+  LangSaveChoice(Code);                                  // in der INI merken
   ApplyLanguage;
 end;
 
+{------------------------------------------------------------------------------
+  ApplyLanguage
+------------------------------------------------------------------------------
+  alle Beschriftungen in der aktuellen Sprache setzen; Zahlen in den
+  Eingabefeldern bekommen das passende Dezimalzeichen
+  Ablauf:
+    1. Zahlenformat der Sprache (Komma / Punkt, Leerschlag vor %)
+    2. Beschriftungen der linken Spalte, Titel, Reiter
+    3. Auswahllisten neu füllen, Dezimalzeichen in den Feldern tauschen
+    4. Breite des Ko-fi-Knopfs anpassen
+    5. LED-Beschriftung neu, neu rechnen
+------------------------------------------------------------------------------}
 procedure TFormMain.ApplyLanguage;
 var
-  OldKofi: string;  // Ko-fi-Text vor dem Wechsel (für die Breite)
-  OldDec: Char;     // Dezimalzeichen vor dem Wechsel
-  Idx: array[0..5] of Integer;  // gewählte Einträge der sechs Listen
-  BC: TBlinkCircuit;            // Schaltung
-  BR: Boolean;                  // Richtung
-  K: Integer;                   // Feld
+  OldKofi: string;                                       // Ko-fi-Text vor dem Wechsel (für die Breite)
+  OldDec: Char;                                          // Dezimalzeichen vor dem Wechsel
+  Idx: array[0..5] of Integer;                           // gewählte Einträge der sechs Listen
+  BC: TBlinkCircuit;                                     // Schaltung
+  BR: Boolean;                                           // Richtung
+  K: Integer;                                            // Feld
 
-  { Dezimalzeichen in einem Eingabefeld tauschen }
+  {----------------------------------------------------------------------------
+    SwapDecimal
+  ----------------------------------------------------------------------------
+    Dezimalzeichen in einem Eingabefeld tauschen
+  ----------------------------------------------------------------------------}
   procedure SwapDecimal(E: TEdit);
   begin
     E.Text := StringReplace(E.Text, OldDec, DisplayDecimal, [rfReplaceAll]);
   end;
 
 begin
-  // Zahlen: Komma auf Deutsch, Punkt auf Englisch; Prozent mit/ohne Leerschlag
+  // ----- 1. Zahlen: Komma auf Deutsch, Punkt auf Englisch; Prozent mit/ohne Leerschlag -----
   OldDec := DisplayDecimal;
   if LangCode = 'en' then
   begin
@@ -830,7 +957,8 @@ begin
   OldKofi := KofiCaptionShown;
   KofiCaptionShown := _(rsKofi);
 
-  Caption := Format(_(rsCaption), [APP_VER]);
+  // ----- 2. Beschriftungen -----
+  Caption := Format(_(rsCaption), [APP_VER]);            // Titelleiste mit Version
   LabelHeadInputs.Caption := _(rsHeadInputs);
   LabelU.Caption := _(rsLabelU);
   LabelColor.Caption := _(rsLabelColor);
@@ -853,7 +981,7 @@ begin
   PaintTabs.Invalidate;
   PaintMode.Invalidate;
 
-  // Auswahllisten neu füllen, gewählte Einträge behalten
+  // ----- 3. Auswahllisten neu füllen, gewählte Einträge behalten -----
   FUpdating := True;
   try
     Idx[0] := ComboColor.ItemIndex;
@@ -886,9 +1014,10 @@ begin
     FUpdating := False;
   end;
 
-  { Ko-fi-Knopf: nur beim Wechsel zur Laufzeit um den Unterschied der
-    Textbreite anpassen. Beim Start setzt ApplyTheme die Breite (dort
-    noch vor der DPI-Umrechnung). So wird nichts doppelt skaliert. }
+  // ----- 4. Ko-fi-Knopf -----
+  // Nur beim Wechsel zur Laufzeit um den Unterschied der Textbreite
+  // anpassen. Beim Start setzt ApplyTheme die Breite (dort noch vor der
+  // DPI-Umrechnung). So wird nichts doppelt skaliert.
   if (OldKofi <> '') and (OldKofi <> KofiCaptionShown) then
   begin
     PaintKofi.Canvas.Font.Name := FONT_UI;
@@ -899,12 +1028,18 @@ begin
     PaintKofi.Invalidate;
   end;
 
-  FLedDirty := True;  // Beschriftung der LED (Anode/Kathode)
+  // ----- 5. LED-Beschriftung (Anode/Kathode) neu, neu rechnen -----
+  FLedDirty := True;
   PaintLed.Invalidate;
   ComboColor.Invalidate;
   Recalc;
 end;
 
+{------------------------------------------------------------------------------
+  FillCombos
+------------------------------------------------------------------------------
+  Auswahllisten mit den (übersetzbaren) Texten füllen
+------------------------------------------------------------------------------}
 procedure TFormMain.FillCombos;
 begin
   ComboColor.Items.Clear;
@@ -930,6 +1065,11 @@ begin
   ComboKsq.Items.Add(_(rsKsqTrans));
 end;
 
+{------------------------------------------------------------------------------
+  CurrentLed
+------------------------------------------------------------------------------
+  Gewählte LED-Farbe
+------------------------------------------------------------------------------}
 function TFormMain.CurrentLed: TLedColor;
 begin
   if ComboColor.ItemIndex < 0 then
@@ -938,6 +1078,11 @@ begin
     Result := TLedColor(ComboColor.ItemIndex);
 end;
 
+{------------------------------------------------------------------------------
+  SeriesName
+------------------------------------------------------------------------------
+  Name der Normreihe, z. B. "E12"
+------------------------------------------------------------------------------}
 function TFormMain.SeriesName(S: TESeries): string;
 begin
   case S of
@@ -948,10 +1093,15 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BandNames
+------------------------------------------------------------------------------
+  Farbnamen der Ringe, z. B. "gelb · violett · braun · gold"
+------------------------------------------------------------------------------}
 function TFormMain.BandNames(const B: TBandArray; const Sep: string): string;
 var
-  I: Integer;   // Ring-Zähler
-  N: string;    // Name eines Rings
+  I: Integer;                                            // Ring-Zähler
+  N: string;                                             // Name eines Rings
 begin
   Result := '';
   for I := 0 to High(B) do
@@ -977,6 +1127,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  StatusText
+------------------------------------------------------------------------------
+  Fehlertext zum Status der Rechnung
+------------------------------------------------------------------------------}
 function TFormMain.StatusText(S: TCalcStatus): string;
 begin
   case S of
@@ -993,15 +1148,31 @@ begin
   end;
 end;
 
+{==============================================================================
+  REITER VORWIDERSTAND: RECHNEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  Recalc
+------------------------------------------------------------------------------
+  Eingaben lesen, rechnen und alles neu zeichnen. Rechnet alle drei
+  Reiter, damit beim Wechsel sofort alles stimmt.
+  Ablauf:
+    1. Eingaben des Reiters «Vorwiderstand» lesen (mA -> A)
+    2. Vorwiderstand rechnen (uCalc), Farbringe bestimmen
+    3. Blinkschaltung und Konstantstrom rechnen
+    4. Anzeige neu zeichnen
+------------------------------------------------------------------------------}
 procedure TFormMain.Recalc;
 var
-  V: Double;  // umgewandelte Eingabe
+  V: Double;                                             // umgewandelte Eingabe
 begin
-  if FUpdating then Exit;
+  if FUpdating then Exit;                                // Felder werden gerade per Code gesetzt
+  // ----- 1. Eingaben lesen; ungültig bleibt 0 (uCalc meldet den Fehler) -----
   FInput := Default(TCalcInput);
-  if ParseDecimal(EditU.Text, V) then FInput.U := V;
-  if ParseDecimal(EditUd.Text, V) then FInput.Ud := V;
-  if ParseDecimal(EditI.Text, V) then FInput.I := V / 1000;
+  if ParseDecimal(EditU.Text, V) then FInput.U := V;     // Speisespannung U_B in V
+  if ParseDecimal(EditUd.Text, V) then FInput.Ud := V;   // Durchlassspannung U_F in V
+  if ParseDecimal(EditI.Text, V) then FInput.I := V / 1000;  // Strom: Feld in mA, Rechnung in A
   // Anzahl nur als ganze Zahl gültig
   if ParseDecimal(EditN.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= 1000) then
     FInput.N := Round(V)
@@ -1009,31 +1180,50 @@ begin
     FInput.N := 0;
   if ComboSeries.ItemIndex >= 0 then
     FInput.Series := TESeries(ComboSeries.ItemIndex);
-  FInput.RatingW := RATING_REFERENCE;
+  FInput.RatingW := RATING_REFERENCE;                    // Bezugsgrösse für die Belastung
   // Stränge parallel: ganze Zahl 1..100, sonst ungültig (-1)
   if ParseDecimal(EditStrings.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= 100) then
     FInput.Strings := Round(V)
   else
     FInput.Strings := -1;
 
+  // ----- 2. Rechnen -----
   FRes := Calculate(FInput);
   if (FRes.Status <> csOk) or not ColorBands(FRes.Std, FInput.Series, FBands) then
     FBands := nil;
 
+  // ----- 3. Die anderen Reiter -----
   RecalcBlink;
   RecalcKsq;
 
+  // ----- 4. Neu zeichnen -----
   PaintSchematic.Invalidate;
   PaintCards.Invalidate;
   PaintRechenweg.Invalidate;
   PaintStatus.Invalidate;
 end;
 
+{==============================================================================
+  EINGABEFELDER
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  InputChange
+------------------------------------------------------------------------------
+  Eine Eingabe hat sich geändert: neu rechnen (ausser, die Felder werden
+  gerade per Code gesetzt).
+------------------------------------------------------------------------------}
 procedure TFormMain.InputChange(Sender: TObject);
 begin
   Recalc;
 end;
 
+{------------------------------------------------------------------------------
+  ComboColorChange
+------------------------------------------------------------------------------
+  Andere LED-Farbe gewählt: typische Durchlassspannung U_F der Farbe
+  eintragen, LED-Bilder neu rechnen, neu rechnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.ComboColorChange(Sender: TObject);
 begin
   if FUpdating then Exit;
@@ -1050,11 +1240,17 @@ begin
   Recalc;
 end;
 
+{------------------------------------------------------------------------------
+  ComboDrawItem
+------------------------------------------------------------------------------
+  Zeichnet einen Eintrag einer Auswahlliste selbst (Farben des Themas, bei
+  der LED-Farbe mit Farbpunkt).
+------------------------------------------------------------------------------}
 procedure TFormMain.ComboDrawItem(Control: TWinControl; Index: Integer;
   ARect: TRect; State: TOwnerDrawState);
 var
-  Cb: TComboBox;   // die Liste, die gezeichnet wird
-  X, D: Integer;   // Textposition und Durchmesser des Farbpunkts
+  Cb: TComboBox;                                         // die Liste, die gezeichnet wird
+  X, D: Integer;                                         // Textposition und Durchmesser des Farbpunkts
 begin
   Cb := Control as TComboBox;
   with Cb.Canvas do
@@ -1082,10 +1278,17 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  EditKeyDown
+------------------------------------------------------------------------------
+  Pfeiltaste hoch/runter in einem Eingabefeld: Wert ändern. Widerstände und
+  Kondensatoren springen zum nächsten Normwert (Tag -1 = E12, -2 = E6),
+  andere Felder um einen sinnvollen Schritt.
+------------------------------------------------------------------------------}
 procedure TFormMain.EditKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
-  E: TEdit;       // Eingabefeld
-  V, Step: Double; // Wert und Schrittweite
+  E: TEdit;                                              // Eingabefeld
+  V, Step: Double;                                       // Wert und Schrittweite
 begin
   if not (Key in [VK_UP, VK_DOWN]) then Exit;
   E := Sender as TEdit;
@@ -1102,7 +1305,7 @@ begin
     Key := 0;
     Exit;
   end;
-  Step := E.Tag / 1000;  // Tag = Schrittweite in Tausendsteln
+  Step := E.Tag / 1000;                                  // Tag = Schrittweite in Tausendsteln
   if ssShift in Shift then Step := Step * 10;
   if Key = VK_UP then V := V + Step else V := V - Step;
   if (E = EditN) or (E = EditStrings) then V := Max(1, V) else V := Max(0, V);
@@ -1111,12 +1314,16 @@ begin
   Key := 0;
 end;
 
-{ Nur Ziffern und ein Dezimalzeichen zulassen. Punkt und Komma werden zum
+{------------------------------------------------------------------------------
+  EditKeyPress
+------------------------------------------------------------------------------
+  Nur Ziffern und ein Dezimalzeichen zulassen. Punkt und Komma werden zum
   Dezimalzeichen der Sprache; die Anzahl LEDs nimmt nur Ziffern an.
-  Steuerzeichen (Rücktaste, Kopieren, Einfügen) bleiben erlaubt. }
+  Steuerzeichen (Rücktaste, Kopieren, Einfügen) bleiben erlaubt.
+------------------------------------------------------------------------------}
 procedure TFormMain.EditKeyPress(Sender: TObject; var Key: Char);
 var
-  E: TEdit;  // Eingabefeld
+  E: TEdit;                                              // Eingabefeld
 begin
   if (Key < ' ') or (Key in ['0'..'9']) then Exit;
   E := Sender as TEdit;
@@ -1132,21 +1339,33 @@ begin
   Key := #0;
 end;
 
+{------------------------------------------------------------------------------
+  EditMouseWheel
+------------------------------------------------------------------------------
+  Mausrad über einem Eingabefeld wirkt wie die Pfeiltasten.
+------------------------------------------------------------------------------}
 procedure TFormMain.EditMouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 var
-  K: Word;  // simulierte Pfeiltaste
+  K: Word;                                               // simulierte Pfeiltaste
 begin
   if WheelDelta > 0 then K := VK_UP else K := VK_DOWN;
   EditKeyDown(Sender, K, Shift);
   Handled := True;
 end;
 
-{ ---------- LED-Vorschau ---------- }
+{==============================================================================
+  LED-VORSCHAU UND BLINKEN
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  RenderLedBitmaps
+------------------------------------------------------------------------------
+  LED-Bilder für die aktuelle Farbe und Grösse neu rechnen
+------------------------------------------------------------------------------}
 procedure TFormMain.RenderLedBitmaps;
 var
-  L: TLedLabels;  // Beschriftung
+  L: TLedLabels;                                         // Beschriftung
 begin
   L.Anode := _(rsAnode);
   L.AnodeHint := _(rsAnodeHint);
@@ -1159,9 +1378,15 @@ begin
   FLedDirty := False;
 end;
 
+{------------------------------------------------------------------------------
+  PaintLedPaint
+------------------------------------------------------------------------------
+  Zeichnet die LED-Vorschau: das gerechnete LED-Bild (an oder aus) mittig in
+  die Fläche.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintLedPaint(Sender: TObject);
 var
-  Y: Integer;  // Zeile der Frequenzanzeige
+  Y: Integer;                                            // Zeile der Frequenzanzeige
 begin
   if FLedDirty or (FLedOn.Width <> PaintLed.Width) or (FLedOn.Height <> PaintLed.Height) then
     RenderLedBitmaps;
@@ -1188,15 +1413,30 @@ begin
     end;
 end;
 
+{------------------------------------------------------------------------------
+  PaintLedResize
+------------------------------------------------------------------------------
+  Grösse der LED-Vorschau hat sich geändert: Bilder beim nächsten Zeichnen
+  neu rechnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintLedResize(Sender: TObject);
 begin
   FLedDirty := True;
 end;
 
+{------------------------------------------------------------------------------
+  UpdateBlink
+------------------------------------------------------------------------------
+  Blink-Timer je nach Häkchen und Frequenz einstellen
+  Ablauf:
+    1. Reiter Blinkschaltung: Helligkeit und Takt aus der Rechnung; zu schnell fürs Auge oder zu kurze Phasen = gedimmtes Dauerlicht, sonst Timer starten
+    2. Andere Reiter: Dauerlicht, Timer aus
+------------------------------------------------------------------------------}
 procedure TFormMain.UpdateBlink;
 var
-  Level: Double;  // Helligkeit der leuchtenden LED
+  Level: Double;                                         // Helligkeit der leuchtenden LED
 begin
+  // ----- 1. Reiter Blinkschaltung -----
   if FMode = 1 then
   begin
     // Blinkschaltung: Takt aus der Rechnung
@@ -1247,6 +1487,7 @@ begin
     PaintLed.Invalidate;
     Exit;
   end;
+  // ----- 2. Andere Reiter: Dauerlicht -----
   if not SameValue(FOnLevel, 1.0) then
   begin
     FOnLevel := 1.0;
@@ -1259,8 +1500,12 @@ begin
   PaintLed.Invalidate;
 end;
 
-{ Feine Timer-Auflösung (1 ms) nur während die Vorschau blinkt. Ohne sie
-  kommen Timer-Meldungen unter Windows nur etwa alle 16 ms. }
+{------------------------------------------------------------------------------
+  SetFineTimer
+------------------------------------------------------------------------------
+  Feine Timer-Auflösung (1 ms) nur während die Vorschau blinkt. Ohne sie
+  kommen Timer-Meldungen unter Windows nur etwa alle 16 ms.
+------------------------------------------------------------------------------}
 procedure TFormMain.SetFineTimer(AOn: Boolean);
 begin
   if AOn = FFineTimer then Exit;
@@ -1273,10 +1518,16 @@ begin
   {$ENDIF}
 end;
 
+{------------------------------------------------------------------------------
+  TimerBlinkTimer
+------------------------------------------------------------------------------
+  Blink-Timer: je nach verstrichener Zeit seit dem Start die LED an- oder
+  ausschalten und neu zeichnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.TimerBlinkTimer(Sender: TObject);
 var
-  OnMs, PeriodMs: QWord;  // An-Zeit und Periode in ms
-  Lit: Boolean;           // LED soll jetzt leuchten
+  OnMs, PeriodMs: QWord;                                 // An-Zeit und Periode in ms
+  Lit: Boolean;                                          // LED soll jetzt leuchten
 begin
   if FMode <> 1 then
   begin
@@ -1287,23 +1538,36 @@ begin
   OnMs := Max(1, Round(FBRes.TOn1 * 1000));
   PeriodMs := OnMs + Max(1, Round(FBRes.TOff1 * 1000));
   Lit := QWord(LongWord(BlinkClockMs - FBlinkStart)) mod PeriodMs < OnMs;
-  if Lit = FLedLit then Exit;  // nur beim Umschalten neu zeichnen
+  if Lit = FLedLit then Exit;                            // nur beim Umschalten neu zeichnen
   FLedLit := Lit;
-  PaintSchematic.Invalidate;  // LEDs im Schaltplan blinken mit
+  PaintSchematic.Invalidate;                             // LEDs im Schaltplan blinken mit
   PaintLed.Invalidate;
 end;
 
-{ ---------- Schaltplan ---------- }
+{==============================================================================
+  REITER VORWIDERSTAND: SCHALTPLAN
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  PaintSchematicPaint
+------------------------------------------------------------------------------
+  Zeichnet den Schaltplan des aktuellen Reiters (geglättet über uSmooth).
+  Ablauf:
+    1. Rahmen und Hintergrund
+    2. Anderer Reiter: dessen Schaltplan zeichnen
+    3. Texte für den Schaltplan zusammenstellen («–» wenn ungültig)
+    4. Geglättet zeichnen (uSchematic, uSmooth)
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintSchematicPaint(Sender: TObject);
 var
-  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
-  BR: TRect;             // Zeichenfläche darauf
-  V: TSchematicValues;  // Texte und Farben für den Schaltplan
-  R: TRect;             // Zeichenfläche
-  LedName: string;      // Farbname der LED im Text
-  Dash: string;         // Platzhalter bei ungültigen Eingaben
+  BC: TCanvas;                                           // Leinwand für das geglättete Zeichnen
+  BR: TRect;                                             // Zeichenfläche darauf
+  V: TSchematicValues;                                   // Texte und Farben für den Schaltplan
+  R: TRect;                                              // Zeichenfläche
+  LedName: string;                                       // Farbname der LED im Text
+  Dash: string;                                          // Platzhalter bei ungültigen Eingaben
 begin
+  // ----- 1. Rahmen und Hintergrund -----
   R := PaintSchematic.ClientRect;
   with PaintSchematic.Canvas do
   begin
@@ -1312,6 +1576,7 @@ begin
     Pen.Width := 1;
     Rectangle(R);
   end;
+  // ----- 2. Anderer Reiter: dessen Schaltplan -----
   if FMode = 1 then
   begin
     PaintBlinkSchematic;
@@ -1322,6 +1587,7 @@ begin
     PaintKsqSchematic;
     Exit;
   end;
+  // ----- 3. Texte zusammenstellen -----
   LedName := LedColorName;
   Dash := '–';
   V := Default(TSchematicValues);
@@ -1352,6 +1618,7 @@ begin
     V.URText := 'U_R = ' + Dash;
     V.IText := 'I = ' + Dash;
   end;
+  // ----- 4. Geglättet zeichnen -----
   InflateRect(R, -Px(20), -Px(20));
   if BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then
   begin
@@ -1360,28 +1627,45 @@ begin
   end;
 end;
 
-{ ---------- Resultatkarten ---------- }
+{==============================================================================
+  RESULTATKARTEN
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  PaintCardsPaint
+------------------------------------------------------------------------------
+  Zeichnet die vier Resultatkarten des aktuellen Reiters (Normwert, Strom,
+  Leistung, Bauform bzw. die Karten der Blinkschaltung und des
+  Konstantstroms).
+  Ablauf:
+    1. Anderer Reiter: dessen Karten zeichnen
+    2. Breite der vier Karten (1,15 : 1 : 1 : 1)
+    3. Jede Karte zeichnen, abgeschnitten am Kartenrand: Normwert mit Farbringen, tatsächlicher Strom, Verlustleistung, empfohlene Bauform mit Auslastungsbalken
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintCardsPaint(Sender: TObject);
 var
-  C: TCanvas;          // Zeichenfläche
-  Gap, W, X: Integer;  // Abstand, Gesamtbreite, laufende Position
-  CW: array[0..3] of Integer; // Breite der Karten
-  I: Integer;          // Kartenzähler
-  R: TRect;            // aktuelle Karte
-  Pad: Integer;        // Innenabstand
-  ValueColor: TColor;  // Farbe des Hauptwerts
-  Lvl: TLoadLevel;     // Bewertung der Referenz-Bauform
-  BarR: TRect;         // Balken der Auslastung
-  Ok: Boolean;         // Resultat gültig
-  Ringe: string;       // Farbnamen der Ringe
-  K: Integer;          // Trennstelle für zwei Zeilen
+  C: TCanvas;                                            // Zeichenfläche
+  Gap, W, X: Integer;                                    // Abstand, Gesamtbreite, laufende Position
+  CW: array[0..3] of Integer;                            // Breite der Karten
+  I: Integer;                                            // Kartenzähler
+  R: TRect;                                              // aktuelle Karte
+  Pad: Integer;                                          // Innenabstand
+  ValueColor: TColor;                                    // Farbe des Hauptwerts
+  Lvl: TLoadLevel;                                       // Bewertung der Referenz-Bauform
+  BarR: TRect;                                           // Balken der Auslastung
+  Ok: Boolean;                                           // Resultat gültig
+  Ringe: string;                                         // Farbnamen der Ringe
+  K: Integer;                                            // Trennstelle für zwei Zeilen
 
-  { Kartenrahmen, Titel, grosser Wert und Untertext }
+  {----------------------------------------------------------------------------
+    Card
+  ----------------------------------------------------------------------------
+    Kartenrahmen, Titel, grosser Wert und Untertext
+  ----------------------------------------------------------------------------}
   procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
   var
-    Y: Integer;       // laufende Zeile
-    TS: TTextStyle;   // Textausrichtung mit Zeilenumbruch
+    Y: Integer;                                          // laufende Zeile
+    TS: TTextStyle;                                      // Textausrichtung mit Zeilenumbruch
   begin
     C.Brush.Style := bsSolid;
     C.Brush.Color := clrPanel;
@@ -1416,6 +1700,7 @@ var
   end;
 
 begin
+  // ----- 1. Anderer Reiter -----
   if FMode = 1 then
   begin
     PaintBlinkCards;
@@ -1426,6 +1711,7 @@ begin
     PaintKsqCards;
     Exit;
   end;
+  // ----- 2. Kartenbreiten -----
   C := PaintCards.Canvas;
   C.Brush.Color := clrWindow;
   C.FillRect(PaintCards.ClientRect);
@@ -1437,6 +1723,7 @@ begin
   CW[1] := (W - CW[0]) div 3;
   CW[2] := CW[1];
   CW[3] := W - CW[0] - 2 * CW[1];
+  // ----- 3. Karten zeichnen -----
   Ok := FRes.Status = csOk;
   X := 0;
   for I := 0 to 3 do
@@ -1549,11 +1836,18 @@ begin
   end;
 end;
 
-{ ---------- Rechenweg ---------- }
+{==============================================================================
+  RECHENWEG
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  RechenwegLines
+------------------------------------------------------------------------------
+  Schritte des Rechenwegs mit den aktuellen Zahlen
+------------------------------------------------------------------------------}
 function TFormMain.RechenwegLines: TStringArray;
 var
-  Over: string;  // Zusatz "(> 50 %)"
+  Over: string;                                          // Zusatz "(> 50 %)"
 begin
   Result := nil;
   if FRes.Status <> csOk then
@@ -1584,6 +1878,12 @@ begin
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
 end;
 
+{------------------------------------------------------------------------------
+  RechenwegLegend
+------------------------------------------------------------------------------
+  Erklärung der Zeichen im Rechenweg des aktuellen Reiters (mit
+  Auszeichnung)
+------------------------------------------------------------------------------}
 function TFormMain.RechenwegLegend: string;
 begin
   if FMode = 1 then
@@ -1603,13 +1903,18 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  CopyText
+------------------------------------------------------------------------------
+  Resultat, kompletter Rechenweg und Zeichen-Erklärung als einfacher Text
+------------------------------------------------------------------------------}
 function TFormMain.CopyText: string;
 var
-  SL: TStringList;   // Zeilen
-  L: TStringArray;   // Schritte des Rechenwegs
-  Legend: string;    // Zeichen-Erklärung
-  Ok: Boolean;       // Rechnung gültig
-  I: Integer;        // Zähler
+  SL: TStringList;                                       // Zeilen
+  L: TStringArray;                                       // Schritte des Rechenwegs
+  Legend: string;                                        // Zeichen-Erklärung
+  Ok: Boolean;                                           // Rechnung gültig
+  I: Integer;                                            // Zähler
 begin
   if FMode = 1 then
   begin
@@ -1629,7 +1934,7 @@ begin
     L := RechenwegLines;
     Ok := FRes.Status = csOk;
   end;
-  if not Ok then Exit;  // nur die Fehlermeldung
+  if not Ok then Exit;                                   // nur die Fehlermeldung
   SL := TStringList.Create;
   try
     SL.Text := Result;
@@ -1649,12 +1954,17 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  UpdateRechenwegHeight
+------------------------------------------------------------------------------
+  Höhe des Rechenweg-Bereichs je nach auf-/zugeklappt setzen
+------------------------------------------------------------------------------}
 procedure TFormMain.UpdateRechenwegHeight;
 var
-  NeuH, Mehr: Integer;  // neue Höhe, zusätzlicher Platzbedarf
+  NeuH, Mehr: Integer;                                   // neue Höhe, zusätzlicher Platzbedarf
 begin
   if FRechenwegOpen then
-    NeuH := Px(200)  // fünf Schritte und die Zeichen-Erklärung (zwei Zeilen)
+    NeuH := Px(200)                                      // fünf Schritte und die Zeichen-Erklärung (zwei Zeilen)
   else
     NeuH := Px(30);
   Mehr := NeuH - PanelRechenweg.Height;
@@ -1668,12 +1978,23 @@ begin
     bei 150-200 % aus dem Ruder (Live-Test 30.10.) }
 end;
 
+{------------------------------------------------------------------------------
+  PanelLeftResize
+------------------------------------------------------------------------------
+  LED-Vorschau füllt die linke Spalte bis unten; reicht die Höhe nicht,
+  rollt die Spalte (Mindesthöhe der Vorschau)
+------------------------------------------------------------------------------}
 procedure TFormMain.PanelLeftResize(Sender: TObject);
 begin
   PanelPreview.Height := Max(PanelPreview.Constraints.MinHeight,
     PanelLeft.ClientHeight - PanelPreview.Top - Px(8));
 end;
 
+{------------------------------------------------------------------------------
+  FormShowPlatz
+------------------------------------------------------------------------------
+  beim ersten Anzeigen: zu wenig Platz für die LED-Vorschau prüfen
+------------------------------------------------------------------------------}
 procedure TFormMain.FormShowPlatz(Sender: TObject);
 begin
   OnShow := nil;
@@ -1682,6 +2003,12 @@ begin
   Application.QueueAsyncCall(@RechenwegZuBeiPlatzmangel, 0);
 end;
 
+{------------------------------------------------------------------------------
+  RechenwegZuBeiPlatzmangel
+------------------------------------------------------------------------------
+  Rechenweg zuklappen, wenn das Fenster auf einen kleinen Bildschirm
+  begrenzt wurde und die LED-Vorschau sonst verschwindet (200 %)
+------------------------------------------------------------------------------}
 procedure TFormMain.RechenwegZuBeiPlatzmangel(Data: PtrInt);
 begin
   // zu wenig Platz für LED-Vorschau oder Schaltplan (z. B. 200 % auf Full HD)
@@ -1693,25 +2020,37 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  PaintRechenwegPaint
+------------------------------------------------------------------------------
+  Zeichnet den Rechenweg: Kopfzeile mit Pfeil und «Kopieren», darunter die
+  Schritte mit den aktuellen Zahlen und die Zeichen-Erklärung.
+  Ablauf:
+    1. Rahmen und Kopfzeile: Dreieck auf/zu, «Rechenweg», Knopf «Kopieren», Hinweis auf das Datenblatt (Schrift wird kleiner, wenn der Platz nicht reicht)
+    2. Zugeklappt: fertig
+    3. Schritte des aktuellen Reiters mit den aktuellen Zahlen
+    4. Zeichen-Erklärung, bei Bedarf auf zwei Zeilen umbrochen (nur zwischen den Einträgen « · »)
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintRechenwegPaint(Sender: TObject);
 var
-  C: TCanvas;            // Zeichenfläche
-  R: TRect;              // ganzer Bereich
-  HeadH, LineH: Integer; // Höhe Kopfzeile und Textzeile
-  L: TStringArray;       // Schritte
-  I, Y: Integer;         // Zähler und Zeile
-  Mid: Integer;          // Mitte der Kopfzeile
-  Ok: Boolean;           // Rechnung gültig
-  HintText: string;          // Hinweis zum Datenblatt
-  HintX: Integer;        // frühester Anfang des Hinweises
-  HintRight: Integer;    // rechter Rand des Hinweises (vor dem Knopf)
-  BtnText: string;       // Beschriftung des Kopier-Knopfs
-  BtnW: Integer;         // Breite des Kopier-Knopfs
-  Legend: string;        // Zeichen-Erklärung
-  Teile: TStringArray;   // Einträge der Zeichen-Erklärung
-  Zeile: string;         // Zeile der Zeichen-Erklärung im Aufbau
-  LegX, LegY, LegW: Integer; // Anfang, Zeile und Breite der Zeichen-Erklärung
+  C: TCanvas;                                            // Zeichenfläche
+  R: TRect;                                              // ganzer Bereich
+  HeadH, LineH: Integer;                                 // Höhe Kopfzeile und Textzeile
+  L: TStringArray;                                       // Schritte
+  I, Y: Integer;                                         // Zähler und Zeile
+  Mid: Integer;                                          // Mitte der Kopfzeile
+  Ok: Boolean;                                           // Rechnung gültig
+  HintText: string;                                      // Hinweis zum Datenblatt
+  HintX: Integer;                                        // frühester Anfang des Hinweises
+  HintRight: Integer;                                    // rechter Rand des Hinweises (vor dem Knopf)
+  BtnText: string;                                       // Beschriftung des Kopier-Knopfs
+  BtnW: Integer;                                         // Breite des Kopier-Knopfs
+  Legend: string;                                        // Zeichen-Erklärung
+  Teile: TStringArray;                                   // Einträge der Zeichen-Erklärung
+  Zeile: string;                                         // Zeile der Zeichen-Erklärung im Aufbau
+  LegX, LegY, LegW: Integer;                             // Anfang, Zeile und Breite der Zeichen-Erklärung
 begin
+  // ----- 1. Rahmen und Kopfzeile -----
   C := PaintRechenweg.Canvas;
   R := PaintRechenweg.ClientRect;
   C.Brush.Color := RGBToColor($1A, $1D, $22);
@@ -1758,7 +2097,9 @@ begin
       R.Top + (HeadH - C.TextHeight('Ag')) div 2, HintText);
   C.Font.Size := 9;
   C.Font.Color := clrText;
+  // ----- 2. Zugeklappt: fertig -----
   if not FRechenwegOpen then Exit;
+  // ----- 3. Schritte -----
   C.Line(R.Left, R.Top + HeadH, R.Right, R.Top + HeadH);
 
   if FMode = 1 then
@@ -1790,7 +2131,8 @@ begin
       DrawRich(C, R.Left + Px(14), Y, L[I], clrError, clrError);
     Inc(Y, LineH);
   end;
-  // Erklärung der Zeichen: gleiche Schrift wie der Rechenweg, bei Bedarf
+  // ----- 4. Erklärung der Zeichen -----
+  // gleiche Schrift wie der Rechenweg, bei Bedarf
   // zweizeilig (Umbruch nur zwischen den Einträgen « · »)
   Legend := RechenwegLegend;
   if Legend <> '' then
@@ -1821,6 +2163,12 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  PaintRechenwegMouseUp
+------------------------------------------------------------------------------
+  Klick in die Kopfzeile des Rechenwegs: auf «Kopieren» kopieren, sonst auf-
+  oder zuklappen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintRechenwegMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -1832,6 +2180,11 @@ begin
     RechenwegToggle(Sender);
 end;
 
+{------------------------------------------------------------------------------
+  PaintRechenwegMouseMove
+------------------------------------------------------------------------------
+  Hand-Zeiger über der Kopfzeile des Rechenwegs
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintRechenwegMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 begin
   if (Y <= Px(28)) then
@@ -1840,6 +2193,11 @@ begin
     PaintRechenweg.Cursor := crDefault;
 end;
 
+{------------------------------------------------------------------------------
+  RechenwegToggle
+------------------------------------------------------------------------------
+  Rechenweg auf- oder zuklappen
+------------------------------------------------------------------------------}
 procedure TFormMain.RechenwegToggle(Sender: TObject);
 begin
   FRechenwegOpen := not FRechenwegOpen;
@@ -1847,20 +2205,33 @@ begin
   PaintRechenweg.Invalidate;
 end;
 
-{ ---------- Statuszeile ---------- }
+{==============================================================================
+  STATUSZEILE UND KO-FI-KNOPF
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  PaintStatusPaint
+------------------------------------------------------------------------------
+  Zeichnet die Statuszeile: farbiges Kästchen (OK / Hinweis / Fehler) und
+  den Text dazu.
+  Ablauf:
+    1. Hintergrund mit Trennlinie oben
+    2. Kästchen-Text, Statustext und Farben je Reiter bestimmen: Fehler (rot), Hinweis (gelb) oder OK (grün) mit Auslastung
+    3. Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz) und Text daneben
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintStatusPaint(Sender: TObject);
 var
-  C: TCanvas;       // Zeichenfläche
-  R, Chip: TRect;   // Bereich und Hinweis-Kästchen
-  ChipText, Txt: string; // Texte
-  Fore, Back: TColor;    // Farben des Kästchens
-  Lvl: TLoadLevel;  // Bewertung
-  X: Integer;       // laufende Position
-  Sym: Integer;    // Symbol: 0 = Haken, 1 = Warndreieck, 2 = Kreuz
-  IconW: Integer;   // Platz für das Symbol
-  IX, IY: Integer;  // Lage des Symbols
+  C: TCanvas;                                            // Zeichenfläche
+  R, Chip: TRect;                                        // Bereich und Hinweis-Kästchen
+  ChipText, Txt: string;                                 // Texte
+  Fore, Back: TColor;                                    // Farben des Kästchens
+  Lvl: TLoadLevel;                                       // Bewertung
+  X: Integer;                                            // laufende Position
+  Sym: Integer;                                          // Symbol: 0 = Haken, 1 = Warndreieck, 2 = Kreuz
+  IconW: Integer;                                        // Platz für das Symbol
+  IX, IY: Integer;                                       // Lage des Symbols
 begin
+  // ----- 1. Hintergrund -----
   C := PaintStatus.Canvas;
   R := PaintStatus.ClientRect;
   C.Brush.Color := clrBar;
@@ -1870,6 +2241,7 @@ begin
   C.Font.Name := FONT_UI;
   C.Font.Size := 9;
   C.Font.Style := [];
+  // ----- 2. Text und Farben bestimmen -----
   X := R.Left + Px(10);
   if FMode = 1 then
     BlinkStatus(ChipText, Txt, Sym, Fore, Back)
@@ -1904,7 +2276,7 @@ begin
     if FRes.Strings > 1 then
       Txt := Txt + ' ' + Format(_(rsStatusStrings), [FRes.Strings]);
   end;
-  // Hinweis-Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz)
+  // ----- 3. Hinweis-Kästchen mit selbst gezeichnetem Symbol (Haken, Warndreieck, Kreuz) -----
   IconW := Px(14);
   Chip := Types.Rect(X, R.Top + Px(4), X + IconW + C.TextWidth(ChipText) + Px(14), R.Bottom - Px(3));
   C.Brush.Color := Back;
@@ -1938,15 +2310,24 @@ begin
   C.TextOut(Chip.Right + Px(10), (R.Top + R.Bottom - C.TextHeight('Ag')) div 2, Txt);
 end;
 
+{------------------------------------------------------------------------------
+  KofiClick
+------------------------------------------------------------------------------
+  Klick auf den Ko-fi-Knopf: Ko-fi-Seite von Elospeed im Browser öffnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.KofiClick(Sender: TObject);
 begin
   OpenURL(KOFI_URL);
 end;
 
-{ Ko-fi-Knopf unten rechts, Elospeed-Standard (gezeichnet in uKofiButton) }
+{------------------------------------------------------------------------------
+  PaintKofiPaint
+------------------------------------------------------------------------------
+  Ko-fi-Knopf unten rechts, Elospeed-Standard (gezeichnet in uKofiButton)
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintKofiPaint(Sender: TObject);
 var
-  R: TRect;  // Bereich des Knopfs
+  R: TRect;                                              // Bereich des Knopfs
 begin
   R := PaintKofi.ClientRect;
   PaintKofi.Canvas.Font.Name := FONT_UI;
@@ -1959,24 +2340,41 @@ begin
   PaintKofi.Canvas.Line(R.Left, R.Top, R.Right, R.Top);
 end;
 
+{------------------------------------------------------------------------------
+  PaintKofiMouseEnter
+------------------------------------------------------------------------------
+  Maus über dem Ko-fi-Knopf: Knopf etwas heller zeichnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintKofiMouseEnter(Sender: TObject);
 begin
   FKofiHover := True;
   PaintKofi.Invalidate;
 end;
 
+{------------------------------------------------------------------------------
+  PaintKofiMouseLeave
+------------------------------------------------------------------------------
+  Maus hat den Ko-fi-Knopf verlassen: wieder normal zeichnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintKofiMouseLeave(Sender: TObject);
 begin
   FKofiHover := False;
   PaintKofi.Invalidate;
 end;
 
-{ ---------- Kopieren, Zurücksetzen, Info ---------- }
+{==============================================================================
+  KOPIEREN, TASTEN, ZURÜCKSETZEN, INFO
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  ResultSummary
+------------------------------------------------------------------------------
+  Zusammenfassung für die Zwischenablage
+------------------------------------------------------------------------------}
 function TFormMain.ResultSummary: string;
 var
-  LedName: string;  // Farbname
-  SL: TStringList;  // Zeilen
+  LedName: string;                                       // Farbname
+  SL: TStringList;                                       // Zeilen
 begin
   Result := '';
   if FRes.Status <> csOk then
@@ -2002,6 +2400,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  CopyClick
+------------------------------------------------------------------------------
+  Knopf «Kopieren» oder Strg+Umschalt+C: CopyText in die Zwischenablage
+------------------------------------------------------------------------------}
 procedure TFormMain.CopyClick(Sender: TObject);
 begin
   Clipboard.AsText := CopyText;
@@ -2012,6 +2415,11 @@ begin
   PaintRechenweg.Invalidate;
 end;
 
+{------------------------------------------------------------------------------
+  CopyTimerTimer
+------------------------------------------------------------------------------
+  «Kopiert ✓» nach kurzer Zeit wieder zu «Kopieren» machen
+------------------------------------------------------------------------------}
 procedure TFormMain.CopyTimerTimer(Sender: TObject);
 begin
   FCopyTimer.Enabled := False;
@@ -2019,6 +2427,11 @@ begin
   PaintRechenweg.Invalidate;
 end;
 
+{------------------------------------------------------------------------------
+  FormKeyDown
+------------------------------------------------------------------------------
+  Tastenkürzel ohne Menü: Strg+1/2/3, F1, Strg+Umschalt+C
+------------------------------------------------------------------------------}
 procedure TFormMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   // Strg+Umschalt+C: wie der Knopf «Kopieren» im Rechenweg
@@ -2041,6 +2454,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  ResetClick
+------------------------------------------------------------------------------
+  Symbol ↺: alle Eingaben auf die Vorgaben zurücksetzen
+------------------------------------------------------------------------------}
 procedure TFormMain.ResetClick(Sender: TObject);
 begin
   FUpdating := True;
@@ -2064,7 +2482,7 @@ begin
       EditI.Text := '15';
     end;
     if FMode = 2 then
-      EditN.Text := '2';  // Konstantstrom: zwei weisse LEDs im Auto wie im Beispiel
+      EditN.Text := '2';                                 // Konstantstrom: zwei weisse LEDs im Auto wie im Beispiel
     CheckDiode.Checked := False;
     CheckSym.Checked := True;
     ComboConn.ItemIndex := Ord(cnGnd);
@@ -2077,19 +2495,36 @@ begin
   Recalc;
 end;
 
+{------------------------------------------------------------------------------
+  AboutClick
+------------------------------------------------------------------------------
+  Symbol ⓘ: Fenster «Über LedPreResistor»
+------------------------------------------------------------------------------}
 procedure TFormMain.AboutClick(Sender: TObject);
 begin
   MessageDlg(Format(_(rsAbout), [APP_VER]), mtInformation, [mbOK], 0);
 end;
 
+{------------------------------------------------------------------------------
+  LedInfoClick
+------------------------------------------------------------------------------
+  LED-Symbol oder F1: LED-Info im Browser öffnen
+------------------------------------------------------------------------------}
 procedure TFormMain.LedInfoClick(Sender: TObject);
 begin
   if not ShowLedInfo then
     MessageDlg(_(rsLedInfoFailed), mtError, [mbOK], 0);
 end;
 
-{ ---------- Blinkschaltung ---------- }
+{==============================================================================
+  REITER UND LINKE SPALTE
+==============================================================================}
 
+{------------------------------------------------------------------------------
+  LedColorName
+------------------------------------------------------------------------------
+  Farbname der LED, z. B. "rot"
+------------------------------------------------------------------------------}
 function TFormMain.LedColorName: string;
 begin
   case CurrentLed of
@@ -2103,6 +2538,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  SwitchMode
+------------------------------------------------------------------------------
+  Reiter wechseln: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
+------------------------------------------------------------------------------}
 procedure TFormMain.SwitchMode(M: Integer; Save: Boolean);
 begin
   FMode := M;
@@ -2126,15 +2566,28 @@ begin
     WriteViewSetting(INI_KEY_TAB, M);
 end;
 
+{------------------------------------------------------------------------------
+  LayoutLeft
+------------------------------------------------------------------------------
+  Bedienelemente der linken Spalte je nach Reiter anordnen
+  Ablauf:
+    1. Sichtbarkeit der Felder je Reiter (Vorwiderstand, Blinkschaltung, Konstantstrom)
+    2. Felder von oben nach unten setzen (Put) und die Tab-Reihenfolge festlegen (Tab)
+    3. Zuunterst die LED-Vorschau; danach füllt sie die Spalte bis unten
+------------------------------------------------------------------------------}
 procedure TFormMain.LayoutLeft;
 var
-  Blink: Boolean;  // Reiter Blinkschaltung
-  Ksq: Boolean;    // Reiter Konstantstrom
-  Is555: Boolean;  // Schaltung NE555
-  Y: Integer;      // laufende Zeile (96 dpi)
-  Order: Integer;  // laufende Tab-Reihenfolge
+  Blink: Boolean;                                        // Reiter Blinkschaltung
+  Ksq: Boolean;                                          // Reiter Konstantstrom
+  Is555: Boolean;                                        // Schaltung NE555
+  Y: Integer;                                            // laufende Zeile (96 dpi)
+  Order: Integer;                                        // laufende Tab-Reihenfolge
 
-  { Bedienelement an (X, Top) in 96-dpi-Punkten setzen; W = 0 behält die Breite }
+  {----------------------------------------------------------------------------
+    Put
+  ----------------------------------------------------------------------------
+    Bedienelement an (X, Top) in 96-dpi-Punkten setzen; W = 0 behält die Breite
+  ----------------------------------------------------------------------------}
   procedure Put(C: TControl; X, Top, W: Integer);
   begin
     if W > 0 then
@@ -2143,7 +2596,11 @@ var
       C.SetBounds(Px(X), Px(Top), C.Width, C.Height);
   end;
 
-  { nächste Stelle in der Tab-Reihenfolge }
+  {----------------------------------------------------------------------------
+    Tab
+  ----------------------------------------------------------------------------
+    nächste Stelle in der Tab-Reihenfolge
+  ----------------------------------------------------------------------------}
   procedure Tab(C: TWinControl);
   begin
     C.TabOrder := Order;
@@ -2154,6 +2611,7 @@ begin
   Blink := FMode = 1;
   Ksq := FMode = 2;
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
+  // ----- 1. Sichtbarkeit je Reiter -----
   PanelLeft.VertScrollBar.Position := 0;
   PanelLeft.DisableAlign;
   try
@@ -2190,9 +2648,10 @@ begin
     LabelDiode.Visible := Blink and Is555;
     CheckSym.Visible := Blink and not Is555;
     LabelSym.Visible := Blink and not Is555;
-    LabelConn.Visible := False;  // die Auswahl erklärt sich selbst
+    LabelConn.Visible := False;                          // die Auswahl erklärt sich selbst
     ComboConn.Visible := Blink and Is555;
 
+    // ----- 2. Felder setzen, Tab-Reihenfolge -----
     Order := 0;
     Put(LabelHeadInputs, 16, 12, 0);
     if Ksq then
@@ -2272,7 +2731,7 @@ begin
       if Is555 then
       begin
         Put(CheckDiode, 16, Y, 0);
-        LabelDiode.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        LabelDiode.AutoSize := False;                    // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
         Put(LabelDiode, 36, Y + 2, 217);
         Tab(CheckDiode);
         Inc(Y, 26);
@@ -2280,7 +2739,7 @@ begin
       else
       begin
         Put(CheckSym, 16, Y, 0);
-        LabelSym.AutoSize := False;  // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
+        LabelSym.AutoSize := False;                      // feste Breite bis zum Rand, sonst wird der Text unter Umständen abgeschnitten
         Put(LabelSym, 36, Y + 2, 217);
         Tab(CheckSym);
         Inc(Y, 26);
@@ -2304,6 +2763,7 @@ begin
       end;
       Inc(Y, 4);
     end;
+    // ----- 3. LED-Vorschau zuunterst -----
     Put(LabelHeadPreview, 16, Y, 0);
     Put(PanelPreview, 16, Y + 20, 237);
     Tab(PanelPreview);
@@ -2313,16 +2773,21 @@ begin
   PanelLeftResize(PanelLeft);
 end;
 
+{------------------------------------------------------------------------------
+  UpdateTimingLabels
+------------------------------------------------------------------------------
+  Beschriftung und Einheiten der drei Zeitglied-Felder setzen
+------------------------------------------------------------------------------}
 procedure TFormMain.UpdateTimingLabels;
 var
-  Is555: Boolean;  // Schaltung NE555
+  Is555: Boolean;                                        // Schaltung NE555
 begin
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
   if FReverse and not Is555 then
   begin
     LabelT1.Caption := _(rsLabelLed1);
     LabelT1Unit.Caption := 's';
-    EditT1.Tag := 100;     // 0,1 s pro Schritt
+    EditT1.Tag := 100;                                   // 0,1 s pro Schritt
     LabelT2.Caption := _(rsLabelLed2);
     LabelT2Unit.Caption := 's';
     EditT2.Tag := 100;
@@ -2331,10 +2796,10 @@ begin
   begin
     LabelT1.Caption := _(rsLabelFreq);
     LabelT1Unit.Caption := 'Hz';
-    EditT1.Tag := 100;     // 0,1 Hz pro Schritt
+    EditT1.Tag := 100;                                   // 0,1 Hz pro Schritt
     LabelT2.Caption := _(rsLabelDuty);
     LabelT2Unit.Caption := '%';
-    EditT2.Tag := 1000;    // 1 % pro Schritt
+    EditT2.Tag := 1000;                                  // 1 % pro Schritt
   end
   else
   begin
@@ -2350,12 +2815,12 @@ begin
     end;
     LabelT1Unit.Caption := 'kΩ';
     LabelT2Unit.Caption := 'kΩ';
-    EditT1.Tag := -1;      // E12-Werte
+    EditT1.Tag := -1;                                    // E12-Werte
     EditT2.Tag := -1;
   end;
   LabelT3.Caption := 'C';
   LabelT3Unit.Caption := 'µF';
-  EditT3.Tag := -2;        // E6-Werte
+  EditT3.Tag := -2;                                      // E6-Werte
   if FMode = 2 then
     LabelHeadLed.Caption := _(rsHeadLeds)
   else if Is555 then
@@ -2364,6 +2829,12 @@ begin
     LabelHeadLed.Caption := _(rsHeadLeds);
 end;
 
+{------------------------------------------------------------------------------
+  StoreTimingTexts
+------------------------------------------------------------------------------
+  Feldinhalte der Zeitglied-Felder merken bzw. für Schaltung und Richtung
+  wieder einsetzen
+------------------------------------------------------------------------------}
 procedure TFormMain.StoreTimingTexts;
 begin
   FBTexts[FCircuitShown, FReverseShown, 0] := EditT1.Text;
@@ -2371,9 +2842,15 @@ begin
   FBTexts[FCircuitShown, FReverseShown, 2] := EditT3.Text;
 end;
 
+{------------------------------------------------------------------------------
+  LoadTimingTexts
+------------------------------------------------------------------------------
+  Setzt die gemerkten Feldinhalte der Zeitglied-Felder für die gewählte
+  Schaltung und Richtung wieder ein (Gegenstück zu StoreTimingTexts).
+------------------------------------------------------------------------------}
 procedure TFormMain.LoadTimingTexts;
 var
-  Old: Boolean;  // vorheriger Zustand von FUpdating
+  Old: Boolean;                                          // vorheriger Zustand von FUpdating
 begin
   if ComboCircuit.ItemIndex = Ord(bcMulti) then
     FCircuitShown := bcMulti
@@ -2393,13 +2870,17 @@ begin
   SyncSymmetric;
 end;
 
-{ Multivibrator symmetrisch (1:1): das zweite Feld folgt dem ersten,
-  RB2 = RB1 bzw. Zeit LED 2 = Zeit LED 1. }
+{------------------------------------------------------------------------------
+  SyncSymmetric
+------------------------------------------------------------------------------
+  Multivibrator symmetrisch (1:1): das zweite Feld folgt dem ersten,
+  RB2 = RB1 bzw. Zeit LED 2 = Zeit LED 1.
+------------------------------------------------------------------------------}
 procedure TFormMain.SyncSymmetric;
 var
-  Sym: Boolean;  // symmetrisch eingestellt
-  T: string;     // Text für das zweite Feld
-  Old: Boolean;  // vorheriger Zustand von FUpdating
+  Sym: Boolean;                                          // symmetrisch eingestellt
+  T: string;                                             // Text für das zweite Feld
+  Old: Boolean;                                          // vorheriger Zustand von FUpdating
 begin
   Sym := (ComboCircuit.ItemIndex = Ord(bcMulti)) and CheckSym.Checked;
   EditT2.Enabled := not Sym;
@@ -2415,6 +2896,12 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkInputChange
+------------------------------------------------------------------------------
+  Eine Eingabe der Blinkschaltung hat sich geändert: beim symmetrischen
+  Multivibrator das zweite Feld nachführen, dann neu rechnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.BlinkInputChange(Sender: TObject);
 begin
   if FUpdating then Exit;
@@ -2422,6 +2909,13 @@ begin
   Recalc;
 end;
 
+{------------------------------------------------------------------------------
+  CircuitChange
+------------------------------------------------------------------------------
+  Andere Blinkschaltung gewählt (NE555 / Multivibrator): Feldinhalte der
+  alten Schaltung merken, die der neuen einsetzen, linke Spalte neu
+  anordnen, rechnen und die Wahl speichern.
+------------------------------------------------------------------------------}
 procedure TFormMain.CircuitChange(Sender: TObject);
 begin
   if FUpdating then Exit;
@@ -2432,23 +2926,40 @@ begin
   WriteViewSetting(INI_KEY_CIRCUIT, ComboCircuit.ItemIndex);
 end;
 
+{------------------------------------------------------------------------------
+  LabelDiodeClick
+------------------------------------------------------------------------------
+  Klick auf den Text neben dem Häkchen «Diode» schaltet das Häkchen um.
+------------------------------------------------------------------------------}
 procedure TFormMain.LabelDiodeClick(Sender: TObject);
 begin
   CheckDiode.Checked := not CheckDiode.Checked;
 end;
 
+{------------------------------------------------------------------------------
+  LabelSymClick
+------------------------------------------------------------------------------
+  Klick auf den Text neben dem Häkchen «symmetrisch» schaltet das Häkchen
+  um.
+------------------------------------------------------------------------------}
 procedure TFormMain.LabelSymClick(Sender: TObject);
 begin
   CheckSym.Checked := not CheckSym.Checked;
 end;
 
+{------------------------------------------------------------------------------
+  PaintTabsPaint
+------------------------------------------------------------------------------
+  Zeichnet die Reiterzeile: «Vorwiderstand | Blinkschaltung | Konstantstrom»
+  links, die Symbole oben rechts.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintTabsPaint(Sender: TObject);
 var
-  C: TCanvas;          // Zeichenfläche
-  R: TRect;            // ganzer Bereich
-  I, X, W: Integer;    // Reiter, Position, Breite
-  T: string;           // Beschriftung
-  TabTop: Integer;     // Oberkante der Reiter
+  C: TCanvas;                                            // Zeichenfläche
+  R: TRect;                                              // ganzer Bereich
+  I, X, W: Integer;                                      // Reiter, Position, Breite
+  T: string;                                             // Beschriftung
+  TabTop: Integer;                                       // Oberkante der Reiter
 begin
   C := PaintTabs.Canvas;
   R := PaintTabs.ClientRect;
@@ -2494,6 +3005,12 @@ begin
   DrawTabIcons(C, R);
 end;
 
+{------------------------------------------------------------------------------
+  PaintTabsMouseUp
+------------------------------------------------------------------------------
+  Klick in die Reiterzeile: auf einen Reiter (wechseln) oder auf ein Symbol
+  oben rechts (zurücksetzen, DE/EN, LED-Info, Info).
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintTabsMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -2513,18 +3030,29 @@ begin
     SwitchMode(2, True);
 end;
 
+{------------------------------------------------------------------------------
+  TabIconAt
+------------------------------------------------------------------------------
+  Symbol an der Stelle X/Y in der Reiterzeile (-1 = keins)
+------------------------------------------------------------------------------}
 function TFormMain.TabIconAt(X, Y: Integer): Integer;
 var
-  I: Integer;  // Symbol
+  I: Integer;                                            // Symbol
 begin
   Result := -1;
   for I := 0 to High(FIco) do
     if PtInRect(FIco[I], Point(X, Y)) then Exit(I);
 end;
 
+{------------------------------------------------------------------------------
+  PaintTabsMouseMove
+------------------------------------------------------------------------------
+  Maus über der Reiterzeile: Hand-Zeiger über Reitern und Symbolen, Symbol
+  hervorheben und seinen Tooltip zeigen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintTabsMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
 var
-  I: Integer;  // Symbol unter der Maus
+  I: Integer;                                            // Symbol unter der Maus
 begin
   I := TabIconAt(X, Y);
   if I = FIcoHover then Exit;
@@ -2546,6 +3074,11 @@ begin
   PaintTabs.Invalidate;
 end;
 
+{------------------------------------------------------------------------------
+  PaintTabsMouseLeave
+------------------------------------------------------------------------------
+  Maus hat die Reiterzeile verlassen: Hervorhebung des Symbols entfernen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintTabsMouseLeave(Sender: TObject);
 begin
   if FIcoHover < 0 then Exit;
@@ -2553,18 +3086,32 @@ begin
   PaintTabs.Invalidate;
 end;
 
+{------------------------------------------------------------------------------
+  DrawTabIcons
+------------------------------------------------------------------------------
+  Symbole oben rechts in der Reiterzeile zeichnen
+  Ablauf:
+    1. Lage der Symbole von rechts nach links: Info, LED-Info, DE/EN, Zurücksetzen (für Mausklick und Tooltip in FIco gemerkt)
+    2. Zu wenig Platz neben den Reitern: keine Symbole
+    3. Zurücksetzen, LED-Info und Info zeichnen (Hintergrund nur beim Darüberfahren)
+    4. Sprache als Pille «DE | EN», die aktive Sprache hervorgehoben
+------------------------------------------------------------------------------}
 procedure TFormMain.DrawTabIcons(C: TCanvas; const R: TRect);
 var
-  BH, BW, G: Integer;  // Höhe und Breite eines Knopfs, Grösse des Zeichens
-  X, BTop: Integer;     // rechter Rand (läuft nach links), Oberkante der Knöpfe
-  LangW: Integer;      // Breite eines Sprachfelds
-  I: Integer;          // Symbol
-  BC: TCanvas;         // grosse Zeichenfläche (geglättet)
-  BR: TRect;           // Zeichen-Rechteck auf BC
-  S: Double;           // Pixel von BC je Pixel des Zeichens
-  F: TRect;            // Fläche des Zeichens
+  BH, BW, G: Integer;                                    // Höhe und Breite eines Knopfs, Grösse des Zeichens
+  X, BTop: Integer;                                      // rechter Rand (läuft nach links), Oberkante der Knöpfe
+  LangW: Integer;                                        // Breite eines Sprachfelds
+  I: Integer;                                            // Symbol
+  BC: TCanvas;                                           // grosse Zeichenfläche (geglättet)
+  BR: TRect;                                             // Zeichen-Rechteck auf BC
+  S: Double;                                             // Pixel von BC je Pixel des Zeichens
+  F: TRect;                                              // Fläche des Zeichens
 
-  { Knopf-Hintergrund: nur beim Darüberfahren sichtbar }
+  {----------------------------------------------------------------------------
+    Back
+  ----------------------------------------------------------------------------
+    Knopf-Hintergrund: nur beim Darüberfahren sichtbar
+  ----------------------------------------------------------------------------}
   procedure Back(const B: TRect; Hover: Boolean);
   begin
     if not Hover then Exit;
@@ -2575,7 +3122,11 @@ var
     C.RoundRect(B, Px(8), Px(8));
   end;
 
-  { Fläche des Zeichens mitten im Knopf }
+  {----------------------------------------------------------------------------
+    GlyphRect
+  ----------------------------------------------------------------------------
+    Fläche des Zeichens mitten im Knopf
+  ----------------------------------------------------------------------------}
   function GlyphRect(const B: TRect): TRect;
   begin
     Result.Left := (B.Left + B.Right - G) div 2;
@@ -2584,7 +3135,11 @@ var
     Result.Bottom := Result.Top + G;
   end;
 
-  { Punkt im Zeichen (0..1 waagrecht/senkrecht) auf BC }
+  {----------------------------------------------------------------------------
+    GX
+  ----------------------------------------------------------------------------
+    Punkt im Zeichen (0..1 waagrecht/senkrecht) auf BC
+  ----------------------------------------------------------------------------}
   function GX(V: Double): Integer;
   begin
     Result := BR.Left + Round(V * (BR.Right - BR.Left));
@@ -2594,15 +3149,19 @@ var
     Result := BR.Top + Round(V * (BR.Bottom - BR.Top));
   end;
 
-  { geglättetes Zeichen I zeichnen }
+  {----------------------------------------------------------------------------
+    Glyph
+  ----------------------------------------------------------------------------
+    geglättetes Zeichen I zeichnen
+  ----------------------------------------------------------------------------}
   procedure Glyph(Idx: Integer; const B: TRect);
   var
-    Col, BackCol: TColor;  // Strichfarbe, Grund
-    A: Double;          // Winkel
-    CX, CY, Rad: Double; // Kreis (Anteile der Fläche)
-    DX, DY, EX, EY: Double; // Laufrichtung und Ende des Bogens
-    Pts: array[0..24] of TPoint; // Punkte des Bogens
-    K: Integer;         // Punkt
+    Col, BackCol: TColor;                                // Strichfarbe, Grund
+    A: Double;                                           // Winkel
+    CX, CY, Rad: Double;                                 // Kreis (Anteile der Fläche)
+    DX, DY, EX, EY: Double;                              // Laufrichtung und Ende des Bogens
+    Pts: array[0..24] of TPoint;                         // Punkte des Bogens
+    K: Integer;                                          // Punkt
   begin
     F := GlyphRect(B);
     if FIcoHover = Idx then BackCol := clrPanel else BackCol := clrWindow;
@@ -2627,7 +3186,7 @@ var
           BC.Polyline(Pts);
           // Pfeilspitze am Ende (oben rechts), zeigt in Laufrichtung
           A := 400 * Pi / 180;
-          DX := -Sin(A); DY := Cos(A);       // Laufrichtung (y nach oben)
+          DX := -Sin(A); DY := Cos(A);                   // Laufrichtung (y nach oben)
           EX := CX + Rad * Cos(A); EY := CY - Rad * Sin(A);
           BC.Brush.Style := bsSolid;
           BC.Pen.Width := 1;
@@ -2671,6 +3230,7 @@ var
   end;
 
 begin
+  // ----- 1. Lage der Symbole -----
   BH := R.Bottom - R.Top - Px(10);
   BW := BH + Px(4);
   G := Px(16);
@@ -2690,13 +3250,14 @@ begin
   FIco[1] := Types.Rect(X - LangW, BTop + Px(2), X, BTop + BH - Px(2));
   Dec(X, LangW + Px(10));
   FIco[0] := Types.Rect(X - BW, BTop, X, BTop + BH);
-  // Symbole nicht über die Reiter legen (sehr schmales Fenster)
+  // ----- 2. Symbole nicht über die Reiter legen (sehr schmales Fenster) -----
   if FIco[0].Left < FTabX[3] + Px(8) then
   begin
     for I := 0 to High(FIco) do FIco[I] := Types.Rect(0, 0, 0, 0);
     Exit;
   end;
 
+  // ----- 3. Symbole zeichnen -----
   Back(FIco[0], FIcoHover = 0);
   Glyph(0, FIco[0]);
   Back(FIco[3], FIcoHover = 3);
@@ -2704,7 +3265,7 @@ begin
   Back(FIco[4], FIcoHover = 4);
   Glyph(4, FIco[4]);
 
-  // Sprache: Pille «DE | EN», die aktive Sprache hervorgehoben
+  // ----- 4. Sprache: Pille «DE | EN», die aktive Sprache hervorgehoben -----
   C.Brush.Style := bsSolid;
   C.Brush.Color := clrWindow;
   C.Pen.Color := clrBorder;
@@ -2737,12 +3298,18 @@ begin
   C.Font.Size := 9;
 end;
 
+{------------------------------------------------------------------------------
+  PaintModePaint
+------------------------------------------------------------------------------
+  Zeichnet den Umschalter «aus Bauteilen / aus Frequenz» als zwei Knöpfe;
+  der gewählte ist hervorgehoben.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintModePaint(Sender: TObject);
 var
-  C: TCanvas;   // Zeichenfläche
-  R, H: TRect;  // ganzer Bereich und eine Hälfte
-  I: Integer;   // Hälfte
-  T: string;    // Beschriftung
+  C: TCanvas;                                            // Zeichenfläche
+  R, H: TRect;                                           // ganzer Bereich und eine Hälfte
+  I: Integer;                                            // Hälfte
+  T: string;                                             // Beschriftung
 begin
   C := PaintMode.Canvas;
   R := PaintMode.ClientRect;
@@ -2787,10 +3354,16 @@ begin
   C.Brush.Style := bsSolid;
 end;
 
+{------------------------------------------------------------------------------
+  PaintModeMouseUp
+------------------------------------------------------------------------------
+  Klick auf den Umschalter «aus Bauteilen / aus Frequenz» (Blinkschaltung):
+  Richtung wechseln, Feldinhalte tauschen, neu rechnen.
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintModeMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  Rev: Boolean;  // gewählte Richtung
+  Rev: Boolean;                                          // gewählte Richtung
 begin
   if Button <> mbLeft then Exit;
   Rev := X >= PaintMode.Width div 2;
@@ -2802,17 +3375,34 @@ begin
   Recalc;
 end;
 
+{==============================================================================
+  REITER BLINKSCHALTUNG: RECHNEN UND ANZEIGEN
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  RecalcBlink
+------------------------------------------------------------------------------
+  Blinkschaltung rechnen (läuft bei jeder Eingabe mit)
+  Ablauf:
+    1. Schaltung und Richtung
+    2. Zeitglied-Felder lesen: vorwärts R in kΩ und C in µF; rückwärts Frequenz und Tastgrad (Multivibrator: Zeiten von LED 1 und LED 2)
+    3. LED-Werte aus dem Reiter «Vorwiderstand» übernehmen
+    4. Rechnen (uBlink) und Farbringe der Vorwiderstände bestimmen
+    5. Im Reiter Blinkschaltung: Blinken der Vorschau anpassen
+------------------------------------------------------------------------------}
 procedure TFormMain.RecalcBlink;
 var
-  V: Double;       // umgewandelte Eingabe
-  T1, T2: Double;  // Multivibrator: Zeiten von LED 1 und LED 2 in s
+  V: Double;                                             // umgewandelte Eingabe
+  T1, T2: Double;                                        // Multivibrator: Zeiten von LED 1 und LED 2 in s
 begin
+  // ----- 1. Schaltung und Richtung -----
   FBInput := Default(TBlinkInput);
   if ComboCircuit.ItemIndex = Ord(bcMulti) then
     FBInput.Circuit := bcMulti
   else
     FBInput.Circuit := bcNE555;
   FBInput.Reverse := FReverse;
+  // ----- 2. Zeitglied-Felder -----
   if FReverse and (FBInput.Circuit = bcMulti) then
   begin
     // Multivibrator: Zeiten von LED 1 und LED 2 in s, daraus f und Tastgrad
@@ -2842,12 +3432,14 @@ begin
       FBInput.Conn := TLedConn(ComboConn.ItemIndex);
   end
   else
-    FBInput.Conn := cnBoth;  // zwei LEDs im Wechsel
+    FBInput.Conn := cnBoth;                              // zwei LEDs im Wechsel
+  // ----- 3. LED-Werte übernehmen -----
   FBInput.U := FInput.U;
   FBInput.Ud := FInput.Ud;
   FBInput.I := FInput.I;
   FBInput.Series := FInput.Series;
 
+  // ----- 4. Rechnen, Farbringe -----
   FBRes := CalculateBlink(FBInput);
   FBBands1 := nil;
   FBBands2 := nil;
@@ -2857,13 +3449,19 @@ begin
     if FBRes.Led2.Used and not ColorBands(FBRes.Led2.Std, FBInput.Series, FBBands2) then
       FBBands2 := nil;
   end;
+  // ----- 5. Blinken anpassen -----
   if FMode = 1 then
     UpdateBlink;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkStatusText
+------------------------------------------------------------------------------
+  Fehlertext zur Blinkschaltung
+------------------------------------------------------------------------------}
 function TFormMain.BlinkStatusText(S: TBlinkStatus): string;
 var
-  Avail: Double;  // Spannung für LED und Vorwiderstand
+  Avail: Double;                                         // Spannung für LED und Vorwiderstand
 begin
   case S of
     bsInvalidU: Result := _(rsErrU);
@@ -2895,15 +3493,23 @@ begin
   end;
 end;
 
-{ Alles, was den Blink-Schaltplan verändert, als Text (Schlüssel für das
-  Zwischenspeichern des geglätteten Bilds) }
+{------------------------------------------------------------------------------
+  BlinkSchemKey
+------------------------------------------------------------------------------
+  Alles, was den Blink-Schaltplan verändert, als Text (Schlüssel für das
+  Zwischenspeichern des geglätteten Bilds)
+------------------------------------------------------------------------------}
 function BlinkSchemKey(const V: TBlinkSchemValues; const Col: TBlinkSchemColors;
   Multi: Boolean): string;
 
-  { Farbringe als Text }
+  {----------------------------------------------------------------------------
+    BandsKey
+  ----------------------------------------------------------------------------
+    Farbringe als Text
+  ----------------------------------------------------------------------------}
   function BandsKey(const B: TBandArray): string;
   var
-    I: Integer;  // Zähler
+    I: Integer;                                          // Zähler
   begin
     Result := '';
     for I := 0 to High(B) do
@@ -2919,25 +3525,42 @@ begin
      BandsKey(V.Bands1), BandsKey(V.Bands2)]);
 end;
 
+{------------------------------------------------------------------------------
+  PaintBlinkSchematic
+------------------------------------------------------------------------------
+  Zeichnet den Schaltplan der gewählten Blinkschaltung (uBlinkSchematic);
+  die LEDs blinken mit.
+  Ablauf:
+    1. Texte für Widerstände, Kondensatoren, LEDs und Transistoren («–» wenn ungültig)
+    2. Vorwiderstände mit Farbringen
+    3. LED-Zustand: blinkt die Vorschau, blinken die LEDs im Schaltplan im gleichen Takt
+    4. Farben
+    5. Geglättet zeichnen; beim Blinken wechseln nur zwei gespeicherte Bilder
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintBlinkSchematic;
 var
-  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
-  BR: TRect;             // Zeichenfläche darauf
-  V: TBlinkSchemValues;   // Texte und Zustände
-  Col: TBlinkSchemColors; // Farben
-  R: TRect;               // Zeichenfläche
-  Ok: Boolean;            // Resultat gültig
-  Multi: Boolean;         // Multivibrator
-  R1, R2: Double;         // anzuzeigende Zeitwiderstände
-  Dash: string;           // Platzhalter
+  BC: TCanvas;                                           // Leinwand für das geglättete Zeichnen
+  BR: TRect;                                             // Zeichenfläche darauf
+  V: TBlinkSchemValues;                                  // Texte und Zustände
+  Col: TBlinkSchemColors;                                // Farben
+  R: TRect;                                              // Zeichenfläche
+  Ok: Boolean;                                           // Resultat gültig
+  Multi: Boolean;                                        // Multivibrator
+  R1, R2: Double;                                        // anzuzeigende Zeitwiderstände
+  Dash: string;                                          // Platzhalter
 
-  { Wert oder Strich }
+  {----------------------------------------------------------------------------
+    OhmOr
+  ----------------------------------------------------------------------------
+    Wert oder Strich
+  ----------------------------------------------------------------------------}
   function OhmOr(X: Double): string;
   begin
     if X > 0 then Result := FormatOhm(X) else Result := Dash;
   end;
 
 begin
+  // ----- 1. Texte -----
   Dash := '–';
   Ok := FBRes.Status = bsOk;
   Multi := FBInput.Circuit = bcMulti;
@@ -2989,6 +3612,7 @@ begin
     else if FBInput.U > 0 then
       V.UOutText := 'U_O_U_T ≈ ' + FormatVolt(FBInput.U - NE555_DROP_HIGH);
   end;
+  // ----- 2. Vorwiderstände -----
   if Ok then
   begin
     if Multi or (FBInput.Conn = cnBoth) then
@@ -3008,6 +3632,7 @@ begin
   end
   else
     V.RV1Text := 'R_V = ' + Dash;
+  // ----- 3. LED-Zustand -----
   V.LedColor := LedGlowColor(CurrentLed);
   // blinkt die Vorschau, blinken die LEDs im Schaltplan im gleichen Takt
   if TimerBlink.Enabled then
@@ -3024,6 +3649,7 @@ begin
   V.Conn := FBInput.Conn;
   V.Elko := FBInput.C >= 1e-6 * 0.999;
 
+  // ----- 4. Farben -----
   Col.Line := clrLine;
   Col.Text := clrLine;
   Col.Accent := clrAccent;
@@ -3031,6 +3657,7 @@ begin
   Col.Body := clrPanel;
   Col.LedOff := MixColor(V.LedColor, clrDeep, 0.22);
 
+  // ----- 5. Geglättet zeichnen -----
   R := PaintSchematic.ClientRect;
   InflateRect(R, -Px(16), -Px(16));
   // Schlüssel fürs Zwischenspeichern: beim Blinken wechseln nur zwei Bilder
@@ -3042,26 +3669,36 @@ begin
   EndSmooth;
 end;
 
+{------------------------------------------------------------------------------
+  PaintBlinkCards
+------------------------------------------------------------------------------
+  Zeichnet die Resultatkarten der Blinkschaltung (Frequenz, Zeiten,
+  Vorwiderstände).
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintBlinkCards;
 var
-  C: TCanvas;          // Zeichenfläche
-  Gap, W, X, I: Integer; // Abstand, Breite einer Karte, Position, Zähler
-  R: TRect;            // aktuelle Karte
-  Pad: Integer;        // Innenabstand
-  Ok: Boolean;         // Resultat gültig
-  Two: Boolean;        // zwei LEDs (Wechselblinker)
-  T, V, Sub: string;   // Texte
-  VC: TColor;          // Farbe des Werts
-  P, Rating: Double;   // Leistung und Bauform
-  WX, WY, WW, WH, PW: Integer; // Rechteck-Signal: Lage und Grösse, Periode
-  K: Integer;          // Periode im Signal
+  C: TCanvas;                                            // Zeichenfläche
+  Gap, W, X, I: Integer;                                 // Abstand, Breite einer Karte, Position, Zähler
+  R: TRect;                                              // aktuelle Karte
+  Pad: Integer;                                          // Innenabstand
+  Ok: Boolean;                                           // Resultat gültig
+  Two: Boolean;                                          // zwei LEDs (Wechselblinker)
+  T, V, Sub: string;                                     // Texte
+  VC: TColor;                                            // Farbe des Werts
+  P, Rating: Double;                                     // Leistung und Bauform
+  WX, WY, WW, WH, PW: Integer;                           // Rechteck-Signal: Lage und Grösse, Periode
+  K: Integer;                                            // Periode im Signal
 
-  { Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext }
+  {----------------------------------------------------------------------------
+    Card
+  ----------------------------------------------------------------------------
+    Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext
+  ----------------------------------------------------------------------------}
   procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
   var
-    Y, Size: Integer; // laufende Zeile, Schriftgrösse
-    H15: Integer;     // Zeilenhöhe bei voller Schriftgrösse
-    TS: TTextStyle;   // Textausrichtung mit Zeilenumbruch
+    Y, Size: Integer;                                    // laufende Zeile, Schriftgrösse
+    H15: Integer;                                        // Zeilenhöhe bei voller Schriftgrösse
+    TS: TTextStyle;                                      // Textausrichtung mit Zeilenumbruch
   begin
     C.Brush.Style := bsSolid;
     C.Brush.Color := clrPanel;
@@ -3103,7 +3740,11 @@ var
     end;
   end;
 
-  { zwei Zeiten mit gemeinsamer Einheit, z. B. "0,478 / 0,471 s" }
+  {----------------------------------------------------------------------------
+    Pair
+  ----------------------------------------------------------------------------
+    zwei Zeiten mit gemeinsamer Einheit, z. B. "0,478 / 0,471 s"
+  ----------------------------------------------------------------------------}
   function Pair(A, B: Double): string;
   begin
     if (A >= 0.1) and (B >= 0.1) then
@@ -3229,13 +3870,18 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkRechenwegLines
+------------------------------------------------------------------------------
+  Schritte des Rechenwegs der Blinkschaltung
+------------------------------------------------------------------------------}
 function TFormMain.BlinkRechenwegLines: TStringArray;
 var
-  Res: TBlinkResult;  // Abkürzung
-  Inp: TBlinkInput;   // Abkürzung
-  S, DHigh: Double;   // Summe der Widerstände rückwärts, High-Anteil
-  Ser: string;        // Name der Normreihe
-  Avail: Double;      // Spannung für LED und Vorwiderstand
+  Res: TBlinkResult;                                     // Abkürzung
+  Inp: TBlinkInput;                                      // Abkürzung
+  S, DHigh: Double;                                      // Summe der Widerstände rückwärts, High-Anteil
+  Ser: string;                                           // Name der Normreihe
+  Avail: Double;                                         // Spannung für LED und Vorwiderstand
 begin
   Result := nil;
   Res := FBRes;
@@ -3306,11 +3952,24 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkStatus
+------------------------------------------------------------------------------
+  Hinweis-Kästchen und Text der Statuszeile für die Blinkschaltung
+  Ablauf:
+    1. Fehler: rotes Kästchen mit dem Grund
+    2. Hinweise sammeln; der erste bestimmt Kästchen und Text, weitere werden gezählt (gelb)
+    3. Sonst OK (grün)
+------------------------------------------------------------------------------}
 procedure TFormMain.BlinkStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
 var
-  Chips, Texts: array of string;  // Hinweise in der Reihenfolge ihrer Wichtigkeit
+  Chips, Texts: array of string;                         // Hinweise in der Reihenfolge ihrer Wichtigkeit
 
-  { einen Hinweis anhängen }
+  {----------------------------------------------------------------------------
+    Add
+  ----------------------------------------------------------------------------
+    einen Hinweis anhängen
+  ----------------------------------------------------------------------------}
   procedure Add(const AChip, AText: string);
   begin
     SetLength(Chips, Length(Chips) + 1);
@@ -3322,6 +3981,7 @@ var
 begin
   Chips := nil;
   Texts := nil;
+  // ----- 1. Fehler -----
   if FBRes.Status <> bsOk then
   begin
     ChipText := '';
@@ -3331,6 +3991,7 @@ begin
     Txt := BlinkStatusText(FBRes.Status);
     Exit;
   end;
+  // ----- 2. Hinweise sammeln -----
   if bwSupply555 in FBRes.Warnings then
     Add(_(rsChipSupply), Format(_(rsWarnSupply), [FormatVolt(FBInput.U)]));
   if bwBaseReverse in FBRes.Warnings then
@@ -3365,11 +4026,16 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  BlinkSummary
+------------------------------------------------------------------------------
+  Zusammenfassung der Blinkschaltung für die Zwischenablage.
+------------------------------------------------------------------------------}
 function TFormMain.BlinkSummary: string;
 var
-  SL: TStringList;   // Zeilen
-  N1, N2: string;    // Namen der Zeitwiderstände
-  Rv: string;        // Vorwiderstand(e)
+  SL: TStringList;                                       // Zeilen
+  N1, N2: string;                                        // Namen der Zeitwiderstände
+  Rv: string;                                            // Vorwiderstand(e)
 begin
   if FBRes.Status <> bsOk then
     Exit(StringReplace(BlinkStatusText(FBRes.Status), '_', '', [rfReplaceAll]));
@@ -3401,9 +4067,15 @@ begin
   end;
 end;
 
-{ ---------- Konstantstrom ---------- }
+{==============================================================================
+  REITER KONSTANTSTROM
+==============================================================================}
 
-{ Name des empfohlenen Bauteils }
+{------------------------------------------------------------------------------
+  KsqPartName
+------------------------------------------------------------------------------
+  Name des empfohlenen Bauteils
+------------------------------------------------------------------------------}
 function KsqPartName(P: TKsqPart): string;
 begin
   case P of
@@ -3416,7 +4088,11 @@ begin
   end;
 end;
 
-{ Leistungsbereich mit gemeinsamer Einheit, z. B. "80,0 … 124,1 mW" }
+{------------------------------------------------------------------------------
+  FormatPowerRange
+------------------------------------------------------------------------------
+  Leistungsbereich mit gemeinsamer Einheit, z. B. "80,0 … 124,1 mW"
+------------------------------------------------------------------------------}
 function FormatPowerRange(P1, P2: Double): string;
 begin
   if Abs(P2 - P1) <= 0.005 * Max(Abs(P2), 1e-9) then
@@ -3427,6 +4103,12 @@ begin
     Result := FormatNum(P1 * 1000, 1, 1) + ' … ' + FormatNum(P2 * 1000, 1, 1) + ' mW';
 end;
 
+{------------------------------------------------------------------------------
+  ModeCaptions
+------------------------------------------------------------------------------
+  Beschriftungen, die vom Reiter abhängen (Kopfzeile, «von» statt
+  «Speisespannung», «LEDS»)
+------------------------------------------------------------------------------}
 procedure TFormMain.ModeCaptions;
 begin
   case FMode of
@@ -3444,9 +4126,15 @@ begin
     LabelHeadInputs.Caption := _(rsHeadInputs);
     LabelU.Caption := _(rsLabelU);
   end;
-  UpdateTimingLabels;  // Kopf «LEDS» bzw. «LED AM AUSGANG»
+  UpdateTimingLabels;                                    // Kopf «LEDS» bzw. «LED AM AUSGANG»
 end;
 
+{------------------------------------------------------------------------------
+  KsqCircuitChange
+------------------------------------------------------------------------------
+  Andere Konstantstromquelle gewählt (LM317 / zwei Transistoren): neu
+  rechnen und die Wahl speichern.
+------------------------------------------------------------------------------}
 procedure TFormMain.KsqCircuitChange(Sender: TObject);
 begin
   if FUpdating then Exit;
@@ -3454,10 +4142,20 @@ begin
   WriteViewSetting(INI_KEY_KSQ, ComboKsq.ItemIndex);
 end;
 
+{------------------------------------------------------------------------------
+  RecalcKsq
+------------------------------------------------------------------------------
+  Konstantstromquelle rechnen: Eingaben lesen (uKsq), Farbringe bestimmen,
+  alles neu zeichnen.
+  Ablauf:
+    1. Schaltung, Spannungsbereich («bis» leer = feste Spannung) und LED-Werte aus dem Reiter «Vorwiderstand»
+    2. Rechnen (uKsq) und Farbringe von R bzw. R_S und R_B
+------------------------------------------------------------------------------}
 procedure TFormMain.RecalcKsq;
 var
-  V: Double;  // umgewandelte Eingabe
+  V: Double;                                             // umgewandelte Eingabe
 begin
+  // ----- 1. Eingaben -----
   FKInput := Default(TKsqInput);
   if ComboKsq.ItemIndex = Ord(kcTransistors) then
     FKInput.Circuit := kcTransistors
@@ -3471,6 +4169,7 @@ begin
   FKInput.I := FInput.I;
   FKInput.N := FInput.N;
   FKInput.Series := FInput.Series;
+  // ----- 2. Rechnen, Farbringe -----
   FKRes := CalculateKsq(FKInput);
   FKBands := nil;
   FKBandsB := nil;
@@ -3482,6 +4181,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  KsqStatusText
+------------------------------------------------------------------------------
+  Fehlertext zum Status der Konstantstromquelle
+------------------------------------------------------------------------------}
 function TFormMain.KsqStatusText(S: TKsqStatus): string;
 begin
   case S of
@@ -3497,6 +4201,11 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  KsqVoltRange
+------------------------------------------------------------------------------
+  Konstantstrom: Speisespannung als Bereich, z. B. "12 … 14,4 V"
+------------------------------------------------------------------------------}
 function TFormMain.KsqVoltRange: string;
 begin
   if FKRes.UMax > FKRes.UMin then
@@ -3505,6 +4214,11 @@ begin
     Result := FormatVolt(FKRes.UMin);
 end;
 
+{------------------------------------------------------------------------------
+  KsqLedVolt
+------------------------------------------------------------------------------
+  Konstantstrom: Spannung der LEDs als Text, z. B. "2 × 3,2 V"
+------------------------------------------------------------------------------}
 function TFormMain.KsqLedVolt: string;
 begin
   if FKInput.N > 1 then
@@ -3513,11 +4227,17 @@ begin
     Result := FormatVolt(FKInput.Ud);
 end;
 
+{------------------------------------------------------------------------------
+  KsqPartText
+------------------------------------------------------------------------------
+  Konstantstrom: empfohlenes Bauteil mit Kühlkörper-Angabe
+------------------------------------------------------------------------------}
 function TFormMain.KsqPartText: string;
 var
-  N: string;  // Name des Bauteils
+  N: string;                                             // Name des Bauteils
 begin
   N := KsqPartName(FKRes.Part);
+  // ----- 2. Hinweise sammeln -----
   if kwTooHot in FKRes.Warnings then
     Result := Format(_(rsKPartTooHot), [N])
   else if kwHeatsink in FKRes.Warnings then
@@ -3530,13 +4250,18 @@ begin
     Result := Format(_(rsKPartFree), [N]);
 end;
 
+{------------------------------------------------------------------------------
+  KsqRechenwegLines
+------------------------------------------------------------------------------
+  Schritte des Rechenwegs der Konstantstromquelle mit den aktuellen Zahlen.
+------------------------------------------------------------------------------}
 function TFormMain.KsqRechenwegLines: TStringArray;
 var
-  Res: TKsqResult;   // Abkürzung
-  Ser: string;       // Name der Normreihe
-  RatingT: string;   // Bauform des Fühlerwiderstands
-  Drift: Double;     // Stromänderung pro 10 °C (T2)
-  PartShort: string; // empfohlenes Bauteil, kurz
+  Res: TKsqResult;                                       // Abkürzung
+  Ser: string;                                           // Name der Normreihe
+  RatingT: string;                                       // Bauform des Fühlerwiderstands
+  Drift: Double;                                         // Stromänderung pro 10 °C (T2)
+  PartShort: string;                                     // empfohlenes Bauteil, kurz
 begin
   Result := nil;
   Res := FKRes;
@@ -3583,16 +4308,21 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  PaintKsqSchematic
+------------------------------------------------------------------------------
+  Zeichnet den Schaltplan der gewählten Konstantstromquelle (uKsqSchematic).
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintKsqSchematic;
 var
-  BC: TCanvas;           // Leinwand für das geglättete Zeichnen
-  BR: TRect;             // Zeichenfläche darauf
-  V: TKsqSchemValues;     // Texte und Werte
-  Col: TBlinkSchemColors; // Farben
-  R: TRect;               // Zeichenfläche
-  Ok: Boolean;            // Resultat gültig
-  Dash: string;           // Platzhalter
-  LedName: string;        // Farbname der LED
+  BC: TCanvas;                                           // Leinwand für das geglättete Zeichnen
+  BR: TRect;                                             // Zeichenfläche darauf
+  V: TKsqSchemValues;                                    // Texte und Werte
+  Col: TBlinkSchemColors;                                // Farben
+  R: TRect;                                              // Zeichenfläche
+  Ok: Boolean;                                           // Resultat gültig
+  Dash: string;                                          // Platzhalter
+  LedName: string;                                       // Farbname der LED
 begin
   Dash := '–';
   Ok := FKRes.Status = ksOk;
@@ -3650,25 +4380,35 @@ begin
   EndSmooth;
 end;
 
+{------------------------------------------------------------------------------
+  PaintKsqCards
+------------------------------------------------------------------------------
+  Zeichnet die Resultatkarten der Konstantstromquelle (Widerstand, Strom,
+  Verlust, Bauteil).
+------------------------------------------------------------------------------}
 procedure TFormMain.PaintKsqCards;
 var
-  C: TCanvas;          // Zeichenfläche
-  Gap, W, X, I: Integer; // Abstand, Breite einer Karte, Position, Zähler
-  R: TRect;            // aktuelle Karte
-  Pad: Integer;        // Innenabstand
-  Ok: Boolean;         // Resultat gültig
-  LM: Boolean;         // Schaltung LM317
-  T, Sub: string;      // Texte
-  VC: TColor;          // Farbe des Werts
-  TS: TTextStyle;      // Text mit Zeilenumbruch
-  TH, SubTop: Integer; // Zeilenhöhe, Oberkante des Untertexts
-  ResTop, ResBot: Integer; // Lage des gezeichneten Widerstands
+  C: TCanvas;                                            // Zeichenfläche
+  Gap, W, X, I: Integer;                                 // Abstand, Breite einer Karte, Position, Zähler
+  R: TRect;                                              // aktuelle Karte
+  Pad: Integer;                                          // Innenabstand
+  Ok: Boolean;                                           // Resultat gültig
+  LM: Boolean;                                           // Schaltung LM317
+  T, Sub: string;                                        // Texte
+  VC: TColor;                                            // Farbe des Werts
+  TS: TTextStyle;                                        // Text mit Zeilenumbruch
+  TH, SubTop: Integer;                                   // Zeilenhöhe, Oberkante des Untertexts
+  ResTop, ResBot: Integer;                               // Lage des gezeichneten Widerstands
 
-  { Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext }
+  {----------------------------------------------------------------------------
+    Card
+  ----------------------------------------------------------------------------
+    Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext
+  ----------------------------------------------------------------------------}
   procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
   var
-    Y, Size: Integer; // laufende Zeile, Schriftgrösse
-    H15: Integer;     // Zeilenhöhe bei voller Schriftgrösse
+    Y, Size: Integer;                                    // laufende Zeile, Schriftgrösse
+    H15: Integer;                                        // Zeilenhöhe bei voller Schriftgrösse
   begin
     C.Brush.Style := bsSolid;
     C.Brush.Color := clrPanel;
@@ -3812,12 +4552,26 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  KsqStatus
+------------------------------------------------------------------------------
+  Hinweis-Kästchen und Text der Statuszeile für die Konstantstromquelle (der
+  wichtigste Hinweis gewinnt).
+  Ablauf:
+    1. Fehler: rotes Kästchen mit dem Grund
+    2. Hinweise sammeln (Verlust, Kühlkörper, Spannung, Mindeststrom, Basisstrom, Fühler-R); der erste bestimmt Kästchen und Text
+    3. Sonst OK (grün) mit Spannungsbereich
+------------------------------------------------------------------------------}
 procedure TFormMain.KsqStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
 var
-  Chips, Texts: array of string;  // Hinweise in der Reihenfolge ihrer Wichtigkeit
-  Tab: string;                    // woran die Kühlfahne liegt
+  Chips, Texts: array of string;                         // Hinweise in der Reihenfolge ihrer Wichtigkeit
+  Tab: string;                                           // woran die Kühlfahne liegt
 
-  { einen Hinweis anhängen }
+  {----------------------------------------------------------------------------
+    Add
+  ----------------------------------------------------------------------------
+    einen Hinweis anhängen
+  ----------------------------------------------------------------------------}
   procedure Add(const AChip, AText: string);
   begin
     SetLength(Chips, Length(Chips) + 1);
@@ -3829,6 +4583,7 @@ var
 begin
   Chips := nil;
   Texts := nil;
+  // ----- 1. Fehler -----
   if FKRes.Status <> ksOk then
   begin
     ChipText := '';
@@ -3885,9 +4640,14 @@ begin
   end;
 end;
 
+{------------------------------------------------------------------------------
+  KsqSummary
+------------------------------------------------------------------------------
+  Zusammenfassung der Konstantstromquelle für die Zwischenablage.
+------------------------------------------------------------------------------}
 function TFormMain.KsqSummary: string;
 var
-  SL: TStringList;   // Zeilen
+  SL: TStringList;                                       // Zeilen
 begin
   if FKRes.Status <> ksOk then
     Exit(StringReplace(KsqStatusText(FKRes.Status), '_', '', [rfReplaceAll]));
