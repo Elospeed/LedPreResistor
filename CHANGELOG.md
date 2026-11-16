@@ -7,6 +7,11 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## Unveröffentlicht
+
+### Projektseite
+- Anonyme Besucherzählung mit GoatCounter (ohne Cookies, ohne persönliche Daten), mit Hinweis im Seitenfuss.
+
 ## 2.4 – 14. November 2026
 
 ### Konstantstrom
