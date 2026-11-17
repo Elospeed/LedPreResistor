@@ -282,9 +282,10 @@ begin
   I.C := 22e-6;
   R := CalculateBlink(I);
   AssertTrue('Status', R.Status = bsOk);
-  // ΔU = 9 − 2,0 − 0,2 = 6,8 V; K = ln(15,2 / 8,4)
+  // ΔU = 9 − 2,0 − 0,2 = 6,8 V; die Basis würde mit 6,2 V gesperrt, also
+  // mit 1N4148: Schwelle 1,2 V, K = ln((9 − 1,2 + 6,8) / (9 − 1,2)) = ln(14,6 / 7,8)
   AssertEquals('ΔU', 6.8, R.DeltaU, EPS);
-  K := Ln(15.2 / 8.4);
+  K := Ln(14.6 / 7.8);
   AssertEquals('K', K, R.K, EPS);
   AssertEquals('t', K * 33000 * 22e-6, R.TOn1, EPS);
   AssertEquals('symmetrisch', 0.5, R.Duty1, EPS);
@@ -338,6 +339,8 @@ procedure TTestBlink.MultivibratorFaktorLehrbuch;
 begin
   // Kollektor springt um Ub − 0,6 V: dann ist K = ln 2
   AssertEquals(Ln(2), MultiFactor(9, 8.4), EPS);
+  // mit Diode vor der Basis: Schwelle 1,2 V, ΔU = U_B − 1,2 V gibt wieder ln 2
+  AssertEquals(Ln(2), MultiFactor(9, 7.8, 1.2), EPS);
 end;
 
 {------------------------------------------------------------------------------

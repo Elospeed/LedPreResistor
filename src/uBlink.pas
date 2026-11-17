@@ -206,11 +206,15 @@ function NearestStdValue(R: Double; Series: TESeries; out Std: TStdValue): Boole
   Formel:    K = ln((U_B − 0,6 + ΔU) / (U_B − 0,6))
              Ist ΔU = U_B − 0,6 (Lehrbuchfall), ist K = ln 2.
   Beispiel:  U_B = 9 V, ΔU = 6,8 V: K = ln(15,2 / 8,4) = 0,593
+             Mit einer Diode 1N4148 vor der Basis schaltet der Transistor
+             erst bei 0,6 V + 0,6 V = 1,2 V am Kondensator wieder ein:
+             K = ln((U_B − 1,2 + ΔU) / (U_B − 1,2)).
   Parameter: U      - Speisespannung U_B in V
              DeltaU - Spannungssprung am Kollektor in V
+             UTh    - Einschaltschwelle am Kondensator in V (0,6 V, mit Diode 1,2 V)
   Rückgabe:  K; bei unsinnigen Werten ln 2
 ------------------------------------------------------------------------------}
-function MultiFactor(U, DeltaU: Double): Double;
+function MultiFactor(U, DeltaU: Double; UTh: Double = 0.6): Double;
 
 {------------------------------------------------------------------------------
   LedResistor
@@ -273,11 +277,11 @@ end;
 {------------------------------------------------------------------------------
   MultiFactor - siehe Interface
 ------------------------------------------------------------------------------}
-function MultiFactor(U, DeltaU: Double): Double;
+function MultiFactor(U, DeltaU: Double; UTh: Double): Double;
 begin
-  if (U - BJT_UBE <= 0) or (DeltaU <= 0) then
+  if (U - UTh <= 0) or (DeltaU <= 0) then
     Exit(Ln(2));                                         // Lehrbuchwert als Notlösung
-  Result := Ln((U - BJT_UBE + DeltaU) / (U - BJT_UBE));
+  Result := Ln((U - UTh + DeltaU) / (U - UTh));
 end;
 
 {------------------------------------------------------------------------------
@@ -459,7 +463,15 @@ begin
   end;
   // ----- 2. Spannungssprung am Kollektor: von U_B − U_F (gesperrt) auf U_CE,sat -----
   Res.DeltaU := Inp.U - Inp.Ud - BJT_UCE_SAT;
-  Res.K := MultiFactor(Inp.U, Res.DeltaU);
+  // Wird die Basis stärker gesperrt, als der BC547 verträgt, kommt je eine
+  // 1N4148 vor die Basis. Sie verschiebt die Einschaltschwelle um 0,6 V und
+  // fehlt dem Basisstrom (siehe 5.).
+  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit würde die Basis ohne Diode negativ
+  Res.BaseDiode := Res.URev > BJT_UEB_MAX;
+  if Res.BaseDiode then
+    Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE + DIODE_UF)
+  else
+    Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE);
   Res.C := Inp.C;
 
   // ----- 3. Zeitwiderstände -----
@@ -493,8 +505,6 @@ begin
   // vor der Basis. Deren Durchlassspannung (ca. 0,6 V) fehlt dann dem
   // Basisstrom, deshalb rechnet der Basisstrom in diesem Fall mit ihr.
   IC := Res.Led1.IAct;
-  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
-  Res.BaseDiode := Res.URev > BJT_UEB_MAX;
   if Res.BaseDiode then
     Res.IB := (Inp.U - BJT_UBE - DIODE_UF) / Max(Res.R1, Res.R2)
   else

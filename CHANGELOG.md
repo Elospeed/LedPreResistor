@@ -22,7 +22,11 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ### Anzeige
 - Empfohlene Bauform: Auslastung, Farbe, Statuszeile und Erwärmung beziehen sich immer auf die empfohlene Bauform («½ W zu 33 % belastet», grün). Vorher stand bei der Empfehlung ½ W eine gelbe «Auslastung 66 %» für ¼ W in der Statuszeile. Wie stark ¼ W belastet wäre, steht im Nebensatz der Statuszeile und als Begründung im Rechenweg.
-- Multivibrator: Mit den empfohlenen Dioden 1N4148 rechnet der Basisstrom deren 0,6 V mit («Basisstrom mit 1N4148»).
+- Multivibrator: Mit den empfohlenen Dioden 1N4148 rechnen Basisstrom und Zeitfaktor k deren 0,6 V mit. Die Statuszeile ist dann grün («Mit 1N4148») und sagt, warum die grau gezeichneten Dioden nötig sind, statt zu warnen.
+- LM317-Grenze: «höchstens 40 V zwischen IN und OUT» statt «am Eingang».
+- Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Herkunft der 1,3 V beim Basiswiderstand und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
+- Multivibrator: Elko-Beschriftung zweizeilig («C2 = 22 µF», darunter «16 V»), damit sie T2 nicht berührt; «10 nF» beim NE555 mit Abstand.
+- Karten: kein Umbruch direkt vor oder nach «→» und «=».
 - NE555 über 16 V: Im Schaltplan steht «U_OUT = –» statt einer Ausgangsspannung.
 - Kartentexte brechen nicht mehr zwischen Bruch und Einheit um («⅛ W»).
 - Konstantstrom: «2 Transistoren (T1 je nach Strom)» statt «(T1 nach Strom)».

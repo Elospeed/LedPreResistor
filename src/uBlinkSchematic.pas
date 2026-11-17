@@ -292,6 +292,29 @@ begin
 end;
 
 {------------------------------------------------------------------------------
+  TxtCap
+------------------------------------------------------------------------------
+  Beschriftung eines Elkos in zwei Zeilen, zentriert: «C1 = 22 µF» fett,
+  darunter die Spannungsfestigkeit «16 V». Ohne «/» nur eine Zeile.
+  Parameter: BX, BaseY - Mitte und Grundlinie der ersten Zeile (Vorlage)
+             T         - Text wie «C1 = 22 µF/16 V»
+------------------------------------------------------------------------------}
+procedure TxtCap(C: TCanvas; const M: TMap; BX, BaseY: Double; const T: string;
+  const Col: TBlinkSchemColors);
+var
+  P: Integer;                                            // Position des «/»
+begin
+  P := Pos('/', T);
+  if P = 0 then
+  begin
+    Txt(C, M, BX, BaseY, T, Col.Accent, 1, True);
+    Exit;
+  end;
+  Txt(C, M, BX, BaseY, Copy(T, 1, P - 1), Col.Accent, 1, True);
+  Txt(C, M, BX, BaseY + 13, Copy(T, P + 1, MaxInt), Col.Accent, 1, False);
+end;
+
+{------------------------------------------------------------------------------
   Wire
 ------------------------------------------------------------------------------
   siehe Interface
@@ -615,7 +638,7 @@ begin
   else
     Txt(C, M, 156, 158, V.R2Text, Col.Accent, 2, True);
   Txt(C, M, 150, 244, V.CText, Col.Accent, 2, True);
-  Txt(C, M, 416, 258, '10 nF', Col.Dim, 0, False);
+  Txt(C, M, 422, 258, '10 nF', Col.Dim, 0, False);
   C.Font.Height := SmoothFontHeight(8, 16 * M.S);
   Txt(C, M, 316, 196, 'NE555', Col.Text, 1, True);       // gross im Gehäuse
   C.Font.Height := SmoothFontHeight(7, 10 * M.S);        // Pin-Namen klein
@@ -880,8 +903,10 @@ begin
   Txt(C, M, 520, 112, V.Led2Text, Col.Text, 0, False);
   Txt(C, M, 226, 74, V.R1Text, Col.Accent, 2, True);
   Txt(C, M, 376, 74, V.R2Text, Col.Accent, 0, True);
-  Txt(C, M, 184, 171, V.CText, Col.Accent, 1, True);
-  Txt(C, M, 420, 206, V.C2Text, Col.Accent, 1, True);
+  // Kondensatoren zweizeilig («C1 = 22 µF», darunter «16 V»), damit die
+  // Beschriftung von C2 zwischen die Leitung von R_B2 und T2 passt
+  TxtCap(C, M, 184, 171, V.CText, Col);
+  TxtCap(C, M, 402, 203, V.C2Text, Col);
   Txt(C, M, 98, 268, V.T1Text, Col.Text, 2, False);
   Txt(C, M, 502, 268, V.T2Text, Col.Text, 0, False);
   if V.BaseDiodes then

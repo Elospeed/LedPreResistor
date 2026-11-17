@@ -167,7 +167,7 @@ msgstr "Buy me a coffee"
 
 #: uMain.pas rsStep2
 msgid "Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**"
-msgstr "Ideal resistance: R = U_R / I = %s / %s A = **%s** → next %s value up: **%s**"
+msgstr "Ideal resistance: R = U_R / I = %s / %s A = **%s** → next %s value above: **%s**"
 
 #: uMain.pas rsStep3
 msgid "Tatsächlicher Strom: I = %s / %s = **%s**"
@@ -515,12 +515,12 @@ msgid "Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) n
 msgstr "Supply voltage %s is below 4.5 V: use the CMOS version (TLC555, ICM7555)"
 
 #: uMain.pas rsChipBase
-msgid "Basis −%s"
-msgstr "Base −%s"
+msgid "Mit 1N4148"
+msgstr "With 1N4148"
 
 #: uMain.pas rsWarnBase
-msgid "Basis wird mit ca. −%s gesperrt, der BC547 verträgt 6 V: Diode 1N4148 vor jede Basis oder Ub senken"
-msgstr "Base is reverse-biased to about −%s, the BC547 tolerates 6 V: put a 1N4148 diode in front of each base or lower Ub"
+msgid "Ohne Dioden läge ca. −%s an der Basis (BC547: höchstens 6 V), deshalb die grau gezeichneten 1N4148 einbauen"
+msgstr "Without diodes the base would see about −%s (BC547: 6 V max.), so fit the 1N4148 drawn in grey"
 
 #: uMain.pas rsChipSat
 msgid "Basisstrom knapp"
@@ -631,12 +631,15 @@ msgid "Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: 
 msgstr "Series resistor: R = (%s − %s) / %s = %s → next %s value above: **%s** → I = **%s**"
 
 #: uMain.pas rsBStepRvBoth
-msgid "Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**"
-msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B) **%s** → I = **%s** / **%s**"
+msgid "Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B, Ausgang Low ≈ 0,1 V) **%s** → I = **%s** / **%s**"
+msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B, output Low ≈ 0.1 V) **%s** → I = **%s** / **%s**"
 
 #: uMain.pas rsBStepMultiK
 msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**"
 msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → k = ln((U_B − 0.6 V + ΔU) / (U_B − 0.6 V)) = **%s**"
+
+msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → mit 1N4148: k = ln((U_B − 1,2 V + ΔU) / (U_B − 1,2 V)) = **%s**"
+msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → with 1N4148: k = ln((U_B − 1.2 V + ΔU) / (U_B − 1.2 V)) = **%s**"
 
 #: uMain.pas rsBStepMultiT
 msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
@@ -900,8 +903,8 @@ msgid "Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** 
 msgstr "Actual current: I = 0.6 V / %s = **%s** · power in R_S: **%s** → %s · U_B_E drops by approx. 2 mV/K: about %s less per 10 °C"
 
 #: uMain.pas rsKStepT3
-msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s → Normwert darunter: **%s**"
-msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 1.3 V) / %s = %s → standard value below: **%s**"
+msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s (1,3 V = 0,6 V an R_S + 0,7 V U_B_E) → Normwert darunter: **%s**"
+msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 1.3 V) / %s = %s (1.3 V = 0.6 V across R_S + 0.7 V U_B_E) → standard value below: **%s**"
 
 #: uMain.pas rsKStepT4
 msgid "Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**"
@@ -968,8 +971,8 @@ msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber 
 msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
 
 #: uMain.pas rsErrKVoltL
-msgid "Der LM317 verträgt höchstens 40 V am Eingang: bis 40 V wählen oder LM317HV nehmen."
-msgstr "The LM317 takes at most 40 V at its input: choose up to 40 V or use an LM317HV."
+msgid "Am LM317 dürfen höchstens 40 V zwischen IN und OUT liegen (bei Kurzschluss der LEDs fast alles): bis 40 V wählen oder LM317HV nehmen."
+msgstr "The LM317 allows at most 40 V between IN and OUT (almost all of it if the LEDs short): choose up to 40 V or use an LM317HV."
 
 #: uMain.pas rsErrKVoltT
 msgid "T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen."
@@ -1090,3 +1093,9 @@ msgstr "Frequency: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 on: **%s**"
 #: uMain.pas rsBStepFreqRev1
 msgid "Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**"
 msgstr "With the standard values: t_H = %s, t_L = %s → f = **%s** · LED 1 on: **%s**"
+
+msgid "nächster %s-Wert darüber"
+msgstr "next %s value above"
+
+msgid "genau ein %s-Wert"
+msgstr "exactly an %s value"

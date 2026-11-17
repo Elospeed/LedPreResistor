@@ -391,6 +391,8 @@ resourcestring
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
   rsKofi = 'Kaffee spendieren';
+  rsNextUp = 'nächster %s-Wert darüber';
+  rsExactStd = 'genau ein %s-Wert';
   rsStep2 = 'Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**';
   rsStep3 = 'Tatsächlicher Strom: I = %s / %s = **%s**';
   rsStep4 = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
@@ -506,8 +508,8 @@ resourcestring
   rsErrBUTooLow = 'Die Speisespannung reicht nicht: am Ausgang bleibt %s, die LED braucht %s.';
   rsChipSupply = 'NE555: unter 4,5 V';
   rsWarnSupply = 'Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) nehmen';
-  rsChipBase = 'Basis −%s';
-  rsWarnBase = 'Basis wird mit ca. −%s gesperrt, der BC547 verträgt 6 V: Diode 1N4148 vor jede Basis oder Ub senken';
+  rsChipBase = 'Mit 1N4148';
+  rsWarnBase = 'Ohne Dioden läge ca. −%s an der Basis (BC547: höchstens 6 V), deshalb die grau gezeichneten 1N4148 einbauen';
   rsChipSat = 'Basisstrom knapp';
   rsWarnSat = 'Der Transistor schaltet nicht sicher durch: RB kleiner und dafür C grösser wählen';
   rsChipR1 = 'R1 unter 1 kΩ';
@@ -535,8 +537,9 @@ resourcestring
   rsBStepOut = 'Ausgang High: U_O_U_T ≈ U_B − 1,7 V = %s − 1,7 V = **%s** (Spannungsabfall im NE555)';
   rsBStepOutVcc = 'LED nach +U_B: sie leuchtet, wenn der Ausgang Low ist (≈ 0,1 V); an LED und R bleiben %s − 0,1 V';
   rsBStepRv = 'Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
-  rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**';
+  rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B, Ausgang Low ≈ 0,1 V) **%s** → I = **%s** / **%s**';
   rsBStepMultiK = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**';
+  rsBStepMultiKD = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → mit 1N4148: k = ln((U_B − 1,2 V + ΔU) / (U_B − 1,2 V)) = **%s**';
   rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
   rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
@@ -587,7 +590,7 @@ resourcestring
   rsKStepL5Fix = 'Aus ADJ fliessen zusätzlich ca. 50 µA durch die LEDs (vernachlässigbar). Der Strom bleibt auch bei schwankender Spannung gleich.';
   rsKStepT1 = 'T2 leitet ab ca. 0,6 V an R_S: R_S = 0,6 V / I = 0,6 V / %s = **%s** → nächster %s-Wert darüber: **%s**';
   rsKStepT2 = 'Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** → %s · U_B_E sinkt um ca. 2 mV/K: pro 10 °C ca. %s weniger';
-  rsKStepT3 = 'Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s → Normwert darunter: **%s**';
+  rsKStepT3 = 'Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s (1,3 V = 0,6 V an R_S + 0,7 V U_B_E) → Normwert darunter: **%s**';
   rsKStepT4 = 'Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**';
   rsKStepT5 = 'Verlust in T1: P = (U_B − U_L_E_D − 0,6 V) · I = (%s − %s − 0,6 V) × %s = **%s** → **%s**';
   rsErrKUTooLow = 'Die Speisespannung (von) %s reicht nicht: die Schaltung braucht mindestens %s.';
@@ -604,7 +607,7 @@ resourcestring
   rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
   rsKChipMinLoad = 'unter 10 mA';
   rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
-  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V am Eingang: bis 40 V wählen oder LM317HV nehmen.';
+  rsErrKVoltL = 'Am LM317 dürfen höchstens 40 V zwischen IN und OUT liegen (bei Kurzschluss der LEDs fast alles): bis 40 V wählen oder LM317HV nehmen.';
   rsErrKVoltT = 'T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen.';
   rsKChipBase = 'RB wird warm';
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
@@ -647,6 +650,24 @@ begin
   for I := Low(ELKO_VOLTS) to High(ELKO_VOLTS) do
     if ELKO_VOLTS[I] >= U * 1.2 then
       Exit('/' + FormatNum(ELKO_VOLTS[I], 1, 0) + ' V');
+end;
+
+{------------------------------------------------------------------------------
+  ExactStd
+------------------------------------------------------------------------------
+  Rechenweg: Ist der ideale Widerstand schon genau ein Normwert (z. B.
+  2,4 V / 20 mA = 120 Ω), heisst es «genau ein E12-Wert: 120 Ω» statt
+  «nächster E12-Wert darüber: 120 Ω».
+  Parameter: Line  - fertige Zeile
+             Ser   - Name der Reihe, z. B. «E12»
+             Ideal - berechneter Widerstand in Ω
+             Std   - gewählter Normwert in Ω
+------------------------------------------------------------------------------}
+function ExactStd(const Line, Ser: string; Ideal, Std: Double): string;
+begin
+  Result := Line;
+  if (Std > 0) and (Abs(Ideal - Std) <= 1e-6 * Std) then
+    Result := StringReplace(Line, Format(_(rsNextUp), [Ser]), Format(_(rsExactStd), [Ser]), []);
 end;
 
 {------------------------------------------------------------------------------
@@ -829,7 +850,12 @@ begin
     Prev := (I > 1) and ((S[I - 1] in ['0'..'9']) or
       ((I > 2) and (S[I - 2] = #$C2) and (S[I - 1] in [#$BC, #$BD, #$BE])) or  // ¼ ½ ¾ = C2 BC/BD/BE
       ((I > 3) and (S[I - 3] = #$E2) and (S[I - 2] = #$85)));          // ⅛ = E2 85 9B (Brüche U+2150..)
-    if (S[I] = ' ') and Prev and (I < Length(S)) and not (S[I + 1] in ['0'..'9', ' ']) then
+    // Leerzeichen vor und nach «→» und «=» ebenfalls schützen («157,4 mW → ½ W», «β = 100»)
+    if (S[I] = ' ') and (((I + 3 <= Length(S)) and (Copy(S, I + 1, 3) = '→')) or
+       ((I > 3) and (Copy(S, I - 3, 3) = '→')) or
+       ((I < Length(S)) and (S[I + 1] = '=')) or ((I > 1) and (S[I - 1] = '='))) then
+      Result := Result + #$C2#$A0
+    else if (S[I] = ' ') and Prev and (I < Length(S)) and not (S[I + 1] in ['0'..'9', ' ']) then
       Result := Result + #$C2#$A0                         // geschützter Leerschlag
     else
       Result := Result + S[I];
@@ -2027,8 +2053,9 @@ begin
     Result[0] := Format(_(rsStep1N), [FormatVolt(FInput.U), FInput.N, FormatVolt(FInput.Ud), FormatVolt(FRes.UR)])
   else
     Result[0] := Format(_(rsStep1), [FormatVolt(FInput.U), FormatVolt(FInput.Ud), FormatVolt(FRes.UR)]);
-  Result[1] := Format(_(rsStep2), [FormatVolt(FRes.UR), FormatNum(FInput.I, 4, 3),
-    FormatOhm(FRes.RCalc), SeriesName(FInput.Series), FormatOhm(FRes.R)]);
+  Result[1] := ExactStd(Format(_(rsStep2), [FormatVolt(FRes.UR), FormatNum(FInput.I, 4, 3),
+    FormatOhm(FRes.RCalc), SeriesName(FInput.Series), FormatOhm(FRes.R)]),
+    SeriesName(FInput.Series), FRes.RCalc, FRes.R);
   if FRes.Strings > 1 then
     Result[2] := Format(_(rsStep3Strings), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct),
       FRes.Strings, FormatMilliAmp(FRes.ITotal)])
@@ -4129,9 +4156,8 @@ begin
         begin
           if Ok then
           begin
-            // gelb, wenn der Transistor nicht sicher durchschaltet oder die Basis
-            // zu stark gesperrt wird (Warnung «Diode 1N4148 vor jede Basis»)
-            if (bwNotSaturated in FBRes.Warnings) or (bwBaseReverse in FBRes.Warnings) then
+            // gelb, wenn der Transistor nicht sicher durchschaltet
+            if bwNotSaturated in FBRes.Warnings then
               VC := clrWarn
             else
               VC := clrOk;
@@ -4252,12 +4278,16 @@ begin
       Result[4] := Format(_(rsBStepRvBoth), [FormatOhm(Res.Led1.R), FormatOhm(Res.Led2.R),
         FormatMilliAmp(Res.Led1.IAct), FormatMilliAmp(Res.Led2.IAct)])
     else
-      Result[4] := Format(_(rsBStepRv), [FormatVolt(Avail), FormatVolt(Inp.Ud), FormatMilliAmp(Inp.I),
-        FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]);
+      Result[4] := ExactStd(Format(_(rsBStepRv), [FormatVolt(Avail), FormatVolt(Inp.Ud), FormatMilliAmp(Inp.I),
+        FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]),
+        Ser, Res.Led1.RCalc, Res.Led1.R);
   end
   else
   begin
-    Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
+    if Res.BaseDiode then
+      Result[0] := Format(_(rsBStepMultiKD), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)])
+    else
+      Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
     if Inp.Reverse then
       Result[1] := Format(_(rsBStepMultiRev), [FormatSeconds(Inp.Duty / Inp.F), FormatSeconds((1 - Inp.Duty) / Inp.F),
         FormatOhm(Res.R2Calc), FormatOhm(Res.R2), FormatOhm(Res.R1Calc), FormatOhm(Res.R1), Ser])
@@ -4271,8 +4301,9 @@ begin
     else
       Result[3] := Format(_(rsBStepMultiBase), [FormatVolt(Inp.U - BJT_UBE), FormatOhm(Max(Res.R1, Res.R2)),
         FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)]);
-    Result[4] := Format(_(rsBStepMultiRv), [FormatVolt(Res.Led1.UR), FormatMilliAmp(Inp.I),
-      FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]);
+    Result[4] := ExactStd(Format(_(rsBStepMultiRv), [FormatVolt(Res.Led1.UR), FormatMilliAmp(Inp.I),
+      FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]),
+      Ser, Res.Led1.RCalc, Res.Led1.R);
   end;
 end;
 
@@ -4318,8 +4349,6 @@ begin
   // ----- 2. Hinweise sammeln -----
   if bwSupply555 in FBRes.Warnings then
     Add(_(rsChipSupply), Format(_(rsWarnSupply), [FormatVolt(FBInput.U)]));
-  if bwBaseReverse in FBRes.Warnings then
-    Add(Format(_(rsChipBase), [FormatVolt(FBRes.URev)]), Format(_(rsWarnBase), [FormatVolt(FBRes.URev)]));
   if bwNotSaturated in FBRes.Warnings then
     Add(_(rsChipSat), _(rsWarnSat));
   if bwR1Small in FBRes.Warnings then
@@ -4337,6 +4366,15 @@ begin
     Sym := 1;
     Fore := clrWarn;
     Back := clrWarnBack;
+  end
+  else if FBRes.BaseDiode then
+  begin
+    // kein Fehler: die Dioden sind gezeichnet und eingerechnet, nur einbauen
+    ChipText := _(rsChipBase);
+    Txt := Format(_(rsWarnBase), [FormatVolt(FBRes.URev)]);
+    Sym := 0;
+    Fore := clrOk;
+    Back := clrOkBack;
   end
   else
   begin
@@ -4617,7 +4655,8 @@ begin
   SetLength(Result, 5);
   if FKInput.Circuit = kcLM317 then
   begin
-    Result[0] := Format(_(rsKStepL1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]);
+    Result[0] := ExactStd(Format(_(rsKStepL1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]),
+      Ser, Res.RCalc, Res.R);
     Result[1] := Format(_(rsKStepL2), [FormatOhm(Res.R), FormatMilliAmp(Res.IAct), FormatMilliAmp(Res.IAct),
       FormatPower(Res.PR), RatingT]);
     Result[2] := Format(_(rsKStepL3), [KsqLedVolt, FormatVolt(Res.UNeed), FormatVolt(Res.UMin), FormatVolt(Res.Reserve)]);
@@ -4632,7 +4671,8 @@ begin
   else
   begin
     Drift := -KSQ_UBE_TC * 10 / KSQ_UBE_SENSE;
-    Result[0] := Format(_(rsKStepT1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]);
+    Result[0] := ExactStd(Format(_(rsKStepT1), [FormatMilliAmp(FKInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]),
+      Ser, Res.RCalc, Res.R);
     Result[1] := Format(_(rsKStepT2), [FormatOhm(Res.R), FormatMilliAmp(Res.IAct), FormatPower(Res.PR), RatingT,
       FormatPercent(Drift)]);
     Result[2] := Format(_(rsKStepT3), [FormatMilliAmp(Res.IRB), KsqPartName(Res.Part), FormatMilliAmp(Res.IB1),
