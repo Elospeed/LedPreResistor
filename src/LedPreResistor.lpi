@@ -118,6 +118,10 @@
         <IsPartOfProject Value="True"/>
       </Unit>
       <Unit>
+        <Filename Value="uSchemNetz.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
         <Filename Value="uSmooth.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>

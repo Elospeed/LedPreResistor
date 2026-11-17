@@ -23,7 +23,9 @@
              Emitter schräg, Pfeil am Emitter zeigt nach aussen (NPN).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  geglättet, Transistorsymbole, U_OUT beim
+  Versionen: 2.5.1 17.11.2026 Leitungen und Bauteile an uSchemNetz melden
+                              (Verbindungstests)
+             2.4  14.11.2026  geglättet, Transistorsymbole, U_OUT beim
                               Wechselblinker unten, Kommentare
              2.3  11.11.2026  neu: Schaltpläne NE555 und Multivibrator
 ==============================================================================}
@@ -206,7 +208,7 @@ procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
 implementation
 
 uses
-  Math, uTheme, uRichText, uSmooth;
+  Math, uTheme, uRichText, uSmooth, uSchemNetz;
 
 {==============================================================================
   ZEICHENHILFEN
@@ -300,6 +302,7 @@ begin
   for I := 0 to High(Pts) do
     Pts[I] := MP(M, P[2 * I], P[2 * I + 1]);
   C.PolyLine(Pts);
+  NetzLinienzug(P);                                      // für die Verbindungstests (uSchemNetz)
 end;
 
 {------------------------------------------------------------------------------
@@ -326,6 +329,7 @@ end;
 ------------------------------------------------------------------------------}
 procedure ResV(C: TCanvas; const M: TMap; X, Y1, Y2: Double; const Col: TBlinkSchemColors);
 begin
+  NetzBauteil('R', ['1', '2'], [X, Y1, X, Y2]);          // Anschlüsse oben und unten
   C.Brush.Style := bsSolid;
   C.Brush.Color := Col.Body;
   C.Pen.Color := Col.Accent;
@@ -352,6 +356,7 @@ var
   BH: Integer;                                           // Höhe eines Rings
   P: Integer;                                            // ein Bildpunkt (beim Glätten mehrere Pixel)
 begin
+  NetzBauteil('R', ['1', '2'], [X, Y1, X, Y2]);          // Anschlüsse oben und unten
   // ----- 1. Rand und Körper -----
   // Rand und Ringe als gefüllte Flächen auf ganzen Bildpunkten, damit sie
   // auch geglättet scharf bleiben (Stiftbreite 1: Kanten ohne Versatz)
@@ -394,6 +399,7 @@ end;
 procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
   const V: TBlinkSchemValues; const Col: TBlinkSchemColors);
 begin
+  NetzBauteil('LED', ['A', 'K'], [X, Top, X, Top + 24]); // Anode oben, Kathode unten
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   C.Brush.Style := bsSolid;
@@ -425,6 +431,7 @@ end;
 ------------------------------------------------------------------------------}
 procedure CapV(C: TCanvas; const M: TMap; X, Y: Double; Elko: Boolean; const Col: TBlinkSchemColors);
 begin
+  NetzBauteil('C', ['1', '2'], [X, Y, X, Y + 8]);        // obere und untere Platte
   C.Pen.Width := MW(M, 2.4);
   C.Line(MX(M, X - 14), MY(M, Y), MX(M, X + 14), MY(M, Y));
   C.Line(MX(M, X - 14), MY(M, Y + 8), MX(M, X + 14), MY(M, Y + 8));
@@ -444,6 +451,7 @@ end;
 procedure CapH(C: TCanvas; const M: TMap; X, Y: Double; Elko, PlusRight: Boolean;
   const Col: TBlinkSchemColors);
 begin
+  NetzBauteil('C', ['1', '2'], [X, Y, X + 8, Y]);        // linke und rechte Platte
   C.Pen.Width := MW(M, 2.4);
   C.Line(MX(M, X), MY(M, Y - 12), MX(M, X), MY(M, Y + 12));
   C.Line(MX(M, X + 8), MY(M, Y - 12), MX(M, X + 8), MY(M, Y + 12));
@@ -490,6 +498,10 @@ begin
   // ----- 2. Speiseleitungen und Zeitglied -----
   Wire(C, M, [60, 30, 520, 30]);                         // +U_B
   Wire(C, M, [60, 295, 520, 295]);                       // Masse
+  NetzName('UB');                                        // Speisung für die Verbindungstests
+  NetzBauteil('UB', ['+', '-'], [60, 30, 60, 295]);
+  NetzFreiesEnde(520, 30);                               // Speiseleitungen laufen rechts aus
+  NetzFreiesEnde(520, 295);
   // R1 und R2 in Reihe, dazwischen Pin 7
   Wire(C, M, [170, 30, 170, 48]);                        // +U_B -> R1
   Wire(C, M, [170, 92, 170, 132]);                       // R1 -> R2
@@ -503,6 +515,8 @@ begin
   begin
     Wire(C, M, [170, 124, 136, 124, 136, 140]);
     Wire(C, M, [136, 166, 136, 181, 170, 181]);
+    NetzName('D');
+    NetzBauteil('D', ['A', 'K'], [136, 166, 136, 140]);  // Anode unten, Kathode oben
     C.Brush.Style := bsSolid;
     C.Brush.Color := Col.Line;
     C.Polygon([MP(M, 126, 166), MP(M, 146, 166), MP(M, 136, 146)]);  // Dreieck, Spitze oben
@@ -513,8 +527,11 @@ begin
     Dot(C, M, 170, 181, Col.Line);
     C.Pen.Color := Col.Line;
   end;
+  NetzName('R1');
   ResV(C, M, 170, 48, 92, Col);
+  NetzName('R2');
   ResV(C, M, 170, 132, 176, Col);
+  NetzName('C');
   CapV(C, M, 170, 236, V.Elko, Col);
   Dot(C, M, 170, 120, Col.Line);
   Dot(C, M, 170, 185, Col.Line);
@@ -527,6 +544,7 @@ begin
   Wire(C, M, [310, 250, 310, 295]);
   Wire(C, M, [370, 220, 400, 220, 400, 250]);
   Wire(C, M, [400, 258, 400, 295]);
+  NetzName('C5');
   CapV(C, M, 400, 250, False, Col);
 
   // ----- 4. IC-Gehäuse -----
@@ -535,6 +553,9 @@ begin
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
   SmoothRectangle(C, MX(M, 250), MY(M, 90), MX(M, 370), MY(M, 250));
+  NetzName('IC');                                        // Pins am Rand des Gehäuses
+  NetzBauteil('IC', ['7', '6', '2', '8', '4', '1', '5', '3'],
+    [250, 120, 250, 170, 250, 200, 276, 90, 336, 90, 310, 250, 370, 220, 370, 150]);
 
   // ----- 5. Ausgang Pin 3 nach rechts -----
   case V.Conn of
@@ -550,7 +571,9 @@ begin
     Wire(C, M, [470, 150, 470, 160]);
     Wire(C, M, [470, 204, 470, 228]);
     Wire(C, M, [470, 252, 470, 295]);
+    NetzName('RV1');
     ResBands(C, M, 470, 160, 204, V.Bands1, Col);
+    NetzName('LED1');
     LedDown(C, M, 470, 228, V.Led1Lit, V, Col);
   end;
   if V.Conn in [cnVcc, cnBoth] then
@@ -561,12 +584,16 @@ begin
     Wire(C, M, [430, 126, 430, 150]);
     if V.Conn = cnVcc then
     begin
+      NetzName('LED1');
       LedDown(C, M, 430, 44, V.Led1Lit, V, Col);
+      NetzName('RV1');
       ResBands(C, M, 430, 82, 126, V.Bands1, Col);
     end
     else
     begin
+      NetzName('LED2');
       LedDown(C, M, 430, 44, V.Led2Lit, V, Col);
+      NetzName('RV2');
       ResBands(C, M, 430, 82, 126, V.Bands2, Col);
     end;
     Dot(C, M, 430, 30, Col.Line);
@@ -642,6 +669,8 @@ var
 begin
   // ----- 1. Kreis und Basisbalken -----
   if FromLeft then BX := CX - 14 else BX := CX + 14;
+  // Anschlüsse am Basisbalken; Kollektor und Emitter führen als Leitung (Wire) weiter
+  NetzBauteil('T', ['B', 'C', 'E'], [BX, CY, BX, CY - 8, BX, CY + 8]);
   C.Brush.Style := bsClear;
   C.Pen.Color := Col.Line;
   C.Pen.Width := MW(M, 1.6);
@@ -697,6 +726,10 @@ begin
   // ----- 2. Leitungen -----
   Wire(C, M, [60, 25, 560, 25]);                         // +U_B
   Wire(C, M, [60, 285, 560, 285]);                       // Masse
+  NetzName('UB');                                        // Speisung für die Verbindungstests
+  NetzBauteil('UB', ['+', '-'], [60, 25, 60, 285]);
+  NetzFreiesEnde(560, 25);                               // Speiseleitungen laufen rechts aus
+  NetzFreiesEnde(560, 285);
   // linker Kollektorzweig: R_V1, LED 1, T1
   Wire(C, M, [120, 25, 120, 40]);
   Wire(C, M, [120, 78, 120, 94]);
@@ -719,15 +752,26 @@ begin
   Wire(C, M, [412, 180, 240, 180]);
   // ----- 3. Bauteile -----
   // Pluspol jeweils auf der Seite des Kollektors (dort ist die Spannung höher)
+  // NetzName: Namen für die Verbindungstests (uSchemNetz)
+  NetzName('C1');
   CapH(C, M, 180, 150, V.Elko, False, Col);
+  NetzName('C2');
   CapH(C, M, 412, 180, V.Elko, True, Col);
+  NetzName('RV1');
   ResBands(C, M, 120, 40, 78, V.Bands1, Col);
+  NetzName('RV2');
   ResBands(C, M, 480, 40, 78, V.Bands2, Col);
+  NetzName('LED1');
   LedDown(C, M, 120, 94, V.Led1Lit, V, Col);
+  NetzName('LED2');
   LedDown(C, M, 480, 94, V.Led2Lit, V, Col);
+  NetzName('R1');
   ResV(C, M, 240, 45, 95, Col);
+  NetzName('R2');
   ResV(C, M, 360, 45, 95, Col);
+  NetzName('T1');
   Npn(C, M, 132, 230, 120, False, Col);                  // T1, Basis von rechts
+  NetzName('T2');
   Npn(C, M, 468, 230, 480, True, Col);                   // T2, Basis von links
   Dot(C, M, 120, 150, Col.Line);
   Dot(C, M, 360, 150, Col.Line);

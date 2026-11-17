@@ -24,6 +24,9 @@
     </RunParams>
     <RequiredPackages>
       <Item>
+        <PackageName Value="LCL"/>
+      </Item>
+      <Item>
         <PackageName Value="FCL"/>
       </Item>
     </RequiredPackages>
@@ -58,6 +61,10 @@
       </Unit>
       <Unit>
         <Filename Value="TestKsq.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="TestSchaltplan.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit>
     </Units>

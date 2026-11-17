@@ -17,6 +17,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ## Unveröffentlicht
 
+### Tests
+- Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator, LM317, zwei Transistoren): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
+
 ### Projektseite
 - Kurzer Satz zur Herkunft des Projekts angepasst; Klicks auf externe Links im Seitenfuss und in den Fragen werden anonym mitgezählt (GoatCounter, ohne Cookies).
 - Seite auf 2.5: neue Bilder (Hauptfenster mit drei LEDs und zwei Strängen, Warnung mit «+X K über Umgebung»), Downloads und Texte.

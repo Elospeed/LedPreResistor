@@ -76,7 +76,7 @@ jobs:
             exit 1
           fi
 
-      - name: Tests der Rechenlogik bauen und ausführen
+      - name: Tests bauen und ausführen (Rechenlogik und Schaltplan-Verbindungen)
         run: |
           set -e
           # FPCUnit-Testprogramm (Konsole). Exitcode 1 bei einem Fehler -> Build rot.
@@ -139,11 +139,14 @@ jobs:
           strip bin/LedPreResistor
           ls -l bin/LedPreResistor
 
-      - name: Tests der Rechenlogik unter Linux
+      - name: Tests unter Linux (Rechenlogik und Schaltplan-Verbindungen)
         run: |
           set -e
+          # Die Schaltplan-Tests zeichnen mit der LCL (GTK2) und brauchen eine
+          # Anzeige: virtuelle Anzeige mit xvfb-run
+          sudo apt-get install -y -q xvfb > /dev/null
           lazbuild -B tests/LedPreResistorTests.lpi
-          ./bin/LedPreResistorTests
+          xvfb-run -a ./bin/LedPreResistorTests
 
       - name: Startet das Programm? (Xvfb, Bildschirmfoto)
         run: |

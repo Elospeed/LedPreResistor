@@ -24,7 +24,9 @@
              darübergeschrieben.
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab
+  Versionen: 2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
+                              Leitungen und Bauteile an uSchemNetz melden
+                              (Verbindungstests)
              2.5  17.11.2026  mehrere LEDs in Reihe als Säule, zweiter Strang
                               rechts angedeutet (Stränge parallel)
              2.4  14.11.2026  geglättet (uSmooth), Stränge parallel, Kommentare
@@ -94,7 +96,7 @@ procedure DrawResistor(Canvas: TCanvas; const Rect: TRect; const Bands: TBandArr
 implementation
 
 uses
-  SysUtils, Math, uTheme, uRichText, uSmooth;
+  SysUtils, Math, uTheme, uRichText, uSmooth, uSchemNetz;
 
 {------------------------------------------------------------------------------
   DrawResistor - siehe Interface
@@ -261,6 +263,18 @@ var
   end;
 
   {----------------------------------------------------------------------------
+    DashWire
+  ----------------------------------------------------------------------------
+    Gestrichelte Leitung (nicht Bauteilkörper): zeichnen und für die
+    Verbindungstests melden (uSchemNetz).
+  ----------------------------------------------------------------------------}
+  procedure DashWire(X1, Y1, X2, Y2: Double);
+  begin
+    DashLine(X1, Y1, X2, Y2);
+    NetzLeitung(X1, Y1, X2, Y2);
+  end;
+
+  {----------------------------------------------------------------------------
     DrawLed
   ----------------------------------------------------------------------------
     Ein LED-Symbol: Dreieck mit Spitze nach unten, Querstrich (Kathode) und
@@ -275,6 +289,7 @@ var
   var
     T: array[0..2] of TPoint;                            // Ecken des Dreiecks
   begin
+    NetzBauteil('LED', ['A', 'K'], [CX, Top, CX, Top + 40 * Sc]);  // Anode oben, Kathode unten
     if Outline then
     begin
       Canvas.Pen.Width := PW(1.5);
@@ -336,6 +351,7 @@ var
     Canvas.Pen.Color := LineColor;
     Canvas.Pen.Width := PW(2);
     Canvas.Line(X(350), Y(40), X(350), Y(Top));          // von oben zur ersten LED
+    NetzLeitung(350, 40, 350, Top);
     YY := Top;
     for I := 1 to K do
     begin
@@ -349,16 +365,26 @@ var
         Canvas.Ellipse(X(347.8), Y(YY + H * 0.5 - 2.2), X(352.2), Y(YY + H * 0.5 + 2.2));
         Canvas.Ellipse(X(347.8), Y(YY + H * 0.8 - 2.2), X(352.2), Y(YY + H * 0.8 + 2.2));
         Canvas.Brush.Style := bsClear;
+        NetzName('PUNKTE');                              // steht für die ausgelassenen LEDs
+        NetzBauteil('LED', ['A', 'K'], [350, YY, 350, YY + H]);
       end
       else
+      begin
+        // Namen für die Verbindungstests: LED1 ... LEDn, die letzte heisst wie ihre Nummer
+        if I = K then NetzName('LED' + IntToStr(N)) else NetzName('LED' + IntToStr(I));
         DrawLed(350, YY, Sc, False);
+      end;
       Canvas.Pen.Color := LineColor;
       Canvas.Pen.Width := PW(2);
       if I < K then
+      begin
         Canvas.Line(X(350), Y(YY + H), X(350), Y(YY + H + GAP));  // Verbindung zum nächsten Platz
+        NetzLeitung(350, YY + H, 350, YY + H + GAP);
+      end;
       YY := YY + H + GAP;
     end;
     Canvas.Line(X(350), Y(YY - GAP), X(350), Y(205));   // von der untersten LED nach unten
+    NetzLeitung(350, YY - GAP, 350, 205);
     LabelY := YY - GAP + 10;
   end;
 
@@ -376,17 +402,20 @@ var
     Canvas.Pen.Color := BranchColor;
     Canvas.Pen.Width := PW(1.5);
     Canvas.Brush.Style := bsClear;
-    DashLine(110, 40, 110, 8);                           // Abzweig vor dem ersten Widerstand
-    DashLine(110, 8, 425, 8);                            // über dem Widerstand nach rechts
-    DashLine(425, 8, 425, 62);
-    DashLine(417, 62, 433, 62);                          // Widerstand senkrecht
+    DashWire(110, 40, 110, 8);                           // Abzweig vor dem ersten Widerstand
+    DashWire(110, 8, 425, 8);                            // über dem Widerstand nach rechts
+    DashWire(425, 8, 425, 62);
+    DashLine(417, 62, 433, 62);                          // Widerstand senkrecht (Körper)
     DashLine(433, 62, 433, 100);
     DashLine(433, 100, 417, 100);
     DashLine(417, 100, 417, 62);
-    DashLine(425, 100, 425, 128);
+    NetzName('R2');
+    NetzBauteil('R', ['1', '2'], [425, 62, 425, 100]);
+    DashWire(425, 100, 425, 128);
+    NetzName('LED_S2');
     DrawLed(425, 128, 0.6, True);
-    DashLine(425, 152, 425, 205);
-    DashLine(425, 205, 350, 205);
+    DashWire(425, 152, 425, 205);
+    DashWire(425, 205, 350, 205);
     // Knotenpunkte, wo sich die Stränge verzweigen
     Canvas.Brush.Style := bsSolid;
     Canvas.Brush.Color := LineColor;
@@ -420,6 +449,11 @@ begin
   Canvas.PolyLine([Point(X(70), Y(108)), Point(X(70), Y(40)), Point(X(160), Y(40))]);  // + zum Widerstand
   Canvas.Line(X(250), Y(40), X(350), Y(40));            // Widerstand zur LED-Säule
   Canvas.PolyLine([Point(X(350), Y(205)), Point(X(70), Y(205)), Point(X(70), Y(128))]);  // zurück zum −
+  NetzLinienzug([70, 108, 70, 40, 160, 40]);             // dieselben Leitungen für die Verbindungstests
+  NetzLeitung(250, 40, 350, 40);
+  NetzLinienzug([350, 205, 70, 205, 70, 128]);
+  NetzName('UB');
+  NetzBauteil('UB', ['+', '-'], [70, 108, 70, 128]);     // Quelle: + oben, − unten
 
   // ----- 4. Quelle: langer dünner Strich (+), kurzer dicker Strich (−) -----
   Canvas.Pen.Width := PW(2.5);
@@ -433,6 +467,8 @@ begin
   Canvas.Brush.Style := bsSolid;
   Canvas.Brush.Color := BodyColor;
   SmoothRectangle(Canvas, X(160), Y(29), X(250), Y(51));
+  NetzName('R1');
+  NetzBauteil('R', ['1', '2'], [160, 40, 250, 40]);      // Anschlüsse links und rechts
   if Length(V.Bands) >= 3 then
     DrawResistor(Canvas, Types.Rect(X(162), Y(31), X(248), Y(49)), V.Bands);
   Canvas.Pen.Color := LineColor;
