@@ -144,7 +144,7 @@ end;
   Erwartete Kette: UB.+ -> R1 -> LED1 -> ... -> LEDn -> UB.-. Ab 4 LEDs
   stehen Punkte (PUNKTE) für die ausgelassenen LEDs zwischen LED1 und LEDn.
   Bei mehreren Strängen: R2 hängt direkt an UB.+ (nicht hinter R1), dann
-  LED_S2, dann UB.-.
+  dieselbe Kette S2_LED1 ... S2_LEDn (bzw. S2_PUNKTE) bis UB.-.
 ------------------------------------------------------------------------------}
 procedure TTestSchaltplan.PruefeVorwiderstand(N, K: Integer);
 var
@@ -170,12 +170,26 @@ begin
   Verbunden(Plan, 'LED' + IntToStr(N) + '.K', 'UB.-');
   if K > 1 then
   begin
-    // zweiter Strang mit eigenem Widerstand direkt an der Quelle
+    // zweiter Strang mit eigenem Widerstand direkt an der Quelle und gleich vielen LEDs
     Verbunden(Plan, 'UB.+', 'R2.1');
     Getrennt(Plan, 'R2.1', 'R1.2');                      // der Fehler aus 2.5
-    Verbunden(Plan, 'R2.2', 'LED_S2.A');
+    Getrennt(Plan, 'R2.1', 'R2.2');
+    Verbunden(Plan, 'R2.2', 'S2_LED1.A');
     Getrennt(Plan, 'R2.2', 'R1.2');
-    Verbunden(Plan, 'LED_S2.K', 'UB.-');
+    if N <= 3 then
+    begin
+      for I := 1 to N - 1 do
+        Verbunden(Plan, 'S2_LED' + IntToStr(I) + '.K', 'S2_LED' + IntToStr(I + 1) + '.A');
+      for I := 1 to N do                                 // jede LED des ersten Strangs hat ihr Gegenstück
+        AssertTrue(Plan + ': S2_LED' + IntToStr(I) + ' fehlt', NetzHat('S2_LED' + IntToStr(I) + '.A'));
+    end
+    else
+    begin
+      Verbunden(Plan, 'S2_LED1.K', 'S2_PUNKTE.A');       // auch hier: LED, Punkte, letzte LED
+      Verbunden(Plan, 'S2_PUNKTE.K', 'S2_LED' + IntToStr(N) + '.A');
+    end;
+    Verbunden(Plan, 'S2_LED' + IntToStr(N) + '.K', 'UB.-');
+    Getrennt(Plan, 'S2_LED1.A', 'LED1.A');               // die Stränge berühren sich nur an der Quelle
   end
   else
     AssertFalse(Plan + ': ohne zweiten Strang', NetzHat('R2.1'));
