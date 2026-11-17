@@ -100,10 +100,12 @@ var
   R: TCalcResult;                                        // Resultat
 begin
   R := Calculate(Beispiel);
-  AssertEquals('Auslastung ¼ W in %', 66, Round(R.Load * 100));
-  AssertTrue('Warnung (gelb)', R.LoadLevel = llWarning);
+  AssertEquals('Auslastung ¼ W in %', 66, Round(R.LoadStd * 100));
   AssertEquals('Empfehlung ½ W', 0.5, R.RecommendedW, 1e-12);
-  AssertEquals('Bezug bleibt ¼ W (zeigt die Überlastung)', 0.25, R.RefW, 1e-12);
+  // Auslastung, Farbe und Erwärmung gelten für die empfohlene Bauform
+  AssertEquals('Bezug ½ W', 0.5, R.RefW, 1e-12);
+  AssertEquals('Auslastung ½ W in %', 33, Round(R.Load * 100));
+  AssertTrue('mit ½ W grün', R.LoadLevel = llOk);
 end;
 
 {------------------------------------------------------------------------------
@@ -239,9 +241,11 @@ procedure TTestCalc.Erwaermung;
 var
   R: TCalcResult;                                        // Resultat
 begin
-  // Beispiel: 164,8 mW in ¼ W * 225 °C/W ≈ 37 °C
+  // Beispiel: 164,8 mW, empfohlen ½ W: 164,8 mW × 112,5 °C/W ≈ 19 °C
+  // (in ¼ W wären es 225 °C/W, also ≈ 37 °C)
   R := Calculate(Beispiel);
-  AssertEquals(37, Round(R.TempRise));
+  AssertEquals(19, Round(R.TempRise));
+  AssertEquals(37, Round(EstimateTempRise(R.PR, 0.25)));
   // gleiche Leistung in ½ W: halber Wärmewiderstand
   AssertEquals(EstimateTempRise(0.1, 0.25) / 2, EstimateTempRise(0.1, 0.5), 1e-12);
 end;

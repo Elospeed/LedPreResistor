@@ -59,6 +59,7 @@ const
   // BC547 (sichere Annahmen)
   BJT_UCE_SAT = 0.2;                                     // V, Kollektor-Emitter-Spannung, voll durchgeschaltet
   BJT_UBE = 0.6;                                         // V, Basis-Emitter-Spannung, wenn er leitet
+  DIODE_UF = 0.6;                                        // V, Durchlassspannung einer 1N4148 vor der Basis
   BJT_BETA = 100.0;                                      // Stromverstärkung (eher niedrig angenommen)
   BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis
   BJT_UCE_MAX = 45.0;                                    // V, BC547: höchste Kollektor-Emitter-Spannung
@@ -162,6 +163,7 @@ type
     URev: Double;                                        // Multivibrator: Sperrspannung der Basis in V
     IB: Double;                                          // Multivibrator: Basisstrom in A
     Overdrive: Double;                                   // Multivibrator: I_B · β / I_C
+    BaseDiode: Boolean;                                  // Multivibrator: 1N4148 vor jeder Basis empfohlen, I_B mit ihr gerechnet
     Led1, Led2: TLedResistor;                            // Vorwiderstände (LED 2 nur bei Wechselblinker)
   end;
 
@@ -487,11 +489,18 @@ begin
   Res.TOff1 := Res.TLow;
 
   // ----- 5. Sättigung: Basisstrom über den grösseren R_B (ungünstigster Fall) -----
+  // Wird die Basis zu stark gesperrt, empfiehlt die Anzeige je eine 1N4148
+  // vor der Basis. Deren Durchlassspannung (ca. 0,6 V) fehlt dann dem
+  // Basisstrom, deshalb rechnet der Basisstrom in diesem Fall mit ihr.
   IC := Res.Led1.IAct;
-  Res.IB := (Inp.U - BJT_UBE) / Max(Res.R1, Res.R2);
+  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
+  Res.BaseDiode := Res.URev > BJT_UEB_MAX;
+  if Res.BaseDiode then
+    Res.IB := (Inp.U - BJT_UBE - DIODE_UF) / Max(Res.R1, Res.R2)
+  else
+    Res.IB := (Inp.U - BJT_UBE) / Max(Res.R1, Res.R2);
   if IC > 0 then
     Res.Overdrive := Res.IB * BJT_BETA / IC;
-  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
 
   // ----- 6. Hinweise -----
   if Res.URev > BJT_UEB_MAX then

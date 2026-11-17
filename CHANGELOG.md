@@ -21,7 +21,11 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - NE555 unter 4,5 V: Hinweis auf die CMOS-Version (TLC555, ICM7555).
 
 ### Anzeige
-- Empfohlene Bauform: Reicht ⅛ W, beziehen sich Auslastung, Statuszeile, Erwärmung und Rechenweg auf ⅛ W («⅛ W zu 26 % belastet»). Vorher stand dort «¼ W zu 13 %» unter der Empfehlung ⅛ W.
+- Empfohlene Bauform: Auslastung, Farbe, Statuszeile und Erwärmung beziehen sich immer auf die empfohlene Bauform («½ W zu 33 % belastet», grün). Vorher stand bei der Empfehlung ½ W eine gelbe «Auslastung 66 %» für ¼ W in der Statuszeile. Wie stark ¼ W belastet wäre, steht im Nebensatz der Statuszeile und als Begründung im Rechenweg.
+- Multivibrator: Mit den empfohlenen Dioden 1N4148 rechnet der Basisstrom deren 0,6 V mit («Basisstrom mit 1N4148»).
+- NE555 über 16 V: Im Schaltplan steht «U_OUT = –» statt einer Ausgangsspannung.
+- Kartentexte brechen nicht mehr zwischen Bruch und Einheit um («⅛ W»).
+- Konstantstrom: «2 Transistoren (T1 je nach Strom)» statt «(T1 nach Strom)».
 - Karte «Tatsächlicher Strom» und «LED-Strom»: «mit 100 Ω statt ideal 90 Ω (Soll 20,0 mA)» statt «berechnet 90 Ω → 20,0 mA», das wie der tatsächliche Strom aussah.
 - Spannung zu klein: Die Meldung nennt die Abhilfe («Abhilfe: höchstens 3 LEDs in Reihe oder mehr Spannung»).
 - Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
@@ -39,7 +43,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ### Tests
 - Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator mit und ohne Dioden, LM317, zwei Transistoren, jeweils mit 1 bis 30 LEDs): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
-- Grenzwerte der Bauteile genau an und knapp über der Grenze, Bezug ⅛ W.
+- Grenzwerte der Bauteile genau an und knapp über der Grenze, Bezug auf die empfohlene Bauform, Basisstrom mit Diode.
 
 ## 2.5.1 – 17. November 2026
 

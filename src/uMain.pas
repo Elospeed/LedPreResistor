@@ -400,6 +400,7 @@ resourcestring
   rsStatusLoad = 'Auslastung %s';
   rsStatusWarn = '%s: ca. +%d K über Umgebung – %s empfohlen';
   rsStatusOk = '%s: ca. +%d K über Umgebung – reicht';
+  rsStatusOkStd = '%s: ca. +%d K über Umgebung (¼ W wäre zu %s belastet)';
   rsStatusNone = '%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand';
   rsStatusTotal = 'Gesamtleistung %s';
   rsErrU = 'Bitte eine Speisespannung über 0 bis %s eingeben (Kleinspannung).';
@@ -540,6 +541,7 @@ resourcestring
   rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
+  rsBStepMultiBaseD = 'Basisstrom mit 1N4148: I_B = (U_B − 0,6 V − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
   rsBStepMultiRv = 'Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsBCopyTitle = 'LedPreResistor %s – Blinkschaltung (%s)';
   rsBCopyInput = 'Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s';
@@ -558,7 +560,7 @@ resourcestring
   rsLabelFrom = 'von';
   rsLabelTo = 'bis';
   rsKsqLM317 = 'LM317 (Regler, bis 1,5 A)';
-  rsKsqTrans = '2 Transistoren (T1 nach Strom)';
+  rsKsqTrans = '2 Transistoren (T1 je nach Strom)';
   rsKCardR = 'Messwiderstand (%s)';
   rsKCardRSub = '%s · %s (%s)';
   rsKCardI = 'LED-Strom';
@@ -819,13 +821,14 @@ end;
 function KeepUnits(const S: string): string;
 var
   I: Integer;                                            // Position im Text
-  Prev: Boolean;                                         // davor steht eine Ziffer, ¼ oder ½
+  Prev: Boolean;                                         // davor steht eine Ziffer, ¼, ½ oder ⅛
 begin
   Result := '';
   for I := 1 to Length(S) do
   begin
     Prev := (I > 1) and ((S[I - 1] in ['0'..'9']) or
-      ((I > 2) and (S[I - 2] = #$C2) and (S[I - 1] in [#$BC, #$BD]))); // ¼ = C2 BC, ½ = C2 BD
+      ((I > 2) and (S[I - 2] = #$C2) and (S[I - 1] in [#$BC, #$BD, #$BE])) or  // ¼ ½ ¾ = C2 BC/BD/BE
+      ((I > 3) and (S[I - 3] = #$E2) and (S[I - 2] = #$85)));          // ⅛ = E2 85 9B (Brüche U+2150..)
     if (S[I] = ' ') and Prev and (I < Length(S)) and not (S[I + 1] in ['0'..'9', ' ']) then
       Result := Result + #$C2#$A0                         // geschützter Leerschlag
     else
@@ -2005,6 +2008,8 @@ end;
 function TFormMain.RechenwegLines: TStringArray;
 var
   Over: string;                                          // Zusatz "(> 50 %)"
+  StepW: Double;                                         // Bauform, die Schritt 4 nennt (¼ W oder die empfohlene)
+  StepLoad: Double;                                      // deren Auslastung
   Step4: string;                                         // Vorlage Schritt 4 (ein Strang / je Widerstand)
   Step4None: string;                                     // ... wenn keine Bauform reicht
   Step6: string;                                         // Vorlage Schritt 6 (ein Strang / alle Stränge)
@@ -2029,7 +2034,20 @@ begin
       FRes.Strings, FormatMilliAmp(FRes.ITotal)])
   else
     Result[2] := Format(_(rsStep3), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
-  if FRes.Load > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
+  // Braucht es mehr als ¼ W, begründet der Rechenweg die Empfehlung mit der
+  // Auslastung von ¼ W («¼ W zu 66 % ausgelastet (> 50 %) → ½ W»), sonst
+  // nennt er die empfohlene Bauform selbst («⅛ W zu 26 % ausgelastet → ⅛ W»).
+  if FRes.RecommendedW > FInput.RatingW then
+  begin
+    StepW := FInput.RatingW;
+    StepLoad := FRes.LoadStd;
+  end
+  else
+  begin
+    StepW := FRes.RefW;
+    StepLoad := FRes.Load;
+  end;
+  if StepLoad > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
   // bei Strängen parallel gilt die Leistung je Widerstand (jeder Strang hat seinen eigenen)
   if FRes.Strings > 1 then
   begin
@@ -2045,7 +2063,7 @@ begin
     Result[3] := Format(_(Step4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
   else
     Result[3] := Format(_(Step4), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
-      FormatRating(FRes.RefW), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
+      FormatRating(StepW), FormatPercent(StepLoad), Over, FormatRating(FRes.RecommendedW)]);
   Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT * 0.25 / Max(FRes.RefW, 0.001)),  // R_th der Bezugs-Bauform
     Round(FRes.TempRise), FormatRating(FRes.RefW)]);
   // Aufteilung: was in den LEDs ankommt und was die Widerstände verheizen.
@@ -2461,6 +2479,9 @@ begin
     ChipText := Format(_(rsStatusLoad), [FormatPercent(FRes.Load)]);
     if FRes.RecommendedW = 0 then
       Txt := Format(_(rsStatusNone), [FormatRating(FRes.RefW), Round(FRes.TempRise)])
+    else if (Lvl = llOk) and (FRes.RecommendedW > FInput.RatingW) then
+      Txt := Format(_(rsStatusOkStd), [FormatRating(FRes.RefW), Round(FRes.TempRise),
+        FormatPercent(FRes.LoadStd)])
     else if Lvl = llOk then
       Txt := Format(_(rsStatusOk), [FormatRating(FRes.RefW), Round(FRes.TempRise)])
     else
@@ -3884,7 +3905,10 @@ begin
     end
     else
       V.Led1Text := Format(_(rsSchemLed), [LedColorName]);
-    if FBInput.Conn = cnVcc then
+    // bei einem Fehler (z. B. über 16 V) keine Ausgangsspannung nennen
+    if not Ok then
+      V.UOutText := 'U_O_U_T = ' + Dash
+    else if FBInput.Conn = cnVcc then
       V.UOutText := 'Low ≈ ' + FormatVolt(NE555_LOW)
     else if FBInput.U > 0 then
       V.UOutText := 'U_O_U_T ≈ ' + FormatVolt(FBInput.U - NE555_DROP_HIGH);
@@ -4241,8 +4265,12 @@ begin
       Result[1] := Format(_(rsBStepMultiT), [FormatNum(Res.K, 3, 3), FormatOhm(Res.R2), FormatCap(Res.C),
         FormatSeconds(Res.THigh), FormatSeconds(Res.TLow)]);
     Result[2] := Format(_(rsBStepMultiF), [FormatSeconds(Res.T), FormatFreq(Res.F), FormatPercent1(Res.Duty1)]);
-    Result[3] := Format(_(rsBStepMultiBase), [FormatVolt(Inp.U - BJT_UBE), FormatOhm(Max(Res.R1, Res.R2)),
-      FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)]);
+    if Res.BaseDiode then
+      Result[3] := Format(_(rsBStepMultiBaseD), [FormatVolt(Inp.U - BJT_UBE - DIODE_UF), FormatOhm(Max(Res.R1, Res.R2)),
+        FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)])
+    else
+      Result[3] := Format(_(rsBStepMultiBase), [FormatVolt(Inp.U - BJT_UBE), FormatOhm(Max(Res.R1, Res.R2)),
+        FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)]);
     Result[4] := Format(_(rsBStepMultiRv), [FormatVolt(Res.Led1.UR), FormatMilliAmp(Inp.I),
       FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]);
   end;

@@ -201,6 +201,9 @@ msgstr "%s: about +%d K above ambient – %s recommended"
 msgid "%s: ca. +%d K über Umgebung – reicht"
 msgstr "%s: about +%d K above ambient – fine"
 
+msgid "%s: ca. +%d K über Umgebung (¼ W wäre zu %s belastet)"
+msgstr "%s: about +%d K above ambient (¼ W would be loaded to %s)"
+
 #: uMain.pas rsStatusNone
 msgid "%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand"
 msgstr "%s: about +%d K above ambient – too much power for a series resistor"
@@ -311,7 +314,7 @@ msgstr "LED PREVIEW"
 
 #: uMain.pas rsAbout
 msgid "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004."
-msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware «LED Pre-Resistor»."
+msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware \"LED Pre-Resistor\"."
 
 #: uMain.pas rsTabResistor
 msgid "Vorwiderstand"
@@ -493,7 +496,7 @@ msgstr "Please enter a frequency greater than 0."
 
 #: uMain.pas rsErrBDuty
 msgid "Bitte für «LED an» einen Wert zwischen 0 und 100 % eingeben."
-msgstr "Please enter a value between 0 and 100% for «LED on»."
+msgstr "Please enter a value between 0 and 100% for \"LED on\"."
 
 #: uMain.pas rsErrBDiode
 msgid "Ohne Diode ist der Ausgang immer mehr als die Hälfte der Zeit High: Diode über R2 einschalten oder mehr als 50 % wählen."
@@ -651,6 +654,9 @@ msgstr "Frequency: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 on: **%s**"
 msgid "Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
 msgstr "Base current: I_B = (U_B − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
 
+msgid "Basisstrom mit 1N4148: I_B = (U_B − 0,6 V − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
+msgstr "Base current with 1N4148: I_B = (U_B − 0.6 V − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
+
 #: uMain.pas rsBStepMultiRv
 msgid "Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
 msgstr "Series resistor: R = (U_B − U_F − 0.2 V) / I = %s / %s = %s → next %s value above: **%s** → I = **%s**"
@@ -715,7 +721,7 @@ msgstr "String 2"
 
 #: uMain.pas rsSchemStringN
 msgid "… Strang %d"
-msgstr "… string %d"
+msgstr "… String %d"
 
 #: uMain.pas rsSchemIString
 msgid "I = %s je Strang"
@@ -790,8 +796,8 @@ msgid "LM317 (Regler, bis 1,5 A)"
 msgstr "LM317 (regulator, up to 1.5 A)"
 
 #: uMain.pas rsKsqTrans
-msgid "2 Transistoren (T1 nach Strom)"
-msgstr "2 transistors (T1 by current)"
+msgid "2 Transistoren (T1 je nach Strom)"
+msgstr "2 transistors (T1 chosen by current)"
 
 #: uMain.pas rsKCardR
 msgid "Messwiderstand (%s)"
@@ -927,7 +933,7 @@ msgstr "With a series resistor: +%s current at %s, here only approx. +%s"
 
 #: uMain.pas rsKOkFix
 msgid "Tipp: bei «bis» die höchste Spannung eingeben (Auto z. B. 14,4 V)"
-msgstr "Tip: enter the highest voltage under «to» (e.g. car 14.4 V)"
+msgstr "Tip: enter the highest voltage under \"to\" (e.g. car 14.4 V)"
 
 #: uMain.pas rsKChipHeat
 msgid "Kühlkörper nötig"

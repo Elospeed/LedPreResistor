@@ -291,9 +291,11 @@ begin
   // (9 − 2,0 − 0,2) / 15 mA = 453 Ω -> 470 Ω
   AssertEquals('R_V1', 470, R.Led1.R, EPS);
   AssertEquals('R_V2', 470, R.Led2.R, EPS);
-  // I_B = 8,4 V / 33 kΩ; I_C = 6,8 V / 470 Ω
-  AssertEquals('I_B', 8.4 / 33000, R.IB, EPS);
-  AssertEquals('Übersteuerung', 8.4 / 33000 * 100 / (6.8 / 470), R.Overdrive, 1e-4);
+  // Basis gefährdet -> 1N4148 vor der Basis empfohlen, I_B rechnet mit ihr:
+  // I_B = (9 − 0,6 − 0,6) V / 33 kΩ = 7,8 V / 33 kΩ; I_C = 6,8 V / 470 Ω
+  AssertTrue('Diode vor der Basis', R.BaseDiode);
+  AssertEquals('I_B mit Diode', 7.8 / 33000, R.IB, EPS);
+  AssertEquals('Übersteuerung', 7.8 / 33000 * 100 / (6.8 / 470), R.Overdrive, 1e-4);
   // Sperrspannung 6,2 V > 6 V
   AssertEquals('Sperrspannung', 6.2, R.URev, EPS);
   AssertTrue('Basis gefährdet', bwBaseReverse in R.Warnings);
