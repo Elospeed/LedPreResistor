@@ -10,6 +10,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ## Unveröffentlicht
 
 ### Projektseite
+- Kurzer Satz zur Herkunft des Projekts angepasst; Klicks auf externe Links im Seitenfuss und in den Fragen werden anonym mitgezählt (GoatCounter, ohne Cookies).
 - Seite auf 2.5: neue Bilder (Hauptfenster mit drei LEDs und zwei Strängen, Warnung mit «+X K über Umgebung»), Downloads und Texte.
 - Anonyme Besucherzählung mit GoatCounter (ohne Cookies, ohne persönliche Daten), mit Hinweis im Seitenfuss.
 
