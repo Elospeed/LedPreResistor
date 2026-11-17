@@ -55,6 +55,10 @@ uses
 ==============================================================================}
 const
   APP_VER = '2.5';                                       // Programmversion für Titelleiste und Info
+  // Obergrenzen für Hobbyschaltungen: 50 rote LEDs in Reihe brauchen schon rund
+  // 90 V, 50 Stränge à 20 mA ziehen 1 A; mehr ist mit Vorwiderständen nicht sinnvoll.
+  MAX_LEDS = 50;                                         // höchstens so viele LEDs in Reihe
+  MAX_STRINGS = 50;                                      // höchstens so viele Stränge parallel
   KOFI_URL = 'https://ko-fi.com/elospeed';               // Ko-fi-Seite von Elospeed
 
 {==============================================================================
@@ -392,7 +396,7 @@ resourcestring
   rsErrU = 'Bitte eine Speisespannung grösser als 0 eingeben.';
   rsErrUd = 'Bitte eine Durchlassspannung grösser als 0 eingeben.';
   rsErrI = 'Bitte einen LED-Strom grösser als 0 eingeben.';
-  rsErrN = 'Bitte mindestens 1 LED angeben (ganze Zahl).';
+  rsErrN = 'Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl).';
   rsErrUTooLow = 'Die Speisespannung (%s) muss grösser sein als %d × %s = %s.';
   rsErrNoStd = 'Kein Normwert gefunden.';
   rsCopyTitle = 'LedPreResistor %s – Vorwiderstand';
@@ -404,7 +408,7 @@ resourcestring
   rsLedInfoFailed = 'Die LED-Info konnte nicht geöffnet werden.';
   { Stränge parallel (Reiter Vorwiderstand) }
   rsLabelStrings = 'Stränge parallel';
-  rsErrStrings = 'Bitte mindestens 1 Strang angeben (ganze Zahl).';
+  rsErrStrings = 'Bitte 1 bis %d Stränge angeben (ganze Zahl).';
   rsSchemStrings = '× %d Stränge, je eigener R';
   rsCardCurrentSubStrings = 'je Strang; %d Stränge: gesamt %s';
   rsCardPowerSubStrings = 'je Widerstand (%d Stück)';
@@ -1169,11 +1173,11 @@ begin
     csInvalidU: Result := _(rsErrU);
     csInvalidUd: Result := _(rsErrUd);
     csInvalidI: Result := _(rsErrI);
-    csInvalidN: Result := _(rsErrN);
+    csInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     csUTooLow: Result := Format(_(rsErrUTooLow), [FormatVolt(FInput.U), FInput.N,
       FormatVolt(FInput.Ud), FormatVolt(FInput.N * FInput.Ud)]);
     csNoStdValue: Result := _(rsErrNoStd);
-    csInvalidStrings: Result := _(rsErrStrings);
+    csInvalidStrings: Result := Format(_(rsErrStrings), [MAX_STRINGS]);
   else
     Result := '';
   end;
@@ -1205,15 +1209,15 @@ begin
   if ParseDecimal(EditUd.Text, V) then FInput.Ud := V;   // Durchlassspannung U_F in V
   if ParseDecimal(EditI.Text, V) then FInput.I := V / 1000;  // Strom: Feld in mA, Rechnung in A
   // Anzahl nur als ganze Zahl gültig
-  if ParseDecimal(EditN.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= 1000) then
+  if ParseDecimal(EditN.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= MAX_LEDS) then
     FInput.N := Round(V)
   else
     FInput.N := 0;
   if ComboSeries.ItemIndex >= 0 then
     FInput.Series := TESeries(ComboSeries.ItemIndex);
   FInput.RatingW := RATING_REFERENCE;                    // Bezugsgrösse für die Belastung
-  // Stränge parallel: ganze Zahl 1..100, sonst ungültig (-1)
-  if ParseDecimal(EditStrings.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= 100) then
+  // Stränge parallel: ganze Zahl 1..MAX_STRINGS, sonst ungültig (-1)
+  if ParseDecimal(EditStrings.Text, V) and (Frac(V) = 0) and (V >= 1) and (V <= MAX_STRINGS) then
     FInput.Strings := Round(V)
   else
     FInput.Strings := -1;
@@ -1339,7 +1343,9 @@ begin
   Step := E.Tag / 1000;                                  // Tag = Schrittweite in Tausendsteln
   if ssShift in Shift then Step := Step * 10;
   if Key = VK_UP then V := V + Step else V := V - Step;
-  if (E = EditN) or (E = EditStrings) then V := Max(1, V) else V := Max(0, V);
+  if E = EditN then V := EnsureRange(V, 1, MAX_LEDS)          // Pfeiltasten bleiben im gültigen Bereich
+  else if E = EditStrings then V := EnsureRange(V, 1, MAX_STRINGS)
+  else V := Max(0, V);
   E.Text := FormatNum(V, 2, 0);
   E.SelStart := Length(E.Text);
   Key := 0;
@@ -4287,7 +4293,7 @@ begin
     ksInvalidU: Result := _(rsErrU);
     ksInvalidUd: Result := _(rsErrUd);
     ksInvalidI: Result := _(rsErrI);
-    ksInvalidN: Result := _(rsErrN);
+    ksInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     ksTooMuchCurrent: Result := _(rsErrKCurrent);
     ksUTooLow: Result := Format(_(rsErrKUTooLow), [FormatVolt(FKRes.UMin), FormatVolt(FKRes.UNeed)]);
     ksNoStdValue: Result := _(rsErrNoStd);

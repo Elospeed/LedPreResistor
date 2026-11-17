@@ -24,6 +24,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Rechenweg
 - Bei Strängen parallel heisst Schritt 4 «Verlustleistung je Widerstand».
 
+### Eingaben
+- Sinnvolle Obergrenzen: höchstens 50 LEDs in Reihe und 50 Stränge parallel (vorher 1000 und 100). Darüber meldet das Programm jetzt «Bitte 1 bis 50 … angeben» statt fälschlich «mindestens 1». Die Pfeiltasten bleiben im gültigen Bereich.
+
 ## 2.4 – 14. November 2026
 
 ### Konstantstrom

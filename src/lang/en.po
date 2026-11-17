@@ -218,8 +218,8 @@ msgid "Bitte einen LED-Strom grösser als 0 eingeben."
 msgstr "Please enter an LED current greater than 0."
 
 #: uMain.pas rsErrN
-msgid "Bitte mindestens 1 LED angeben (ganze Zahl)."
-msgstr "Please enter at least 1 LED (whole number)."
+msgid "Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl)."
+msgstr "Please enter 1 to %d LEDs in series (whole number)."
 
 #: uMain.pas rsErrUTooLow
 msgid "Die Speisespannung (%s) muss grösser sein als %d × %s = %s."
@@ -672,8 +672,8 @@ msgid "Stränge parallel"
 msgstr "Parallel strings"
 
 #: uMain.pas rsErrStrings
-msgid "Bitte mindestens 1 Strang angeben (ganze Zahl)."
-msgstr "Please enter at least 1 string (whole number)."
+msgid "Bitte 1 bis %d Stränge angeben (ganze Zahl)."
+msgstr "Please enter 1 to %d strings (whole number)."
 
 #: uMain.pas rsSchemStrings
 msgid "× %d Stränge, je eigener R"
