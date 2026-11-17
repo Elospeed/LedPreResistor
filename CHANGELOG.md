@@ -12,6 +12,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Schaltplan
 - Stränge parallel: Der angedeutete zweite Strang zweigt jetzt vor dem ersten Vorwiderstand ab (direkt an der Quelle), wie es elektrisch richtig ist. Vorher hing er zeichnerisch hinter dem ersten Widerstand.
 
+### Rechenweg
+- Neuer Schritt 6 «Aufteilung der Leistung»: wie viel der Leistung aus der Quelle in den LEDs ankommt und wie viel die Widerstände verheizen, je mit Anteil in Prozent (bei Strängen parallel für alle Stränge zusammen).
+
 ## Unveröffentlicht
 
 ### Projektseite
