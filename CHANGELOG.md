@@ -26,7 +26,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Empfohlene Bauform: Auslastung, Farbe, Statuszeile und Erwärmung beziehen sich immer auf die empfohlene Bauform («½ W zu 33 % belastet», grün). Vorher stand bei der Empfehlung ½ W eine gelbe «Auslastung 66 %» für ¼ W in der Statuszeile. Wie stark ¼ W belastet wäre, steht im Nebensatz der Statuszeile und als Begründung im Rechenweg.
 - Multivibrator: Sperrspannung der Basis über 6 V (Datenblatt BC547) ergibt nur einen ruhigen Tipp in Grün mit den grau gezeichneten 1N4148 als Schutz, denn die Schaltung läuft in der Praxis auch ohne. Gelb gewarnt wird erst über 12 V. Gerechnet wird ohne Dioden.
 - LM317-Grenze: «höchstens 40 V zwischen IN und OUT» statt «am Eingang».
-- Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Herkunft der 1,3 V beim Basiswiderstand und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
+- Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Basiswiderstand als «(U_B − 0,6 V − 0,7 V) / I» statt mit unerklärten 1,3 V und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
 - Multivibrator: Elko-Beschriftung zweizeilig («C2 = 22 µF», darunter «16 V»), damit sie T2 nicht berührt; «10 nF» beim NE555 mit Abstand.
 - Karten: kein Umbruch direkt vor oder nach «→» und «=».
 - Karten: Untertexte kürzer, damit sie auf echtem Windows bei 100 % in zwei Zeilen passen und nichts abgeschnitten ist (z. B. «Soll 20,0 mA; gleich von 14,4 V bis 40 V», «18,64 / 17,27 mA · bis 98,5 mW → ¼ W»). «ausgelastet» statt «belastet», wie in Statuszeile und Rechenweg.

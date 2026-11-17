@@ -899,8 +899,8 @@ msgid "Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** 
 msgstr "Actual current: I = 0.6 V / %s = **%s** · power in R_S: **%s** → %s · U_B_E drops by approx. 2 mV/K: about %s less per 10 °C"
 
 #: uMain.pas rsKStepT3
-msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s (1,3 V = 0,6 V an R_S + 0,7 V U_B_E) → Normwert darunter: **%s**"
-msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 1.3 V) / %s = %s (1.3 V = 0.6 V across R_S + 0.7 V U_B_E) → standard value below: **%s**"
+msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 0,6 V − 0,7 V) / %s = %s → Normwert darunter: **%s**"
+msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 0.6 V − 0.7 V) / %s = %s → standard value below: **%s**"
 
 #: uMain.pas rsKStepT4
 msgid "Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**"

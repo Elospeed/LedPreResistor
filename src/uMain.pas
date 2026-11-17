@@ -588,7 +588,7 @@ resourcestring
   rsKStepL5Fix = 'Aus ADJ fliessen zusätzlich ca. 50 µA durch die LEDs (vernachlässigbar). Der Strom bleibt auch bei schwankender Spannung gleich.';
   rsKStepT1 = 'T2 leitet ab ca. 0,6 V an R_S: R_S = 0,6 V / I = 0,6 V / %s = **%s** → nächster %s-Wert darüber: **%s**';
   rsKStepT2 = 'Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** → %s · U_B_E sinkt um ca. 2 mV/K: pro 10 °C ca. %s weniger';
-  rsKStepT3 = 'Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s (1,3 V = 0,6 V an R_S + 0,7 V U_B_E) → Normwert darunter: **%s**';
+  rsKStepT3 = 'Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 0,6 V − 0,7 V) / %s = %s → Normwert darunter: **%s**';
   rsKStepT4 = 'Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**';
   rsKStepT5 = 'Verlust in T1: P = (U_B − U_L_E_D − 0,6 V) · I = (%s − %s − 0,6 V) × %s = **%s** → **%s**';
   rsErrKUTooLow = 'Die Speisespannung (von) %s reicht nicht: die Schaltung braucht mindestens %s.';
