@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.4
+# Elospeed LedPreResistor 2.5
 
 **von Elospeed**
 
@@ -6,7 +6,7 @@
 
 **Webseite:** [elospeed.github.io/LedPreResistor/de](https://elospeed.github.io/LedPreResistor/de/) · **Download:** [neuestes Release](https://github.com/Elospeed/LedPreResistor/releases/latest)
 
-![Hauptfenster von LedPreResistor: 12 V, weisse LED, 20 mA → 470 Ω, ½ W](site/img/ledpreresistor-main.png)
+![Hauptfenster von LedPreResistor: 12 V, drei weisse LEDs in Reihe, zwei Stränge parallel, 20 mA → 120 Ω](site/img/ledpreresistor-main.png)
 
 LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist die Neuauflage der Freeware *LED Pre-Resistor* (Delphi 7, 2004), komplett neu gebaut in Lazarus: eine einzelne 64-Bit-Windows-EXE, ohne Installation, ohne Zusatzpakete. Seit 2.2 gibt es auch eine eigene **Linux**-Version.
 
@@ -14,14 +14,15 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 
 - **Live-Berechnung** beim Tippen: Betriebsspannung, Durchlassspannung, LED-Strom und Anzahl LEDs in Reihe.
 - **Nächster Normwert** aus E12, E24 oder E96 (immer der nächsthöhere, damit die LED nie mehr Strom bekommt als geplant).
-- **Tatsächlicher Strom und Leistung** im Widerstand, in den LEDs und gesamt, dazu die empfohlene Belastbarkeit (⅛ / ¼ / ½ / 1 W) mit Warnung ab 50 % Auslastung und geschätzter Erwärmung.
-- **Farbringe** des Widerstands (4 Ringe, bei E96 5 Ringe) und ein **Schaltplan** mit allen Werten an den Bauteilen.
+- **Tatsächlicher Strom und Leistung** im Widerstand, in den LEDs und gesamt, dazu die empfohlene Belastbarkeit (⅛ / ¼ / ½ / 1 W) mit Warnung ab 50 % Auslastung und geschätzter Erwärmung als «ca. +X K über Umgebung».
+- **Farbringe** des Widerstands (4 Ringe, bei E96 5 Ringe) und ein **Schaltplan** mit allen Werten an den Bauteilen; LEDs in Reihe sind gezeichnet (ab 4 LEDs mit Punkten), Stränge parallel als gestrichelter zweiter Zweig mit «× k».
 - Aufklappbarer Bereich **«Rechenweg»**: zeigt die Rechnung Schritt für Schritt mit den eigenen Zahlen.
 - Vorgaben für rote, gelbe, grüne, blaue, weisse und Infrarot-LEDs oder eigene Durchlassspannung aus dem Datenblatt.
 - **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet.
 - Reiter **«Blinkschaltung»** (seit 2.3): NE555 astabil (wahlweise mit Diode über R2) oder Multivibrator mit zwei Transistoren (BC547). Rechnet aus den Bauteilen Frequenz, Ein-/Auszeit und den Vorwiderstand der LED oder umgekehrt aus Wunschfrequenz und Tastgrad (NE555) bzw. den Leuchtzeiten beider LEDs (Multivibrator, Standard 1:1) die Widerstände. Die Vorschau blinkt im berechneten Takt, dazu Schaltplan, Rechenweg und Prüfungen (Spannungsbereich, Ausgangsstrom, Sättigung der Transistoren, Sperrspannung an der Basis).
 - Reiter **«Konstantstrom»** (seit 2.4): LM317 als Stromquelle oder Konstantstromquelle mit zwei Transistoren. Die Speisespannung lässt sich als Bereich eingeben (z. B. 12 … 14,4 V im Auto); das Programm zeigt, wie wenig sich der LED-Strom ändert, verglichen mit einem einfachen Vorwiderstand. Rechnet Fühlerwiderstand, Mindestspannung, Verlustleistung mit Kühlkörper-Hinweis und schlägt das Bauteil vor (LM317L/LM317, T1 als BC547, BC337 oder BD139).
 - **Stränge parallel** (seit 2.4): mehrere gleiche LED-Stränge mit je eigenem Vorwiderstand, mit Gesamtstrom und Gesamtleistung.
+- **Sinnvolle Grenzen** (seit 2.5): Speisespannung bis 60 V (Kleinspannung), bis 30 LEDs in Reihe und 20 Stränge parallel.
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
 - Knopf **«Kopieren»** in der Kopfzeile des Rechenwegs (oder Strg+Umschalt+C): kopiert Resultat, kompletten Rechenweg und Zeichen-Erklärung als einfachen Text. Komma und Punkt als Dezimalzeichen.
 - **Deutsch und Englisch**: Auf einem deutschen Windows startet das Programm deutsch, sonst englisch; der Umschalter DE/EN oben rechts wechselt jederzeit (gespeichert in `LedPreResistor.ini` neben der EXE, unter Linux in `~/.config/LedPreResistor/`).
