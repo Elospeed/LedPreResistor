@@ -27,7 +27,6 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
 - Multivibrator: Karte «Basisstrom» gelb, solange die Basis-Warnung gilt.
 - Konstantstrom: «Messwiderstand» statt «Fühlerwiderstand».
-- Rechenweg: Das Leerzeichen vor fetten Werten ist bei 100 % nicht mehr zu schmal («gesamt 33,94 mA» statt «gesamt33,94 mA»).
 - Eingaben: Lange Beschriftungen wie «Durchlassspannung» werden bei 100 % nicht mehr abgeschnitten.
 
 ### Kopieren

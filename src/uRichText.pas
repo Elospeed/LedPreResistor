@@ -13,9 +13,7 @@
              für Zeichen abgelaufen (UTF-8, also auch Ω, µ, ×).
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Wort für Wort ausgeben: Leerzeichen vor fetten Werten
-                              nie zu schmal
-             2.4  14.11.2026  RichPlain für den Knopf «Kopieren»
+  Versionen: 2.4  14.11.2026  RichPlain für den Knopf «Kopieren»
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit uRichText;
@@ -66,7 +64,6 @@ function RichPlain(const S: string): string;
 implementation
 
 uses
-  Math,                                                  // Max
   LazUTF8;                                               // UTF8CodepointSize
 
 {------------------------------------------------------------------------------
@@ -92,9 +89,6 @@ var
   StartX: Integer;                                       // Startposition für die Breitenberechnung
   Run: string;                                           // gesammelter Text gleichen Stils
   BaseH: Integer;                                        // Zeilenhöhe der Grundschrift
-  SpaceW: Integer;                                       // Breite eines Leerzeichens in Pixel
-  P, Q: Integer;                                         // Anfang und Ende des aktuellen Worts in Run
-  Wd: string;                                            // aktuelles Wort
 
   // Gibt den gesammelten Text (Run) im aktuellen Stil aus und rückt X weiter
   procedure Flush;
@@ -111,30 +105,9 @@ var
       Canvas.Font.Style := BaseStyle;
       Canvas.Font.Color := Color;
     end;
-    // Wort für Wort ausgeben und selbst weiterrücken: Unter Wine bei 100 %
-    // zeichnet TextOut längere Texte etwas breiter, als TextWidth misst. Bei
-    // einem ganzen Abschnitt summiert sich das, und der folgende fette Wert
-    // klebt am Wort davor («gesamt33,94 mA»). So bleibt der Fehler bei einem
-    // Wort, und jedes Leerzeichen ist mindestens ¼ Zeilenhöhe breit.
-    SpaceW := Max(Canvas.TextWidth(' '), (BaseH + 3) div 4);
-    P := 1;
-    while P <= Length(Run) do
-    begin
-      if Run[P] = ' ' then
-      begin
-        Inc(X, SpaceW);
-        Inc(P);
-        Continue;
-      end;
-      Q := P;
-      while (Q <= Length(Run)) and (Run[Q] <> ' ') do
-        Inc(Q);
-      Wd := Copy(Run, P, Q - P);
-      if Paint then
-        Canvas.TextOut(X, Y, Wd);
-      Inc(X, Canvas.TextWidth(Wd));
-      P := Q;
-    end;
+    if Paint then
+      Canvas.TextOut(X, Y, Run);
+    Inc(X, Canvas.TextWidth(Run));
     Run := '';
   end;
 
