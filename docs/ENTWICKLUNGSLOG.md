@@ -10,7 +10,7 @@ Neueste Einträge oben.
 
 ## Schaltplan-Verbindungen, 2.5.1 (November 2026)
 
-- **Fehler in 2.5:** Der angedeutete zweite Strang zweigte zeichnerisch zwischen dem ersten Vorwiderstand und der LED ab, statt direkt an der Quelle. Ein Reddit-Leser hat es gemeldet. Die Rechnung stimmte; die Tests prüften aber nur Zahlen, nie die Verbindungen im Bild, und beim Ansehen der Bildschirmfotos fiel es nicht auf.
+- **Fehler in 2.5:** Der angedeutete zweite Strang zweigte zeichnerisch zwischen dem ersten Vorwiderstand und der LED ab, statt direkt an der Quelle. Die Rechnung stimmte; die Tests prüften aber nur Zahlen, nie die Verbindungen im Bild, und beim Ansehen der Bildschirmfotos fiel es nicht auf.
 - **Lehre:** Was gezeichnet wird, braucht einen eigenen Test. Jetzt melden alle Schaltpläne beim Zeichnen ihre Leitungen und Bauteil-Anschlüsse an `uSchemNetz` (in Vorlagen-Koordinaten). `TestSchaltplan` zeichnet jeden Plan in allen Varianten und prüft: kein Anschluss offen, keine losen Leitungsenden, kein Bauteil überbrückt, und die erwarteten Verbindungen (z. B. «R2.1 hängt an UB.+, nicht an R1.2»). Gegenprobe: Mit der alten Abzweigung schlägt der Test fehl.
 - **Regeln der Verbindung:** Leitungen sind verbunden, wenn ein Ende auf der anderen liegt (Ecke, T-Abzweig); reine Kreuzungen nicht. Bauteilkörper (Kasten, Dreieck, Platten) werden nicht als Leitung gemeldet. Die Speiseleitungen laufen absichtlich rechts aus (`NetzFreiesEnde`).
 - **Neue Leitung oder neues Bauteil zeichnen:** Leitungen mit `Wire` (meldet selbst) bzw. im LED-Plan zusätzlich `NetzLeitung`; Bauteile vorher mit `NetzName` benennen und im Test die erwarteten Verbindungen ergänzen.
