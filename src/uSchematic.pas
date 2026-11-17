@@ -16,7 +16,7 @@
              rechts die LED-Säule (1 bis 3 LEDs einzeln, ab 4 zwei LEDs mit
              Punkten dazwischen), unten der Stromrichtungspfeil. Bei Strängen
              parallel steht rechts der zweite Strang, genau wie der erste
-             gezeichnet (eigener Widerstand, gleich viele LEDs), darüber «Strang 1» und
+             gezeichnet (eigener Widerstand, gleich viele LEDs), darunter «Strang 1» und
              «Strang 2» bzw. «… Strang k». Die Beschriftungen kommen fertig als Text in
              TSchematicValues (uMain baut sie, Tiefstellung mit «_»).
 
@@ -474,9 +474,9 @@ begin
     // rechts ist der zweite Strang: LED-Text links neben die Säule
     Txt(326, 174, V.LedText, TextColor, 2, False);
     Txt(326, 190, V.UFText, TextColor, 2, False);
-    // Nummern über den Säulen: gezeichnet sind der erste und der letzte Strang
-    Txt(343, 31, V.String1Text, TextColor, 2, False);
-    Txt(408, 31, V.StringLastText, TextColor, 2, False);
+    // Nummern unter den Säulen: gezeichnet sind der erste und der letzte Strang
+    Txt(350, 222, V.String1Text, TextColor, 1, False);    // unter der Rückleitung, mittig
+    Txt(S2_X, 222, V.StringLastText, TextColor, 1, False);
   end
   else
   begin

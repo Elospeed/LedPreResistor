@@ -13,7 +13,8 @@
              für Zeichen abgelaufen (UTF-8, also auch Ω, µ, ×).
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Leerzeichen vor fetten Werten nie zu schmal
+  Versionen: 2.5.2 17.11.2026 Wort für Wort ausgeben: Leerzeichen vor fetten Werten
+                              nie zu schmal
              2.4  14.11.2026  RichPlain für den Knopf «Kopieren»
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
@@ -91,7 +92,9 @@ var
   StartX: Integer;                                       // Startposition für die Breitenberechnung
   Run: string;                                           // gesammelter Text gleichen Stils
   BaseH: Integer;                                        // Zeilenhöhe der Grundschrift
-  Trail: Integer;                                        // Leerzeichen am Ende des Abschnitts
+  SpaceW: Integer;                                       // Breite eines Leerzeichens in Pixel
+  P, Q: Integer;                                         // Anfang und Ende des aktuellen Worts in Run
+  Wd: string;                                            // aktuelles Wort
 
   // Gibt den gesammelten Text (Run) im aktuellen Stil aus und rückt X weiter
   procedure Flush;
@@ -108,21 +111,30 @@ var
       Canvas.Font.Style := BaseStyle;
       Canvas.Font.Color := Color;
     end;
-    // Leerzeichen am Ende eines Abschnitts selbst weiterrücken: Manche
-    // Schriften (z. B. unter Wine bei 100 %) messen sie sehr schmal, dann
-    // klebt der folgende fette Wert am Wort davor («gesamt33,94 mA»).
-    Trail := 0;
-    while (Run <> '') and (Run[Length(Run)] = ' ') do
+    // Wort für Wort ausgeben und selbst weiterrücken: Unter Wine bei 100 %
+    // zeichnet TextOut längere Texte etwas breiter, als TextWidth misst. Bei
+    // einem ganzen Abschnitt summiert sich das, und der folgende fette Wert
+    // klebt am Wort davor («gesamt33,94 mA»). So bleibt der Fehler bei einem
+    // Wort, und jedes Leerzeichen ist mindestens ¼ Zeilenhöhe breit.
+    SpaceW := Max(Canvas.TextWidth(' '), (BaseH + 3) div 4);
+    P := 1;
+    while P <= Length(Run) do
     begin
-      Inc(Trail);
-      Delete(Run, Length(Run), 1);
+      if Run[P] = ' ' then
+      begin
+        Inc(X, SpaceW);
+        Inc(P);
+        Continue;
+      end;
+      Q := P;
+      while (Q <= Length(Run)) and (Run[Q] <> ' ') do
+        Inc(Q);
+      Wd := Copy(Run, P, Q - P);
+      if Paint then
+        Canvas.TextOut(X, Y, Wd);
+      Inc(X, Canvas.TextWidth(Wd));
+      P := Q;
     end;
-    if Paint and (Run <> '') then
-      Canvas.TextOut(X, Y, Run);
-    if Run <> '' then
-      Inc(X, Canvas.TextWidth(Run));
-    if Trail > 0 then
-      Inc(X, Trail * Max(Canvas.TextWidth(' '), (BaseH + 3) div 4));  // mindestens ¼ Zeilenhöhe
     Run := '';
   end;
 

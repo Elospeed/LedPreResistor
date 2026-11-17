@@ -407,8 +407,8 @@ resourcestring
   rsErrI = 'Bitte einen LED-Strom grösser als 0 eingeben.';
   rsErrN = 'Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl).';
   rsErrUTooLow = 'Die Speisespannung (%s) muss grösser sein als %d × %s = %s.';
-  rsErrUTooLowMaxN = ' Abhilfe: höchstens %d LEDs in Reihe (dafür mehr Stränge) oder mehr Spannung.';
-  rsErrUTooLowMax1 = ' Abhilfe: nur 1 LED in Reihe (dafür mehr Stränge) oder mehr Spannung.';
+  rsErrUTooLowMaxN = ' Abhilfe: höchstens %d LEDs in Reihe oder mehr Spannung.';
+  rsErrUTooLowMax1 = ' Abhilfe: 1 LED in Reihe oder mehr Spannung.';
   rsErrUTooLowNoLed = ' Abhilfe: mehr Spannung oder eine LED mit kleinerer Durchlassspannung.';
   rsErrNoStd = 'Kein Normwert gefunden.';
   rsCopyTitle = 'LedPreResistor %s – Vorwiderstand';
@@ -601,8 +601,8 @@ resourcestring
   rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
   rsKChipMinLoad = 'unter 10 mA';
   rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
-  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V zwischen IN und OUT, und beim Einschalten liegt fast die ganze Speisespannung dort: höchstens 40 V wählen oder einen LM317HV (bis 60 V) nehmen.';
-  rsErrKVoltT = 'T1 verträgt höchstens 45 V, und wenn die LEDs kurzschliessen, liegt die ganze Speisespannung an T1: höchstens 45 V wählen.';
+  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V (beim Einschalten liegt fast die ganze Spannung an): bis 40 V wählen oder LM317HV nehmen.';
+  rsErrKVoltT = 'T1 verträgt höchstens 45 V (bei kurzgeschlossenen LEDs liegt die ganze Spannung an): bis 45 V wählen.';
   rsKChipBase = 'RB wird warm';
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
   rsKChipRPower = 'Mess-R über 1 W';
@@ -628,7 +628,7 @@ uses
   ElkoVoltText
 ------------------------------------------------------------------------------
   Spannungsfestigkeit für einen Elko (ab 1 µF): nächste übliche Nennspannung
-  mit mindestens 20 % Reserve über U_B, z. B. bei 12 V « / ≥ 16 V». Unter
+  mit mindestens 20 % Reserve über U_B, z. B. bei 12 V «22 µF/16 V». Unter
   1 µF (Keramik/Folie, meist 50 V und mehr) und ohne gültige Spannung leer.
   Parameter: C - Kapazität in F
              U - Speisespannung in V
@@ -643,7 +643,7 @@ begin
   if (C < 1e-6 * 0.999) or not (U > 0) then Exit;
   for I := Low(ELKO_VOLTS) to High(ELKO_VOLTS) do
     if ELKO_VOLTS[I] >= U * 1.2 then
-      Exit(' / ≥ ' + FormatNum(ELKO_VOLTS[I], 0, 1) + ' V');
+      Exit('/' + FormatNum(ELKO_VOLTS[I], 0, 1) + ' V');
 end;
 
 {------------------------------------------------------------------------------
@@ -2211,6 +2211,7 @@ var
   Legend: string;                                        // Zeichen-Erklärung
   Teile: TStringArray;                                   // Einträge der Zeichen-Erklärung
   Zeile: string;                                         // Zeile der Zeichen-Erklärung im Aufbau
+  Rest: string;                                          // noch nicht ausgegebener Teil eines Fehlertexts
   LegX, LegY, LegW: Integer;                             // Anfang, Zeile und Breite der Zeichen-Erklärung
 begin
   // ----- 1. Rahmen und Kopfzeile -----
@@ -2291,7 +2292,19 @@ begin
       DrawRich(C, R.Left + Px(40), Y, L[I], clrText, clrTextBright);
     end
     else
-      DrawRich(C, R.Left + Px(14), Y, L[I], clrError, clrError);
+    begin
+      // Fehlertext mit Abhilfe kann länger sein als eine Zeile: an Leerzeichen umbrechen
+      Rest := L[I];
+      while Rest <> '' do
+      begin
+        Zeile := Rest;
+        while (RichWidth(C, Zeile) > R.Right - R.Left - Px(28)) and (Pos(' ', Zeile) > 0) do
+          Zeile := Copy(Zeile, 1, LastDelimiter(' ', Zeile) - 1);
+        DrawRich(C, R.Left + Px(14), Y, Zeile, clrError, clrError);
+        Rest := TrimLeft(Copy(Rest, Length(Zeile) + 1, MaxInt));
+        if Rest <> '' then Inc(Y, LineH);
+      end;
+    end;
     Inc(Y, LineH);
   end;
   // ----- 4. Erklärung der Zeichen -----
@@ -2384,6 +2397,7 @@ end;
 ------------------------------------------------------------------------------}
 procedure TFormMain.PaintStatusPaint(Sender: TObject);
 var
+  Avail: Integer;                                        // Platz für den Text rechts vom Chip
   C: TCanvas;                                            // Zeichenfläche
   R, Chip: TRect;                                        // Bereich und Hinweis-Kästchen
   ChipText, Txt: string;                                 // Texte
@@ -2470,6 +2484,15 @@ begin
   C.Font.Color := Fore;
   C.TextOut(Chip.Left + Px(6) + IconW, (Chip.Top + Chip.Bottom - C.TextHeight('Ag')) div 2, ChipText);
   C.Font.Color := clrText;
+  // Zu lange Texte (z. B. Fehler mit Abhilfe) wortweise kürzen und mit «…»
+  // abschliessen; der ganze Text steht umbrochen im Rechenweg.
+  Avail := R.Right - (Chip.Right + Px(10)) - Px(6);
+  if C.TextWidth(Txt) > Avail then
+  begin
+    while (Txt <> '') and (C.TextWidth(Txt + ' …') > Avail) and (Pos(' ', Txt) > 0) do
+      Txt := Copy(Txt, 1, LastDelimiter(' ', Txt) - 1);
+    Txt := TrimRight(Txt) + ' …';
+  end;
   C.TextOut(Chip.Right + Px(10), (R.Top + R.Bottom - C.TextHeight('Ag')) div 2, Txt);
 end;
 

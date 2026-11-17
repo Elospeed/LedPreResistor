@@ -881,7 +881,7 @@ begin
   Txt(C, M, 226, 74, V.R1Text, Col.Accent, 2, True);
   Txt(C, M, 376, 74, V.R2Text, Col.Accent, 0, True);
   Txt(C, M, 184, 171, V.CText, Col.Accent, 1, True);
-  Txt(C, M, 416, 206, V.C2Text, Col.Accent, 1, True);
+  Txt(C, M, 420, 206, V.C2Text, Col.Accent, 1, True);
   Txt(C, M, 98, 268, V.T1Text, Col.Text, 2, False);
   Txt(C, M, 502, 268, V.T2Text, Col.Text, 0, False);
   if V.BaseDiodes then

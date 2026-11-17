@@ -14,7 +14,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Stränge parallel: Der Strompfeil unten liegt auf der gemeinsamen Rückleitung und zeigt den Gesamtstrom aller Stränge («I = 35,12 mA gesamt (2 × 17,56 mA)»); der Strom je Strang steht unter «k Stränge parallel».
 - Konstantstrom: bis 3 LEDs einzeln, ab 4 LEDs mit Punkten dazwischen (wie beim Vorwiderstand). Vorher waren es ab 2 LEDs immer zwei Symbole.
 - Multivibrator: Kreuzungen ohne Verbindung mit kleiner Brücke. Wird die Basis zu stark gesperrt, sind die empfohlenen Dioden 1N4148 vor den Basen grau eingezeichnet.
-- Blinkschaltungen: Bei Elkos steht die nötige Spannungsfestigkeit dabei («22 µF / ≥ 16 V»).
+- Blinkschaltungen: Bei Elkos steht die nötige Spannungsfestigkeit dabei («22 µF/16 V»).
 
 ### Grenzen der Bauteile
 - Zu grosse Werte ergeben kein Resultat mehr, sondern eine Meldung mit der Grenze: NE555 höchstens 16 V und 200 mA, Multivibrator (BC547) höchstens 45 V und 100 mA, LM317 höchstens 40 V (sonst LM317HV), zwei Transistoren höchstens 45 V. Bei LM317 und T1 zählt die ganze Speisespannung, weil sie beim Einschalten oder bei kurzgeschlossenen LEDs anliegt.
@@ -23,7 +23,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Anzeige
 - Empfohlene Bauform: Reicht ⅛ W, beziehen sich Auslastung, Statuszeile, Erwärmung und Rechenweg auf ⅛ W («⅛ W zu 26 % belastet»). Vorher stand dort «¼ W zu 13 %» unter der Empfehlung ⅛ W.
 - Karte «Tatsächlicher Strom» und «LED-Strom»: «mit 100 Ω statt ideal 90 Ω (Soll 20,0 mA)» statt «berechnet 90 Ω → 20,0 mA», das wie der tatsächliche Strom aussah.
-- Spannung zu klein: Die Meldung nennt die Abhilfe («höchstens 3 LEDs in Reihe (dafür mehr Stränge) oder mehr Spannung»).
+- Spannung zu klein: Die Meldung nennt die Abhilfe («Abhilfe: höchstens 3 LEDs in Reihe oder mehr Spannung»).
 - Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
 - Multivibrator: Karte «Basisstrom» gelb, solange die Basis-Warnung gilt.
 - Konstantstrom: «Messwiderstand» statt «Fühlerwiderstand».

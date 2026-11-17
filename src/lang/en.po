@@ -230,12 +230,12 @@ msgid "Die Speisespannung (%s) muss grösser sein als %d × %s = %s."
 msgstr "The supply voltage (%s) must be greater than %d × %s = %s."
 
 #: uMain.pas rsErrUTooLowMaxN
-msgid " Abhilfe: höchstens %d LEDs in Reihe (dafür mehr Stränge) oder mehr Spannung."
-msgstr " Fix: at most %d LEDs in series (use more strings instead) or a higher voltage."
+msgid " Abhilfe: höchstens %d LEDs in Reihe oder mehr Spannung."
+msgstr " Fix: at most %d LEDs in series or a higher voltage."
 
 #: uMain.pas rsErrUTooLowMax1
-msgid " Abhilfe: nur 1 LED in Reihe (dafür mehr Stränge) oder mehr Spannung."
-msgstr " Fix: only 1 LED in series (use more strings instead) or a higher voltage."
+msgid " Abhilfe: 1 LED in Reihe oder mehr Spannung."
+msgstr " Fix: 1 LED in series or a higher voltage."
 
 #: uMain.pas rsErrUTooLowNoLed
 msgid " Abhilfe: mehr Spannung oder eine LED mit kleinerer Durchlassspannung."
@@ -959,12 +959,12 @@ msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber 
 msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
 
 #: uMain.pas rsErrKVoltL
-msgid "Der LM317 verträgt höchstens 40 V zwischen IN und OUT, und beim Einschalten liegt fast die ganze Speisespannung dort: höchstens 40 V wählen oder einen LM317HV (bis 60 V) nehmen."
-msgstr "The LM317 takes at most 40 V between IN and OUT, and at switch-on almost the whole supply voltage is there: choose at most 40 V or use an LM317HV (up to 60 V)."
+msgid "Der LM317 verträgt höchstens 40 V (beim Einschalten liegt fast die ganze Spannung an): bis 40 V wählen oder LM317HV nehmen."
+msgstr "The LM317 takes at most 40 V (almost the full voltage is across it at switch-on): choose up to 40 V or use an LM317HV."
 
 #: uMain.pas rsErrKVoltT
-msgid "T1 verträgt höchstens 45 V, und wenn die LEDs kurzschliessen, liegt die ganze Speisespannung an T1: höchstens 45 V wählen."
-msgstr "T1 takes at most 45 V, and if the LEDs short out, the whole supply voltage is across T1: choose at most 45 V."
+msgid "T1 verträgt höchstens 45 V (bei kurzgeschlossenen LEDs liegt die ganze Spannung an): bis 45 V wählen."
+msgstr "T1 takes at most 45 V (the full voltage is across it if the LEDs short out): choose up to 45 V."
 
 #: uMain.pas rsKChipBase
 msgid "RB wird warm"
