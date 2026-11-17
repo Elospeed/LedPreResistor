@@ -351,7 +351,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     </div>
     <div>
       <h3>How many watts?</h3>
-      <p>For continuous use a resistor should be loaded with at most half of its rated power. That is why LedPreResistor warns from 50% load. As a guide, a ¼ W resistor heats up by about 200–250 °C per watt above ambient. LedPreResistor uses 225 °C/W, larger sizes correspondingly less (½ W about half).</p>
+      <p>For continuous use a resistor should be loaded with at most half of its rated power. That is why LedPreResistor warns from 50% load. As a guide, a ¼ W resistor heats up by about 200–250 K per watt above ambient. LedPreResistor uses 225 K/W, larger sizes correspondingly less (½ W about half). That is why the program always shows the temperature rise, not the temperature itself: «+37 K above ambient» means about 57 °C at the resistor in a 20 °C room (1 K equals a difference of 1 °C).</p>
     </div>
   </div>
 </section>
@@ -603,7 +603,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     step("Actual current", "I = U<sub>R</sub> / R = " + fmt(Ur, 2) + " V / " + ohm(R) + " = <b>" + fmt(Ireal * 1000, 2) + " mA</b>");
     step("Power in the resistor", "P<sub>R</sub> = U<sub>R</sub> · I = " + fmt(Ur, 2) + " V × " + fmt(Ireal * 1000, 2) + " mA = <b>" + fmt(P * 1000, 1) + " mW</b>");
     step("Check the load (limit 50%)", "¼ W: " + fmt(quarter * 100, 0) + "% → recommended <b>" + pick[1] + "</b> (" + fmt(P / pick[0] * 100, 0) + "% load)");
-    step("Temperature rise (guide value 225 °C/W at ¼ W, scaled inversely to the rated power)", "¼ W: " + fmt(P, 4) + " W × 225 °C/W ≈ " + fmt(dT4, 0) + " °C; " + pick[1] + ": " + fmt(225 * 0.25 / pick[0], 1) + " °C/W ≈ <b>" + fmt(dTpick, 0) + " °C</b> above ambient");
+    step("Temperature rise (guide value 225 K/W at ¼ W, scaled inversely to the rated power)", "¼ W: " + fmt(P, 4) + " W × 225 K/W ≈ +" + fmt(dT4, 0) + " K; " + pick[1] + ": " + fmt(225 * 0.25 / pick[0], 1) + " K/W ≈ <b>+" + fmt(dTpick, 0) + " K</b> above ambient");
     step("Total power and efficiency", "P<sub>tot</sub> = U · I = <b>" + fmt(Pges * 1000, 1) + " mW</b>, η = " + fmt(Uled, 2) + " V / " + fmt(U, 2) + " V = <b>" + fmt(eta * 100, 0) + "%</b>");
 
     $("oR").textContent = ohm(R);
@@ -612,10 +612,10 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     $("oW").textContent = pick[1];
     if (quarter <= 0.5) {
       st.className = "status ok";
-      st.textContent = "¼ W is loaded to " + fmt(quarter * 100, 0) + "%. Fine, temperature rise about " + fmt(dT4, 0) + " °C.";
+      st.textContent = "¼ W is loaded to " + fmt(quarter * 100, 0) + "%. Fine, about +" + fmt(dT4, 0) + " K above ambient.";
     } else {
       st.className = "status warn";
-      st.textContent = "¼ W would be loaded to " + fmt(quarter * 100, 0) + "% (about " + fmt(dT4, 0) + " °C). " + pick[1] + " recommended (about " + fmt(dTpick, 0) + " °C).";
+      st.textContent = "¼ W would be loaded to " + fmt(quarter * 100, 0) + "% (about +" + fmt(dT4, 0) + " K above ambient). " + pick[1] + " recommended (about +" + fmt(dTpick, 0) + " K).";
     }
     if (Ur < 1) {
       st.className = "status warn";

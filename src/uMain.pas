@@ -31,7 +31,9 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
+  Versionen: 2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
+                              Erwärmung als «+X K über Umgebung», Rechenweg je Widerstand
+             2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
                               dunkles Info-Fenster
              2.3  11.11.2026  Reiter Blinkschaltung
              2.2  09.11.2026  Linux
@@ -52,7 +54,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.4';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.5';                                       // Programmversion für Titelleiste und Info
   KOFI_URL = 'https://ko-fi.com/elospeed';               // Ko-fi-Seite von Elospeed
 
 {==============================================================================
@@ -381,11 +383,11 @@ resourcestring
   rsStep4 = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
   rsStep4Over50 = ' (> 50 %)';
   rsStep4None = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**';
-  rsStep5 = 'Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d °C/W ≈ **+%d °C** (bei %s)';
+  rsStep5 = 'Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d K/W ≈ **+%d K über Umgebung** (bei %s)';
   rsStatusLoad = 'Auslastung %s';
-  rsStatusWarn = '%s würde ca. +%d °C warm – %s empfohlen';
-  rsStatusOk = '%s wird ca. +%d °C warm – reicht';
-  rsStatusNone = '%s würde ca. +%d °C warm – Leistung zu gross für einen Vorwiderstand';
+  rsStatusWarn = '%s: ca. +%d K über Umgebung – %s empfohlen';
+  rsStatusOk = '%s: ca. +%d K über Umgebung – reicht';
+  rsStatusNone = '%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand';
   rsStatusTotal = 'Gesamtleistung %s';
   rsErrU = 'Bitte eine Speisespannung grösser als 0 eingeben.';
   rsErrUd = 'Bitte eine Durchlassspannung grösser als 0 eingeben.';
@@ -406,6 +408,8 @@ resourcestring
   rsSchemStrings = '× %d Stränge, je eigener R';
   rsCardCurrentSubStrings = 'je Strang; %d Stränge: gesamt %s';
   rsCardPowerSubStrings = 'je Widerstand (%d Stück)';
+  rsStep4Strings = 'Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
+  rsStep4NoneStrings = 'Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**';
   rsStep3Strings = 'Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**';
   rsStatusStrings = '(%d Stränge)';
   rsCopyStrings = 'Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s';
@@ -1619,6 +1623,8 @@ begin
   Dash := '–';
   V := Default(TSchematicValues);
   V.LedColor := LedGlowColor(CurrentLed);
+  V.LedCount := FInput.N;                                // Säule im Schaltplan
+  V.StringCount := FInput.Strings;                       // zweiter Strang angedeutet (auch bei Fehlern)
   if FInput.U > 0 then V.UBText := 'U_B = ' + FormatVolt(FInput.U) else V.UBText := 'U_B = ' + Dash;
   if FInput.N > 1 then
   begin
@@ -1875,6 +1881,8 @@ end;
 function TFormMain.RechenwegLines: TStringArray;
 var
   Over: string;                                          // Zusatz "(> 50 %)"
+  Step4: string;                                         // Vorlage Schritt 4 (ein Strang / je Widerstand)
+  Step4None: string;                                     // ... wenn keine Bauform reicht
 begin
   Result := nil;
   if FRes.Status <> csOk then
@@ -1896,10 +1904,21 @@ begin
   else
     Result[2] := Format(_(rsStep3), [FormatVolt(FRes.UR), FormatOhm(FRes.R), FormatMilliAmp(FRes.IAct)]);
   if FRes.Load > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
-  if FRes.RecommendedW = 0 then
-    Result[3] := Format(_(rsStep4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
+  // bei Strängen parallel gilt die Leistung je Widerstand (jeder Strang hat seinen eigenen)
+  if FRes.Strings > 1 then
+  begin
+    Step4 := rsStep4Strings;
+    Step4None := rsStep4NoneStrings;
+  end
   else
-    Result[3] := Format(_(rsStep4), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
+  begin
+    Step4 := rsStep4;
+    Step4None := rsStep4None;
+  end;
+  if FRes.RecommendedW = 0 then
+    Result[3] := Format(_(Step4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
+  else
+    Result[3] := Format(_(Step4), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
       FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
   Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT),
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);

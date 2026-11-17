@@ -12,6 +12,18 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ### Projektseite
 - Anonyme Besucherzählung mit GoatCounter (ohne Cookies, ohne persönliche Daten), mit Hinweis im Seitenfuss.
 
+## 2.5 – unveröffentlicht
+
+### Schaltplan
+- Mehrere LEDs in Reihe sind jetzt gezeichnet: 1 bis 3 LEDs einzeln, ab 4 LEDs zwei Symbole mit drei Punkten dazwischen. Die Beschriftung «n × LED …» bleibt.
+- Stränge parallel: Rechts deutet ein grau gestrichelter Zweig mit eigenem Widerstand und «× k» den zweiten Strang an. Die LED-Beschriftung steht dann links neben der Säule.
+
+### Erwärmung
+- Die Erwärmung heisst jetzt überall «ca. +X K über Umgebung» (Statuszeile, Rechenweg, Kopieren, LED-Info), damit niemand sie als absolute Temperatur liest. Die LED-Info erklärt den Unterschied mit einem Beispiel.
+
+### Rechenweg
+- Bei Strängen parallel heisst Schritt 4 «Verlustleistung je Widerstand».
+
 ## 2.4 – 14. November 2026
 
 ### Konstantstrom

@@ -36,3 +36,9 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 3. **Stränge parallel** im Reiter «Vorwiderstand». ✔
 4. **LED-Info** Kapitel «Konstantstrom» neu. ✔
 5. **Testversion** unter Wine (100 %, 150 %, 200 %) und Linux, danach Release 2.4.
+
+## 2.5 – Schaltplan und Erwärmung
+
+1. **Schaltplan** – LEDs in Reihe als Säule (ab 4 mit Punkten), Stränge parallel als angedeuteter zweiter Zweig (`uSchematic`). ✔
+2. **Erwärmung** als «+X K über Umgebung» in Statuszeile, Rechenweg und LED-Info. ✔
+3. **Testversion** unter Wine (100 %, 150 %, 200 %) und in der Windows-11-VM, danach Release 2.5.
