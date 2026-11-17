@@ -519,8 +519,8 @@ msgid "Mit 1N4148"
 msgstr "With 1N4148"
 
 #: uMain.pas rsWarnBase
-msgid "Ohne Dioden läge ca. −%s an der Basis (BC547: höchstens 6 V), deshalb die grau gezeichneten 1N4148 einbauen"
-msgstr "Without diodes the base would see about −%s (BC547: 6 V max.), so fit the 1N4148 drawn in grey"
+msgid "Ohne Dioden läge −%s an der Basis (BC547: max. 6 V): die grau gezeichneten 1N4148 einbauen"
+msgstr "Without diodes the base would see −%s (BC547: max. 6 V): fit the 1N4148 drawn in grey"
 
 #: uMain.pas rsChipSat
 msgid "Basisstrom knapp"
@@ -811,16 +811,16 @@ msgid "%s · %s (%s)"
 msgstr "%s · %s (%s)"
 
 #: uMain.pas rsKCardISubL
-msgid "%s; bleibt von %s bis %s gleich"
-msgstr "%s; stays the same from %s to %s"
+msgid "Soll %s; gleich von %s bis %s"
+msgstr "target %s; same from %s to %s"
 
 #: uMain.pas rsKCardISubLFix
-msgid "%s; bleibt auch bei schwankender Spannung gleich"
-msgstr "%s; stays the same even if the voltage varies"
+msgid "Soll %s; auch bei schwankender Spannung gleich"
+msgstr "target %s; same even if the voltage varies"
 
 #: uMain.pas rsKCardISubT
-msgid "%s; pro 10 °C wärmer ca. %s weniger"
-msgstr "%s; about %s less per 10 °C warmer"
+msgid "Soll %s; je 10 °C wärmer ca. %s weniger"
+msgstr "target %s; about %s less per 10 °C warmer"
 
 #: uMain.pas rsKCardLossL
 msgid "Verlust im Regler"

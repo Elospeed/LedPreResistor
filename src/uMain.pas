@@ -509,7 +509,7 @@ resourcestring
   rsChipSupply = 'NE555: unter 4,5 V';
   rsWarnSupply = 'Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) nehmen';
   rsChipBase = 'Mit 1N4148';
-  rsWarnBase = 'Ohne Dioden läge ca. −%s an der Basis (BC547: höchstens 6 V), deshalb die grau gezeichneten 1N4148 einbauen';
+  rsWarnBase = 'Ohne Dioden läge −%s an der Basis (BC547: max. 6 V): die grau gezeichneten 1N4148 einbauen';
   rsChipSat = 'Basisstrom knapp';
   rsWarnSat = 'Der Transistor schaltet nicht sicher durch: RB kleiner und dafür C grösser wählen';
   rsChipR1 = 'R1 unter 1 kΩ';
@@ -567,9 +567,9 @@ resourcestring
   rsKCardR = 'Messwiderstand (%s)';
   rsKCardRSub = '%s · %s (%s)';
   rsKCardI = 'LED-Strom';
-  rsKCardISubL = '%s; bleibt von %s bis %s gleich';
-  rsKCardISubLFix = '%s; bleibt auch bei schwankender Spannung gleich';
-  rsKCardISubT = '%s; pro 10 °C wärmer ca. %s weniger';
+  rsKCardISubL = 'Soll %s; gleich von %s bis %s';
+  rsKCardISubLFix = 'Soll %s; auch bei schwankender Spannung gleich';
+  rsKCardISubT = 'Soll %s; je 10 °C wärmer ca. %s weniger';
   rsKCardLossL = 'Verlust im Regler';
   rsKCardLossT = 'Verlust in T1';
   rsKCardLossSubT = '%s; RB = %s';
@@ -860,6 +860,72 @@ begin
     else
       Result := Result + S[I];
   end;
+end;
+
+{------------------------------------------------------------------------------
+  WrapLineCount
+------------------------------------------------------------------------------
+  Zählt, wie viele Zeilen der Text bei Umbruch an Leerzeichen in der Breite
+  W braucht (geschützte Leerzeichen bleiben zusammen, wie beim Zeichnen).
+  Parameter: C - Zeichenfläche mit der gewählten Schrift
+             S - Text
+             W - verfügbare Breite in Pixel
+------------------------------------------------------------------------------}
+function WrapLineCount(C: TCanvas; const S: string; W: Integer): Integer;
+var
+  Words: TStringArray;                                   // Wörter (an Leerzeichen getrennt)
+  I: Integer;                                            // Wort-Index
+  Line: string;                                          // aktuelle Zeile
+begin
+  Result := 0;
+  if S = '' then Exit;
+  Words := S.Split([' ']);
+  Line := '';
+  Result := 1;
+  for I := 0 to High(Words) do
+  begin
+    if Line = '' then
+      Line := Words[I]
+    else if C.TextWidth(Line + ' ' + Words[I]) <= W then
+      Line := Line + ' ' + Words[I]
+    else
+    begin
+      Inc(Result);
+      Line := Words[I];
+    end;
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  DrawCardSub
+------------------------------------------------------------------------------
+  Untertext einer Karte mit Zeilenumbruch. Passt er mit Schriftgrösse 8 nicht
+  ganz in den Bereich (lange Texte, grosse Windows-Skalierung, andere
+  Schriftbreiten), wird die Schrift schrittweise bis 6 verkleinert, damit
+  nie eine Zeile abgeschnitten ist.
+  Parameter: C    - Zeichenfläche (Schriftname und Farbe schon gesetzt)
+             Area - verfügbarer Bereich
+             S    - Text (mit geschützten Leerzeichen, siehe KeepUnits)
+------------------------------------------------------------------------------}
+procedure DrawCardSub(C: TCanvas; Area: TRect; const S: string);
+var
+  TS: TTextStyle;                                        // Textausrichtung mit Zeilenumbruch
+  Size: Integer;                                         // Schriftgrösse
+begin
+  Size := 8;
+  C.Font.Size := Size;
+  while (Size > 6) and
+        (WrapLineCount(C, S, Area.Right - Area.Left) * C.TextHeight('Ag') > Area.Bottom - Area.Top) do
+  begin
+    Dec(Size);
+    C.Font.Size := Size;
+  end;
+  TS := C.TextStyle;
+  TS.Wordbreak := True;
+  TS.SingleLine := False;
+  TS.Clipping := True;
+  C.TextRect(Area, Area.Left, Area.Top, S, TS);
+  C.Font.Size := 8;
 end;
 
 {------------------------------------------------------------------------------
@@ -1881,7 +1947,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad - Px(8)), R.Left + Pad, Y, KeepUnits(ASub), TS);
+      DrawCardSub(C, Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad - Px(8)), KeepUnits(ASub));
     end;
   end;
 
@@ -4067,7 +4133,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, KeepUnits(ASub), TS);
+      DrawCardSub(C, Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), KeepUnits(ASub));
     end;
   end;
 
@@ -4819,7 +4885,7 @@ var
       TS.Wordbreak := True;
       TS.SingleLine := False;
       TS.Clipping := True;
-      C.TextRect(Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, Y, KeepUnits(ASub), TS);
+      DrawCardSub(C, Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), KeepUnits(ASub));
     end;
   end;
 
@@ -4866,7 +4932,7 @@ begin
             TS.SingleLine := False;
             TS.Clipping := True;
             C.Brush.Style := bsClear;
-            C.TextRect(Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), R.Left + Pad, SubTop, KeepUnits(Sub), TS);
+            DrawCardSub(C, Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), KeepUnits(Sub));
             ResBot := Min(R.Top + Px(80), SubTop - Px(4));
             ResTop := Max(R.Top + Px(58), ResBot - Px(24));
             if ResBot - ResTop >= Px(10) then
@@ -4880,13 +4946,13 @@ begin
         if Ok then
         begin
           if not LM then
-            Sub := Format(_(rsKCardISubT), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I),
+            Sub := Format(_(rsKCardISubT), [FormatMilliAmp(FKInput.I),
               FormatPercent(-KSQ_UBE_TC * 10 / KSQ_UBE_SENSE)])
           else if FKRes.UMax > FKRes.UMin then
-            Sub := Format(_(rsKCardISubL), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I),
+            Sub := Format(_(rsKCardISubL), [FormatMilliAmp(FKInput.I),
               FormatVolt(FKRes.UMin), FormatVolt(FKRes.UMax)])
           else
-            Sub := Format(_(rsKCardISubLFix), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I)]);
+            Sub := Format(_(rsKCardISubLFix), [FormatMilliAmp(FKInput.I)]);
           Card(_(rsKCardI), FormatMilliAmp(FKRes.IAct), Sub, clrTextBright);
         end
         else

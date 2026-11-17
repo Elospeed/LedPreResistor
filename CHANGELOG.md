@@ -27,6 +27,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Herkunft der 1,3 V beim Basiswiderstand und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
 - Multivibrator: Elko-Beschriftung zweizeilig («C2 = 22 µF», darunter «16 V»), damit sie T2 nicht berührt; «10 nF» beim NE555 mit Abstand.
 - Karten: kein Umbruch direkt vor oder nach «→» und «=».
+- Karten: Passt ein Untertext nicht ganz in die Karte (lange Texte, grosse Skalierung), wird die Schrift etwas kleiner statt die letzte Zeile abzuschneiden. Konstantstrom-Karte «LED-Strom» kürzer («Soll 20,0 mA; gleich von 14,4 V bis 40 V»).
 - NE555 über 16 V: Im Schaltplan steht «U_OUT = –» statt einer Ausgangsspannung.
 - Kartentexte brechen nicht mehr zwischen Bruch und Einheit um («⅛ W»).
 - Konstantstrom: «2 Transistoren (T1 je nach Strom)» statt «(T1 nach Strom)».
