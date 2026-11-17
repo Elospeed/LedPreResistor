@@ -31,7 +31,8 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
+  Versionen: 2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «× k Stränge»
+             2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
                               Rechenweg Schritt 6: Aufteilung der Leistung LEDs/Widerstand
              2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
                               Erwärmung als «+X K über Umgebung», Rechenweg je Widerstand
@@ -57,7 +58,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.5.1';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.5.2';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
@@ -406,7 +407,7 @@ resourcestring
   rsErrUTooLow = 'Die Speisespannung (%s) muss grösser sein als %d × %s = %s.';
   rsErrNoStd = 'Kein Normwert gefunden.';
   rsCopyTitle = 'LedPreResistor %s – Vorwiderstand';
-  rsCopyInput = 'Speisespannung %s, %d × LED %s mit U_F = %s, Strom %s';
+  rsCopyInput = 'Speisespannung %s, %d × LED %s mit U_F = %s, Sollstrom %s';
   rsCopyStd = 'Vorwiderstand: %s (%s, %s), berechnet %s';
   rsCopyCurrent = 'Tatsächlicher Strom: %s';
   rsCopyPower = 'Leistung Widerstand: %s, LEDs: %s, gesamt: %s';
@@ -416,6 +417,8 @@ resourcestring
   rsLabelStrings = 'Stränge parallel';
   rsErrStrings = 'Bitte 1 bis %d Stränge angeben (ganze Zahl).';
   rsSchemStrings = '× %d Stränge, je eigener R';
+  rsSchemIString = 'I = %s je Strang';
+  rsSchemITotal = 'I = %s gesamt (%d × %s)';
   rsCardCurrentSubStrings = 'je Strang; %d Stränge: gesamt %s';
   rsCardPowerSubStrings = 'je Widerstand (%d Stück)';
   rsStep4Strings = 'Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
@@ -425,6 +428,8 @@ resourcestring
   rsStep6Strings = 'Aufteilung der Leistung (alle Stränge): LEDs **%s (%s)** · Widerstände %s (%s) · gesamt %s';
   rsStatusStrings = '(%d Stränge)';
   rsCopyStrings = 'Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s';
+  rsCopyCurrentStrings = 'Tatsächlicher Strom: %s je Strang';
+  rsCopyPowerStrings = 'Leistung je Widerstand: %s; alle Widerstände: %s, alle LEDs: %s, gesamt: %s';
   { Beschriftungen, die im Formular (uMain.lfm) deutsch stehen; sie werden
     in ApplyLanguage zur Laufzeit gesetzt }
   rsHeadInputs = 'EINGABEN';
@@ -526,10 +531,16 @@ resourcestring
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
   rsBStepMultiRv = 'Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsBCopyTitle = 'LedPreResistor %s – Blinkschaltung (%s)';
-  rsBCopyInput = 'Speisespannung %s, LED %s mit U_F = %s, Strom %s';
+  rsBCopyInput = 'Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s';
   rsBCopyParts = 'Bauteile: %s = %s, %s = %s, C = %s';
   rsBCopyTimes = 'LED an %s, aus %s, Frequenz %s, Tastgrad %s';
   rsBCopyRv = 'Vorwiderstand: %s';
+  rsBCopyRv2 = 'Vorwiderstände: LED 1 %s, LED 2 %s';
+  rsBCopyTimes2 = 'LED 1 an %s, LED 2 an %s, Frequenz %s, Tastgrad LED 1 %s';
+  rsBCardDuty1 = 'Tastgrad (LED 1 an)';
+  rsBStepFreq1 = 'Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**';
+  rsBStepFreqRev1 = 'Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**';
+  rsBCardRvSub2 = '%s / %s · bis %s → %s';
   { Konstantstrom }
   rsTabKsq = 'Konstantstrom';
   rsHeadSupply = 'SPEISESPANNUNG';
@@ -1516,7 +1527,7 @@ begin
       TimerBlink.Interval := 10;
       TimerBlink.Enabled := True;
       SetFineTimer(True);
-      if FBInput.Circuit = bcMulti then
+      if (FBInput.Circuit = bcMulti) or (FBInput.Conn = cnBoth) then  // zwei LEDs: Leuchtzeit je LED
         LabelBlinkInfo.Caption := Format(_(rsBlinkInfoMulti), [FormatFreq(FBRes.F),
           FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1)])
       else
@@ -1659,7 +1670,14 @@ begin
     V.IText := 'I = ' + FormatMilliAmp(FRes.IAct);
     V.Bands := FBands;
     if FRes.Strings > 1 then
+    begin
+      // Der Pfeil unten liegt auf der gemeinsamen Rückleitung: dort fliesst
+      // der Strom aller Stränge. Der Strom je Strang steht bei «× k Stränge».
       V.StringsText := Format(_(rsSchemStrings), [FRes.Strings]);
+      V.IStringText := Format(_(rsSchemIString), [FormatMilliAmp(FRes.IAct)]);
+      V.IText := Format(_(rsSchemITotal), [FormatMilliAmp(FRes.ITotal), FRes.Strings,
+        FormatMilliAmp(FRes.IAct)]);
+    end;
   end
   else
   begin
@@ -2451,7 +2469,7 @@ begin
   Result := '';
   if FRes.Status <> csOk then
     Exit(StatusText(FRes.Status));
-  LedName := ComboColor.Text;
+  LedName := LedColorName;                               // klein wie im Schaltplan («LED weiss»)
   SL := TStringList.Create;
   try
     SL.Add(Format(_(rsCopyTitle), [APP_VER]));
@@ -2459,10 +2477,19 @@ begin
       FormatVolt(FInput.Ud), FormatMilliAmp(FInput.I)]), '_', '', [rfReplaceAll]));
     SL.Add(Format(_(rsCopyStd), [FormatOhm(FRes.R), SeriesName(FInput.Series),
       BandNames(FBands, '-'), FormatOhm(FRes.RCalc)]));
-    SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FRes.IAct)]));
     if FRes.Strings > 1 then
+    begin
+      // Strom und Leistung je Strang bzw. Widerstand klar von den Summen trennen
+      SL.Add(Format(_(rsCopyCurrentStrings), [FormatMilliAmp(FRes.IAct)]));
       SL.Add(Format(_(rsCopyStrings), [FRes.Strings, FormatMilliAmp(FRes.ITotal)]));
-    SL.Add(Format(_(rsCopyPower), [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
+      SL.Add(Format(_(rsCopyPowerStrings), [FormatPower(FRes.PR), FormatPower(FRes.PTotal - FRes.PLed),
+        FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
+    end
+    else
+    begin
+      SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FRes.IAct)]));
+      SL.Add(Format(_(rsCopyPower), [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
+    end;
     if FRes.RecommendedW > 0 then
       SL.Add(Format(_(rsCopyRating), [FormatRating(FRes.RecommendedW), FormatRating(RATING_REFERENCE),
         FormatPercent(FRes.Load)]));
@@ -3808,6 +3835,7 @@ var
   T, V, Sub: string;                                     // Texte
   VC: TColor;                                            // Farbe des Werts
   P, Rating: Double;                                     // Leistung und Bauform
+  RatingText: string;                                    // empfohlene Bauform als Text (oder «> 1 W»)
   WX, WY, WW, WH, PW: Integer;                           // Rechteck-Signal: Lage und Grösse, Periode
   K: Integer;                                            // Periode im Signal
 
@@ -3913,7 +3941,11 @@ begin
           Card(_(rsBCardFreq), '–', '', clrTextBright);
       1:
         begin
-          if FBInput.Circuit = bcMulti then T := _(rsBCardTimesMulti) else T := _(rsBCardTimes);
+          // zwei LEDs (Multivibrator, Wechselblinker): Leuchtzeit LED 1 / LED 2
+          if (FBInput.Circuit = bcMulti) or (FBInput.Conn = cnBoth) then
+            T := _(rsBCardTimesMulti)
+          else
+            T := _(rsBCardTimes);
           if Ok then
           begin
             Card(T, Pair(FBRes.TOn1, FBRes.TOff1), '', clrTextBright);
@@ -3958,7 +3990,8 @@ begin
             Sub := _(rsBCardDutySubDiode)
           else
             Sub := _(rsBCardDutySub);
-          Card(_(rsBCardDuty), FormatPercent1(FBRes.Duty1), Sub, clrTextBright);
+          if FBInput.Conn = cnBoth then T := _(rsBCardDuty1) else T := _(rsBCardDuty);
+          Card(T, FormatPercent1(FBRes.Duty1), Sub, clrTextBright);
         end
         else
           Card(_(rsBCardDuty), '–', '', clrTextBright);
@@ -3975,12 +4008,14 @@ begin
               V := FormatOhm(FBRes.Led1.R);
             P := Max(FBRes.Led1.P, FBRes.Led2.P);
             Rating := RecommendRating(P);
-            if Rating > 0 then
-              Sub := Format(_(rsBCardRvSub), [FormatMilliAmp(FBRes.Led1.IAct), FormatPower(FBRes.Led1.P),
-                FormatRating(Rating)])
+            if Rating > 0 then RatingText := FormatRating(Rating) else RatingText := _(rsCardRatingNone);
+            if FBRes.Led2.Used and not SameValue(FBRes.Led1.R, FBRes.Led2.R) then
+              // zwei verschiedene Widerstände: beide Ströme, Bauform nach dem stärker belasteten
+              Sub := Format(_(rsBCardRvSub2), [FormatNum(FBRes.Led1.IAct * 1000, 2, 1),
+                FormatMilliAmp(FBRes.Led2.IAct), FormatPower(P), RatingText])
             else
               Sub := Format(_(rsBCardRvSub), [FormatMilliAmp(FBRes.Led1.IAct), FormatPower(FBRes.Led1.P),
-                _(rsCardRatingNone)]);
+                RatingText]);
             Card(T, V, Sub, clrTextBright);
           end
           else
@@ -4003,6 +4038,7 @@ var
   Inp: TBlinkInput;                                      // Abkürzung
   S, DHigh: Double;                                      // Summe der Widerstände rückwärts, High-Anteil
   Ser: string;                                           // Name der Normreihe
+  StepFreq: string;                                      // Vorlage Frequenz-Schritt (eine LED / Wechselblinker)
   Avail: Double;                                         // Spannung für LED und Vorwiderstand
 begin
   Result := nil;
@@ -4028,7 +4064,9 @@ begin
         Result[0] := Format(_(rsBStep555Rev1), [FormatFreq(Inp.F), FormatCap(Inp.C), FormatOhm(S)]);
       Result[1] := Format(_(rsBStep555Rev2), [FormatPercent(DHigh), FormatOhm(Res.R1Calc), FormatOhm(Res.R1),
         FormatOhm(Res.R2Calc), FormatOhm(Res.R2), Ser]);
-      Result[2] := Format(_(rsBStepFreqRev), [FormatSeconds(Res.THigh), FormatSeconds(Res.TLow),
+      // Wechselblinker: der Anteil gilt für LED 1 (LED 2 leuchtet in der übrigen Zeit)
+      if Inp.Conn = cnBoth then StepFreq := rsBStepFreqRev1 else StepFreq := rsBStepFreqRev;
+      Result[2] := Format(_(StepFreq), [FormatSeconds(Res.THigh), FormatSeconds(Res.TLow),
         FormatFreq(Res.F), FormatPercent1(Res.Duty1)]);
     end
     else
@@ -4038,7 +4076,8 @@ begin
       else
         Result[0] := Format(_(rsBStep555High), [FormatOhm(Res.R1 + Res.R2), FormatCap(Res.C), FormatSeconds(Res.THigh)]);
       Result[1] := Format(_(rsBStep555Low), [FormatOhm(Res.R2), FormatCap(Res.C), FormatSeconds(Res.TLow)]);
-      Result[2] := Format(_(rsBStepFreq), [FormatSeconds(Res.T), FormatFreq(Res.F), FormatPercent1(Res.Duty1)]);
+      if Inp.Conn = cnBoth then StepFreq := rsBStepFreq1 else StepFreq := rsBStepFreq;
+      Result[2] := Format(_(StepFreq), [FormatSeconds(Res.T), FormatFreq(Res.F), FormatPercent1(Res.Duty1)]);
     end;
     if Inp.Conn = cnVcc then
     begin
@@ -4164,7 +4203,7 @@ begin
   SL := TStringList.Create;
   try
     SL.Add(Format(_(rsBCopyTitle), [APP_VER, ComboCircuit.Text]));
-    SL.Add(StringReplace(Format(_(rsBCopyInput), [FormatVolt(FBInput.U), ComboColor.Text,
+    SL.Add(StringReplace(Format(_(rsBCopyInput), [FormatVolt(FBInput.U), LedColorName,
       FormatVolt(FBInput.Ud), FormatMilliAmp(FBInput.I)]), '_', '', [rfReplaceAll]));
     if FBInput.Circuit = bcMulti then
     begin
@@ -4177,12 +4216,18 @@ begin
       N2 := 'R2';
     end;
     SL.Add(Format(_(rsBCopyParts), [N1, FormatOhm(FBRes.R1), N2, FormatOhm(FBRes.R2), FormatCap(FBRes.C)]));
-    SL.Add(Format(_(rsBCopyTimes), [FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1),
-      FormatFreq(FBRes.F), FormatPercent1(FBRes.Duty1)]));
+    // zwei LEDs (Wechselblinker, Multivibrator): Zeiten und Widerstände je LED benennen
+    if FBRes.Led2.Used then
+      SL.Add(Format(_(rsBCopyTimes2), [FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1),
+        FormatFreq(FBRes.F), FormatPercent1(FBRes.Duty1)]))
+    else
+      SL.Add(Format(_(rsBCopyTimes), [FormatSeconds(FBRes.TOn1), FormatSeconds(FBRes.TOff1),
+        FormatFreq(FBRes.F), FormatPercent1(FBRes.Duty1)]));
     Rv := FormatOhm(FBRes.Led1.R) + ' (' + BandNames(FBBands1, '-') + ')';
     if FBRes.Led2.Used then
-      Rv := Rv + ', ' + FormatOhm(FBRes.Led2.R) + ' (' + BandNames(FBBands2, '-') + ')';
-    SL.Add(Format(_(rsBCopyRv), [Rv]));
+      SL.Add(Format(_(rsBCopyRv2), [Rv, FormatOhm(FBRes.Led2.R) + ' (' + BandNames(FBBands2, '-') + ')']))
+    else
+      SL.Add(Format(_(rsBCopyRv), [Rv]));
     Result := TrimRight(SL.Text);
   finally
     SL.Free;
@@ -4781,7 +4826,7 @@ begin
   SL := TStringList.Create;
   try
     SL.Add(Format(_(rsKCopyTitle), [APP_VER, ComboKsq.Text]));
-    SL.Add(StringReplace(Format(_(rsCopyInput), [KsqVoltRange, FKInput.N, ComboColor.Text,
+    SL.Add(StringReplace(Format(_(rsCopyInput), [KsqVoltRange, FKInput.N, LedColorName,
       FormatVolt(FKInput.Ud), FormatMilliAmp(FKInput.I)]), '_', '', [rfReplaceAll]));
     SL.Add(Format(_(rsKCopyR), [FormatOhm(FKRes.R), SeriesName(FKInput.Series), BandNames(FKBands, '-'),
       FormatOhm(FKRes.RCalc)]));

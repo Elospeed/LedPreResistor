@@ -7,7 +7,22 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.5.1 – unveröffentlicht
+## 2.5.2 – unveröffentlicht
+
+### Schaltplan
+- Stränge parallel: Der Strompfeil unten liegt auf der gemeinsamen Rückleitung und zeigt jetzt den Gesamtstrom aller Stränge («I = 35,12 mA gesamt (2 × 17,56 mA)»); der Strom je Strang steht unter «× k Stränge». Vorher stand dort der Strom eines Strangs, was wie der Gesamtstrom aussah.
+
+### Kopieren
+- Stränge parallel: Strom «je Strang» und die Leistung getrennt nach je Widerstand, alle Widerstände, alle LEDs und gesamt. Vorher stand die Leistung eines Widerstands neben der Summe aller LEDs.
+- Farbname klein wie im Schaltplan («LED weiss»), «Sollstrom» statt «Strom» für den eingegebenen Wert.
+
+### Blinkschaltung
+- Wechselblinker (NE555, beide LEDs) und Multivibrator: Karten, Vorschau, Rechenweg und Kopiertext nennen die Zeiten und den Tastgrad je LED («LED 1 / LED 2 an», «Tastgrad (LED 1 an)»). Die Karte «Vorwiderstand» zeigt beim Wechselblinker beide Ströme und die grössere Leistung.
+
+### Tests
+- Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator, LM317, zwei Transistoren): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
+
+## 2.5.1 – 17. November 2026
 
 ### Schaltplan
 - Stränge parallel: Der angedeutete zweite Strang zweigt jetzt vor dem ersten Vorwiderstand ab (direkt an der Quelle), wie es elektrisch richtig ist. Vorher hing er zeichnerisch hinter dem ersten Widerstand.
@@ -16,9 +31,6 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Neuer Schritt 6 «Aufteilung der Leistung»: wie viel der Leistung aus der Quelle in den LEDs ankommt und wie viel die Widerstände verheizen, je mit Anteil in Prozent (bei Strängen parallel für alle Stränge zusammen).
 
 ## Unveröffentlicht
-
-### Tests
-- Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator, LM317, zwei Transistoren): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
 
 ### Projektseite
 - Kurzer Satz zur Herkunft des Projekts angepasst; Klicks auf externe Links im Seitenfuss und in den Fragen werden anonym mitgezählt (GoatCounter, ohne Cookies).

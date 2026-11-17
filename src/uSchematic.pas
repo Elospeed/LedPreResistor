@@ -24,7 +24,8 @@
              darübergeschrieben.
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
+  Versionen: 2.5.2 17.11.2026 Strom je Strang unter «× k Stränge»
+             2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
                               Leitungen und Bauteile an uSchemNetz melden
                               (Verbindungstests)
              2.5  17.11.2026  mehrere LEDs in Reihe als Säule, zweiter Strang
@@ -53,8 +54,9 @@ type
     UBText: string;                                      // z. B. "U_B = 12 V"
     LedText: string;                                     // z. B. "LED weiss" oder "3 × LED weiss" (in Reihe)
     UFText: string;                                      // z. B. "U_F = 3,2 V"
-    IText: string;                                       // z. B. "I = 18,72 mA"
+    IText: string;                                       // z. B. "I = 18,72 mA"; bei Strängen der Gesamtstrom (gemeinsame Rückleitung)
     StringsText: string;                                 // z. B. "× 3 Stränge parallel" (leer = ein Strang)
+    IStringText: string;                                 // Strom je Strang bei Strängen parallel (leer = ein Strang)
     LedCount: Integer;                                   // LEDs in Reihe (0 oder 1 = eine)
     StringCount: Integer;                                // Stränge parallel (0 oder 1 = einer)
     LedColor: TColor;                                    // Füllfarbe des LED-Symbols
@@ -507,6 +509,7 @@ begin
   end;
   if V.StringsText <> '' then
     Txt(96, 150, V.StringsText, AccentColor, 0, True);
+  Txt(96, 168, V.IStringText, TextColor, 0, False);      // Strom je Strang unter «× k Stränge» (leer = nichts)
   Txt(210, 226, V.IText, AccentColor, 1, True);          // Strom unter der Leitung
 end;
 

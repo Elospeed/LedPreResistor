@@ -234,8 +234,8 @@ msgid "LedPreResistor %s – Vorwiderstand"
 msgstr "LedPreResistor %s – series resistor"
 
 #: uMain.pas rsCopyInput
-msgid "Speisespannung %s, %d × LED %s mit U_F = %s, Strom %s"
-msgstr "Supply voltage %s, %d × %s LED with U_F = %s, current %s"
+msgid "Speisespannung %s, %d × LED %s mit U_F = %s, Sollstrom %s"
+msgstr "Supply voltage %s, %d × %s LED with U_F = %s, target current %s"
 
 #: uMain.pas rsCopyStd
 msgid "Vorwiderstand: %s (%s, %s), berechnet %s"
@@ -634,8 +634,8 @@ msgid "LedPreResistor %s – Blinkschaltung (%s)"
 msgstr "LedPreResistor %s – blink circuit (%s)"
 
 #: uMain.pas rsBCopyInput
-msgid "Speisespannung %s, LED %s mit U_F = %s, Strom %s"
-msgstr "Supply voltage %s, LED %s with U_F = %s, current %s"
+msgid "Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s"
+msgstr "Supply voltage %s, %s LED with U_F = %s, target current %s"
 
 #: uMain.pas rsBCopyParts
 msgid "Bauteile: %s = %s, %s = %s, C = %s"
@@ -679,6 +679,14 @@ msgstr "Please enter 1 to %d strings (whole number)."
 msgid "× %d Stränge, je eigener R"
 msgstr "× %d strings, each with its own R"
 
+#: uMain.pas rsSchemIString
+msgid "I = %s je Strang"
+msgstr "I = %s per string"
+
+#: uMain.pas rsSchemITotal
+msgid "I = %s gesamt (%d × %s)"
+msgstr "I = %s total (%d × %s)"
+
 #: uMain.pas rsCardCurrentSubStrings
 msgid "je Strang; %d Stränge: gesamt %s"
 msgstr "per string; %d strings: total %s"
@@ -714,6 +722,14 @@ msgstr "(%d strings)"
 #: uMain.pas rsCopyStrings
 msgid "Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s"
 msgstr "Parallel strings: %d, each with its own series resistor; total current %s"
+
+#: uMain.pas rsCopyCurrentStrings
+msgid "Tatsächlicher Strom: %s je Strang"
+msgstr "Actual current: %s per string"
+
+#: uMain.pas rsCopyPowerStrings
+msgid "Leistung je Widerstand: %s; alle Widerstände: %s, alle LEDs: %s, gesamt: %s"
+msgstr "Power per resistor: %s; all resistors: %s, all LEDs: %s, total: %s"
 
 #: uMain.pas rsTabKsq
 msgid "Konstantstrom"
@@ -1010,3 +1026,27 @@ msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R sense resistor ·
 #: uMain.pas rsLegendKT
 msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Fühlerwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung"
 msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R_S sense resistor · R_B base resistor · U_B_E base-emitter voltage · β current gain · P power · U_m_i_n minimum supply voltage"
+
+#: uMain.pas rsBCopyRv2
+msgid "Vorwiderstände: LED 1 %s, LED 2 %s"
+msgstr "Series resistors: LED 1 %s, LED 2 %s"
+
+#: uMain.pas rsBCopyTimes2
+msgid "LED 1 an %s, LED 2 an %s, Frequenz %s, Tastgrad LED 1 %s"
+msgstr "LED 1 on %s, LED 2 on %s, frequency %s, duty cycle LED 1 %s"
+
+#: uMain.pas rsBCardDuty1
+msgid "Tastgrad (LED 1 an)"
+msgstr "Duty cycle (LED 1 on)"
+
+#: uMain.pas rsBCardRvSub2
+msgid "%s / %s · bis %s → %s"
+msgstr "%s / %s · up to %s → %s"
+
+#: uMain.pas rsBStepFreq1
+msgid "Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**"
+msgstr "Frequency: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 on: **%s**"
+
+#: uMain.pas rsBStepFreqRev1
+msgid "Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**"
+msgstr "With the standard values: t_H = %s, t_L = %s → f = **%s** · LED 1 on: **%s**"
