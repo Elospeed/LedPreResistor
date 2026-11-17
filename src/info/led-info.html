@@ -363,7 +363,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <div class="calc">
     <form class="inputs" id="calcForm" autocomplete="off">
       <label for="inU">Versorgungsspannung U
-        <span class="unitrow"><input id="inU" type="number" step="0.1" min="0" value="12"><span>V</span></span>
+        <span class="unitrow"><input id="inU" type="number" step="0.1" min="0" max="60" value="12"><span>V</span></span>
       </label>
       <label for="inType">LED-Typ
         <select id="inType">
@@ -385,7 +385,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
         <span class="unitrow"><input id="inI" type="number" step="1" min="0" value="20"><span>mA</span></span>
       </label>
       <label for="inN">LEDs in Reihe n
-        <span class="unitrow"><input id="inN" type="number" step="1" min="1" value="1"><span>Stk</span></span>
+        <span class="unitrow"><input id="inN" type="number" step="1" min="1" max="30" value="1"><span>Stk</span></span>
       </label>
     </form>
     <div class="result" aria-live="polite">
@@ -579,6 +579,11 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     $("steps").innerHTML = "";
     if (!(U > 0) || !(Uf > 0) || !(ImA > 0)) {
       st.className = "status bad"; st.textContent = "Bitte alle Werte grösser als 0 eingeben.";
+      ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
+      return;
+    }
+    if (U > 60 || n > 30) {                    // Grenzen wie im Programm: Kleinspannung, höchstens 30 LEDs
+      st.className = "status bad"; st.textContent = "Bitte eine Versorgung bis 60 V (Kleinspannung) und 1 bis 30 LEDs eingeben.";
       ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
       return;
     }

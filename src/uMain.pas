@@ -33,6 +33,7 @@
   Autor:     Elospeed
   Versionen: 2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
                               Erwärmung als «+X K über Umgebung», Rechenweg je Widerstand
+                              Grenzen: höchstens 60 V, 30 LEDs in Reihe, 20 Stränge
              2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
                               dunkles Info-Fenster
              2.3  11.11.2026  Reiter Blinkschaltung
@@ -55,10 +56,13 @@ uses
 ==============================================================================}
 const
   APP_VER = '2.5';                                       // Programmversion für Titelleiste und Info
-  // Obergrenzen für Hobbyschaltungen: 50 rote LEDs in Reihe brauchen schon rund
-  // 90 V, 50 Stränge à 20 mA ziehen 1 A; mehr ist mit Vorwiderständen nicht sinnvoll.
-  MAX_LEDS = 50;                                         // höchstens so viele LEDs in Reihe
-  MAX_STRINGS = 50;                                      // höchstens so viele Stränge parallel
+  // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
+  // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
+  // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
+  // à 20 mA ziehen 0,4 A; mehr ist mit Vorwiderständen nicht sinnvoll.
+  MAX_U = 60.0;                                          // V, grösste Speisespannung
+  MAX_LEDS = 30;                                         // höchstens so viele LEDs in Reihe
+  MAX_STRINGS = 20;                                      // höchstens so viele Stränge parallel
   KOFI_URL = 'https://ko-fi.com/elospeed';               // Ko-fi-Seite von Elospeed
 
 {==============================================================================
@@ -393,7 +397,7 @@ resourcestring
   rsStatusOk = '%s: ca. +%d K über Umgebung – reicht';
   rsStatusNone = '%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand';
   rsStatusTotal = 'Gesamtleistung %s';
-  rsErrU = 'Bitte eine Speisespannung grösser als 0 eingeben.';
+  rsErrU = 'Bitte eine Speisespannung über 0 bis %s eingeben (Kleinspannung).';
   rsErrUd = 'Bitte eine Durchlassspannung grösser als 0 eingeben.';
   rsErrI = 'Bitte einen LED-Strom grösser als 0 eingeben.';
   rsErrN = 'Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl).';
@@ -1170,7 +1174,7 @@ end;
 function TFormMain.StatusText(S: TCalcStatus): string;
 begin
   case S of
-    csInvalidU: Result := _(rsErrU);
+    csInvalidU: Result := Format(_(rsErrU), [FormatVolt(MAX_U)]);
     csInvalidUd: Result := _(rsErrUd);
     csInvalidI: Result := _(rsErrI);
     csInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
@@ -1205,7 +1209,8 @@ begin
   if FUpdating then Exit;                                // Felder werden gerade per Code gesetzt
   // ----- 1. Eingaben lesen; ungültig bleibt 0 (uCalc meldet den Fehler) -----
   FInput := Default(TCalcInput);
-  if ParseDecimal(EditU.Text, V) then FInput.U := V;     // Speisespannung U_B in V
+  // Speisespannung U_B in V; über MAX_U ungültig (0), damit uCalc den Fehler meldet
+  if ParseDecimal(EditU.Text, V) and (V <= MAX_U) then FInput.U := V;
   if ParseDecimal(EditUd.Text, V) then FInput.Ud := V;   // Durchlassspannung U_F in V
   if ParseDecimal(EditI.Text, V) then FInput.I := V / 1000;  // Strom: Feld in mA, Rechnung in A
   // Anzahl nur als ganze Zahl gültig
@@ -1345,6 +1350,7 @@ begin
   if Key = VK_UP then V := V + Step else V := V - Step;
   if E = EditN then V := EnsureRange(V, 1, MAX_LEDS)          // Pfeiltasten bleiben im gültigen Bereich
   else if E = EditStrings then V := EnsureRange(V, 1, MAX_STRINGS)
+  else if (E = EditU) or (E = EditU2) then V := EnsureRange(V, 0, MAX_U)
   else V := Max(0, V);
   E.Text := FormatNum(V, 2, 0);
   E.SelStart := Length(E.Text);
@@ -3565,7 +3571,7 @@ var
   Avail: Double;                                         // Spannung für LED und Vorwiderstand
 begin
   case S of
-    bsInvalidU: Result := _(rsErrU);
+    bsInvalidU: Result := Format(_(rsErrU), [FormatVolt(MAX_U)]);
     bsInvalidUd: Result := _(rsErrUd);
     bsInvalidI: Result := _(rsErrI);
     bsInvalidR1:
@@ -4265,7 +4271,12 @@ begin
   FKInput.UMin := FInput.U;
   // «bis» leer oder ungültig: feste Spannung (gleich wie «von»)
   if ParseDecimal(EditU2.Text, V) and (V > 0) then
-    FKInput.UMax := V;
+  begin
+    if V <= MAX_U then
+      FKInput.UMax := V
+    else
+      FKInput.UMin := 0;                                 // «bis» über MAX_U: als ungültig melden
+  end;
   FKInput.Ud := FInput.Ud;
   FKInput.I := FInput.I;
   FKInput.N := FInput.N;
@@ -4290,7 +4301,7 @@ end;
 function TFormMain.KsqStatusText(S: TKsqStatus): string;
 begin
   case S of
-    ksInvalidU: Result := _(rsErrU);
+    ksInvalidU: Result := Format(_(rsErrU), [FormatVolt(MAX_U)]);
     ksInvalidUd: Result := _(rsErrUd);
     ksInvalidI: Result := _(rsErrI);
     ksInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);

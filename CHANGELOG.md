@@ -25,7 +25,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Bei Strängen parallel heisst Schritt 4 «Verlustleistung je Widerstand».
 
 ### Eingaben
-- Sinnvolle Obergrenzen: höchstens 50 LEDs in Reihe und 50 Stränge parallel (vorher 1000 und 100). Darüber meldet das Programm jetzt «Bitte 1 bis 50 … angeben» statt fälschlich «mindestens 1». Die Pfeiltasten bleiben im gültigen Bereich.
+- Grenzen für Hobbyschaltungen: Speisespannung höchstens 60 V (Schutzkleinspannung), höchstens 30 LEDs in Reihe und 20 Stränge parallel (vorher 1000 LEDs und 100 Stränge, Spannung ohne Grenze). Darüber nennt die Meldung den erlaubten Bereich statt fälschlich «mindestens 1». Die Pfeiltasten bleiben im gültigen Bereich.
 
 ## 2.4 – 14. November 2026
 

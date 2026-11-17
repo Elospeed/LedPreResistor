@@ -206,8 +206,8 @@ msgid "Gesamtleistung %s"
 msgstr "Total power %s"
 
 #: uMain.pas rsErrU
-msgid "Bitte eine Speisespannung grösser als 0 eingeben."
-msgstr "Please enter a supply voltage greater than 0."
+msgid "Bitte eine Speisespannung über 0 bis %s eingeben (Kleinspannung)."
+msgstr "Please enter a supply voltage above 0 up to %s (extra-low voltage)."
 
 #: uMain.pas rsErrUd
 msgid "Bitte eine Durchlassspannung grösser als 0 eingeben."
