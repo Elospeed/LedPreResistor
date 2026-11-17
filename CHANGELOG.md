@@ -7,6 +7,11 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.5.1 – unveröffentlicht
+
+### Schaltplan
+- Stränge parallel: Der angedeutete zweite Strang zweigt jetzt vor dem ersten Vorwiderstand ab (direkt an der Quelle), wie es elektrisch richtig ist. Vorher hing er zeichnerisch hinter dem ersten Widerstand.
+
 ## Unveröffentlicht
 
 ### Projektseite

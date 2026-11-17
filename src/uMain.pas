@@ -31,7 +31,8 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
+  Versionen: 2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle
+             2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
                               Erwärmung als «+X K über Umgebung», Rechenweg je Widerstand
                               Grenzen: höchstens 60 V, 30 LEDs in Reihe, 20 Stränge
              2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
@@ -55,7 +56,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.5';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.5.1';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
