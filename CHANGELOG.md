@@ -26,6 +26,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Spannung zu klein: Die Meldung nennt die Abhilfe («Abhilfe: höchstens 3 LEDs in Reihe oder mehr Spannung»).
 - Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
 - Multivibrator: Karte «Basisstrom» gelb, solange die Basis-Warnung gilt.
+- Multivibrator: Bei zu kleinem Basisstrom heisst es «zu wenig: nur 0,7-fach des Nötigen» statt «0,7-fach übersteuert».
 - Konstantstrom: «Messwiderstand» statt «Fühlerwiderstand».
 - Eingaben: Lange Beschriftungen wie «Durchlassspannung» werden bei 100 % nicht mehr abgeschnitten.
 

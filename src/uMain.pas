@@ -491,6 +491,7 @@ resourcestring
   rsBCardDutySubVcc = 'LED leuchtet bei Low';
   rsBCardBase = 'Basisstrom';
   rsBCardBaseSub = '%s-fach übersteuert (β = %d)';
+  rsBCardBaseSubLow = 'zu wenig: nur %s-fach des Nötigen (β = %d)';
   rsBCardRv = 'Vorwiderstand (%s)';
   rsBCardRvSub = '%s · %s → %s';
   rsErrBR1 = 'Bitte R1 grösser als 0 eingeben.';
@@ -601,8 +602,8 @@ resourcestring
   rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
   rsKChipMinLoad = 'unter 10 mA';
   rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
-  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V (beim Einschalten liegt fast die ganze Spannung an): bis 40 V wählen oder LM317HV nehmen.';
-  rsErrKVoltT = 'T1 verträgt höchstens 45 V (bei kurzgeschlossenen LEDs liegt die ganze Spannung an): bis 45 V wählen.';
+  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V am Eingang: bis 40 V wählen oder LM317HV nehmen.';
+  rsErrKVoltT = 'T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen.';
   rsKChipBase = 'RB wird warm';
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
   rsKChipRPower = 'Mess-R über 1 W';
@@ -643,7 +644,23 @@ begin
   if (C < 1e-6 * 0.999) or not (U > 0) then Exit;
   for I := Low(ELKO_VOLTS) to High(ELKO_VOLTS) do
     if ELKO_VOLTS[I] >= U * 1.2 then
-      Exit('/' + FormatNum(ELKO_VOLTS[I], 0, 1) + ' V');
+      Exit('/' + FormatNum(ELKO_VOLTS[I], 1, 0) + ' V');
+end;
+
+{------------------------------------------------------------------------------
+  BaseSubText
+------------------------------------------------------------------------------
+  Zweite Zeile der Karte «Basisstrom»: ab 1-fach «1,9-fach übersteuert», darunter
+  «zu wenig: nur 0,7-fach des Nötigen», damit niemand einen zu kleinen
+  Basisstrom als «übersteuert» liest.
+  Parameter: Overdrive - I_B · β / I_C
+------------------------------------------------------------------------------}
+function BaseSubText(Overdrive: Double): string;
+begin
+  if Overdrive < 1 then
+    Result := Format(_(rsBCardBaseSubLow), [FormatNum(Overdrive, 1, 1), Round(BJT_BETA)])
+  else
+    Result := Format(_(rsBCardBaseSub), [FormatNum(Overdrive, 1, 1), Round(BJT_BETA)]);
 end;
 
 {------------------------------------------------------------------------------
@@ -4095,7 +4112,7 @@ begin
             else
               VC := clrOk;
             Card(_(rsBCardBase), FormatMilliAmp(FBRes.IB),
-              Format(_(rsBCardBaseSub), [FormatNum(FBRes.Overdrive, 1, 1), Round(BJT_BETA)]), VC);
+              BaseSubText(FBRes.Overdrive), VC);
           end
           else
             Card(_(rsBCardBase), '–', '', clrTextBright);

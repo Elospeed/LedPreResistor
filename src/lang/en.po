@@ -456,6 +456,9 @@ msgstr "Base current"
 msgid "%s-fach übersteuert (β = %d)"
 msgstr "%s× overdriven (β = %d)"
 
+msgid "zu wenig: nur %s-fach des Nötigen (β = %d)"
+msgstr "too low: only %s× of what is needed (β = %d)"
+
 #: uMain.pas rsBCardRv
 msgid "Vorwiderstand (%s)"
 msgstr "Series resistor (%s)"
@@ -959,12 +962,12 @@ msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber 
 msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
 
 #: uMain.pas rsErrKVoltL
-msgid "Der LM317 verträgt höchstens 40 V (beim Einschalten liegt fast die ganze Spannung an): bis 40 V wählen oder LM317HV nehmen."
-msgstr "The LM317 takes at most 40 V (almost the full voltage is across it at switch-on): choose up to 40 V or use an LM317HV."
+msgid "Der LM317 verträgt höchstens 40 V am Eingang: bis 40 V wählen oder LM317HV nehmen."
+msgstr "The LM317 takes at most 40 V at its input: choose up to 40 V or use an LM317HV."
 
 #: uMain.pas rsErrKVoltT
-msgid "T1 verträgt höchstens 45 V (bei kurzgeschlossenen LEDs liegt die ganze Spannung an): bis 45 V wählen."
-msgstr "T1 takes at most 45 V (the full voltage is across it if the LEDs short out): choose up to 45 V."
+msgid "T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen."
+msgstr "T1 takes at most 45 V (all of it is across T1 if the LEDs short): choose up to 45 V."
 
 #: uMain.pas rsKChipBase
 msgid "RB wird warm"
