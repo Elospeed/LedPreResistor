@@ -282,24 +282,23 @@ begin
   I.C := 22e-6;
   R := CalculateBlink(I);
   AssertTrue('Status', R.Status = bsOk);
-  // ΔU = 9 − 2,0 − 0,2 = 6,8 V; die Basis würde mit 6,2 V gesperrt, also
-  // mit 1N4148: Schwelle 1,2 V, K = ln((9 − 1,2 + 6,8) / (9 − 1,2)) = ln(14,6 / 7,8)
+  // ΔU = 9 − 2,0 − 0,2 = 6,8 V; K = ln(15,2 / 8,4) (gerechnet ohne Dioden)
   AssertEquals('ΔU', 6.8, R.DeltaU, EPS);
-  K := Ln(14.6 / 7.8);
+  K := Ln(15.2 / 8.4);
   AssertEquals('K', K, R.K, EPS);
   AssertEquals('t', K * 33000 * 22e-6, R.TOn1, EPS);
   AssertEquals('symmetrisch', 0.5, R.Duty1, EPS);
   // (9 − 2,0 − 0,2) / 15 mA = 453 Ω -> 470 Ω
   AssertEquals('R_V1', 470, R.Led1.R, EPS);
   AssertEquals('R_V2', 470, R.Led2.R, EPS);
-  // Basis gefährdet -> 1N4148 vor der Basis empfohlen, I_B rechnet mit ihr:
-  // I_B = (9 − 0,6 − 0,6) V / 33 kΩ = 7,8 V / 33 kΩ; I_C = 6,8 V / 470 Ω
-  AssertTrue('Diode vor der Basis', R.BaseDiode);
-  AssertEquals('I_B mit Diode', 7.8 / 33000, R.IB, EPS);
-  AssertEquals('Übersteuerung', 7.8 / 33000 * 100 / (6.8 / 470), R.Overdrive, 1e-4);
+  // I_B = 8,4 V / 33 kΩ; I_C = 6,8 V / 470 Ω
+  AssertEquals('I_B', 8.4 / 33000, R.IB, EPS);
+  AssertEquals('Übersteuerung', 8.4 / 33000 * 100 / (6.8 / 470), R.Overdrive, 1e-4);
   // Sperrspannung 6,2 V > 6 V
   AssertEquals('Sperrspannung', 6.2, R.URev, EPS);
-  AssertTrue('Basis gefährdet', bwBaseReverse in R.Warnings);
+  // über 6 V: 1N4148 als Tipp (grau gezeichnet), Warnung erst über 12 V
+  AssertTrue('Dioden empfohlen', R.BaseDiode);
+  AssertFalse('noch keine Warnung', bwBaseReverse in R.Warnings);
   // bei 5 V keine Gefahr mehr
   I.U := 5;
   R := CalculateBlink(I);

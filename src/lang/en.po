@@ -118,8 +118,8 @@ msgid "Tatsächlicher Strom"
 msgstr "Actual current"
 
 #: uMain.pas rsCardCurrentSub
-msgid "mit %s statt ideal %s (Soll %s)"
-msgstr "with %s instead of ideal %s (target %s)"
+msgid "%s statt ideal %s (Soll %s)"
+msgstr "%s vs. ideal %s (target %s)"
 
 #: uMain.pas rsCardCurrentSubExact
 msgid "Normwert passt genau (Soll %s)"
@@ -138,11 +138,11 @@ msgid "Empfohlene Bauform"
 msgstr "Recommended rating"
 
 #: uMain.pas rsCardRatingSub
-msgid "%s wäre zu %s belastet"
+msgid "%s wäre zu %s ausgelastet"
 msgstr "%s would be loaded to %s"
 
 #: uMain.pas rsCardRatingSubOk
-msgid "%s zu %s belastet"
+msgid "%s zu %s ausgelastet"
 msgstr "%s loaded to %s"
 
 #: uMain.pas rsCardRatingNoneSub
@@ -201,7 +201,7 @@ msgstr "%s: about +%d K above ambient – %s recommended"
 msgid "%s: ca. +%d K über Umgebung – reicht"
 msgstr "%s: about +%d K above ambient – fine"
 
-msgid "%s: ca. +%d K über Umgebung (¼ W wäre zu %s belastet)"
+msgid "%s: ca. +%d K über Umgebung (¼ W wäre zu %s ausgelastet)"
 msgstr "%s: about +%d K above ambient (¼ W would be loaded to %s)"
 
 #: uMain.pas rsStatusNone
@@ -459,8 +459,8 @@ msgstr "Base current"
 msgid "%s-fach übersteuert (β = %d)"
 msgstr "%s× overdriven (β = %d)"
 
-msgid "zu wenig: nur %s-fach des Nötigen (β = %d)"
-msgstr "too low: only %s× of what is needed (β = %d)"
+msgid "nur %s-fach des Nötigen (β = %d)"
+msgstr "only %s× of what is needed (β = %d)"
 
 #: uMain.pas rsBCardRv
 msgid "Vorwiderstand (%s)"
@@ -515,12 +515,15 @@ msgid "Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) n
 msgstr "Supply voltage %s is below 4.5 V: use the CMOS version (TLC555, ICM7555)"
 
 #: uMain.pas rsChipBase
-msgid "Mit 1N4148"
-msgstr "With 1N4148"
+msgid "Basis −%s"
+msgstr "Base −%s"
 
 #: uMain.pas rsWarnBase
-msgid "Ohne Dioden läge −%s an der Basis (BC547: max. 6 V): die grau gezeichneten 1N4148 einbauen"
-msgstr "Without diodes the base would see −%s (BC547: max. 6 V): fit the 1N4148 drawn in grey"
+msgid "Basis wird mit −%s gesperrt, der BC547 verträgt 6 V: die grau gezeichneten 1N4148 einbauen oder Ub senken"
+msgstr "Base is reverse-biased to −%s, the BC547 takes 6 V: fit the 1N4148 drawn in grey or lower Ub"
+
+msgid "Tipp: Basis bis −%s gesperrt (BC547: 6 V); läuft meist, geschützt mit den grauen 1N4148"
+msgstr "Tip: base reverse-biased to −%s (BC547: 6 V); usually works, protected with the grey 1N4148"
 
 #: uMain.pas rsChipSat
 msgid "Basisstrom knapp"
@@ -638,8 +641,6 @@ msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B, output Low �
 msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**"
 msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → k = ln((U_B − 0.6 V + ΔU) / (U_B − 0.6 V)) = **%s**"
 
-msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → mit 1N4148: k = ln((U_B − 1,2 V + ΔU) / (U_B − 1,2 V)) = **%s**"
-msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → with 1N4148: k = ln((U_B − 1.2 V + ΔU) / (U_B − 1.2 V)) = **%s**"
 
 #: uMain.pas rsBStepMultiT
 msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
@@ -657,16 +658,14 @@ msgstr "Frequency: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 on: **%s**"
 msgid "Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
 msgstr "Base current: I_B = (U_B − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
 
-msgid "Basisstrom mit 1N4148: I_B = (U_B − 0,6 V − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
-msgstr "Base current with 1N4148: I_B = (U_B − 0.6 V − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
 
 #: uMain.pas rsBStepMultiRv
 msgid "Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
 msgstr "Series resistor: R = (U_B − U_F − 0.2 V) / I = %s / %s = %s → next %s value above: **%s** → I = **%s**"
 
 #: uMain.pas rsBCopyTitle
-msgid "LedPreResistor %s – Blinkschaltung (%s)"
-msgstr "LedPreResistor %s – blink circuit (%s)"
+msgid "LedPreResistor %s – Blinkschaltung: %s"
+msgstr "LedPreResistor %s – Blink circuit: %s"
 
 #: uMain.pas rsBCopyInput
 msgid "Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s"
@@ -815,12 +814,12 @@ msgid "Soll %s; gleich von %s bis %s"
 msgstr "target %s; same from %s to %s"
 
 #: uMain.pas rsKCardISubLFix
-msgid "Soll %s; auch bei schwankender Spannung gleich"
-msgstr "target %s; same even if the voltage varies"
+msgid "Soll %s; bleibt gleich"
+msgstr "target %s; stays the same"
 
 #: uMain.pas rsKCardISubT
-msgid "Soll %s; je 10 °C wärmer ca. %s weniger"
-msgstr "target %s; about %s less per 10 °C warmer"
+msgid "Soll %s; −%s je 10 °C wärmer"
+msgstr "target %s; −%s per 10 °C warmer"
 
 #: uMain.pas rsKCardLossL
 msgid "Verlust im Regler"
@@ -839,12 +838,12 @@ msgid "Mindestspannung"
 msgstr "Minimum voltage"
 
 #: uMain.pas rsKCardNeedSubL
-msgid "%s + 1,25 V + ca. 2 V Regler"
-msgstr "%s + 1.25 V + approx. 2 V regulator"
+msgid "%s + 1,25 V + 2 V Regler"
+msgstr "%s + 1.25 V + 2 V regulator"
 
 #: uMain.pas rsKCardNeedSubT
-msgid "%s + 0,6 V + ca. 0,6 V an T1"
-msgstr "%s + 0.6 V + approx. 0.6 V across T1"
+msgid "%s + 0,6 V + 0,6 V an T1"
+msgstr "%s + 0.6 V + 0.6 V at T1"
 
 #: uMain.pas rsKPartLM317L
 msgid "LM317L (TO-92) reicht, ohne Kühlkörper"
@@ -995,8 +994,8 @@ msgid "Der Messwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehme
 msgstr "The sense resistor dissipates %s: use a power resistor (2–5 W)"
 
 #: uMain.pas rsKCopyTitle
-msgid "LedPreResistor %s – Konstantstrom (%s)"
-msgstr "LedPreResistor %s – Constant current (%s)"
+msgid "LedPreResistor %s – Konstantstrom: %s"
+msgstr "LedPreResistor %s – Constant current: %s"
 
 #: uMain.pas rsKCopyR
 msgid "Messwiderstand: %s (%s, %s), berechnet %s"
@@ -1083,8 +1082,8 @@ msgid "Tastgrad (LED 1 an)"
 msgstr "Duty cycle (LED 1 on)"
 
 #: uMain.pas rsBCardRvSub2
-msgid "LED 1 %s / LED 2 %s · bis %s → %s"
-msgstr "LED 1 %s / LED 2 %s · up to %s → %s"
+msgid "%s / %s · bis %s → %s"
+msgstr "%s / %s · up to %s → %s"
 
 #: uMain.pas rsBStepFreq1
 msgid "Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**"

@@ -59,9 +59,9 @@ const
   // BC547 (sichere Annahmen)
   BJT_UCE_SAT = 0.2;                                     // V, Kollektor-Emitter-Spannung, voll durchgeschaltet
   BJT_UBE = 0.6;                                         // V, Basis-Emitter-Spannung, wenn er leitet
-  DIODE_UF = 0.6;                                        // V, Durchlassspannung einer 1N4148 vor der Basis
   BJT_BETA = 100.0;                                      // Stromverstärkung (eher niedrig angenommen)
-  BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis
+  BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis (Datenblatt)
+  BJT_UEB_WARN = 12.0;                                   // V, ab hier ernsthaft: Warnung statt Tipp
   BJT_UCE_MAX = 45.0;                                    // V, BC547: höchste Kollektor-Emitter-Spannung
   BJT_IC_MAX = 0.1;                                      // A, BC547: höchster Kollektorstrom
   BJT_OVERDRIVE_MIN = 1.0;                               // Basisstrom mindestens I_C / β (Übersteuerung 1)
@@ -127,7 +127,7 @@ type
   TBlinkWarning = (
     bwSupply555,                                         // NE555 unter 4,5 V (CMOS-Version nehmen)
     bwR1Small,                                           // NE555: R1 unter 1 kΩ
-    bwBaseReverse,                                       // Multivibrator: Basis wird mit mehr als 6 V gesperrt
+    bwBaseReverse,                                       // Multivibrator: Basis wird mit mehr als 12 V gesperrt (Dioden nötig)
     bwNotSaturated,                                      // Multivibrator: Basisstrom reicht nicht sicher
     bwRHigh,                                             // Zeitwiderstand über 1 MΩ (Leckstrom des Elkos)
     bwTooFast                                            // schneller als das Auge: wirkt wie Dauerlicht
@@ -163,7 +163,7 @@ type
     URev: Double;                                        // Multivibrator: Sperrspannung der Basis in V
     IB: Double;                                          // Multivibrator: Basisstrom in A
     Overdrive: Double;                                   // Multivibrator: I_B · β / I_C
-    BaseDiode: Boolean;                                  // Multivibrator: 1N4148 vor jeder Basis empfohlen, I_B mit ihr gerechnet
+    BaseDiode: Boolean;                                  // Multivibrator: Sperrspannung über 6 V, 1N4148 vor jeder Basis empfohlen (grau gezeichnet)
     Led1, Led2: TLedResistor;                            // Vorwiderstände (LED 2 nur bei Wechselblinker)
   end;
 
@@ -463,15 +463,12 @@ begin
   end;
   // ----- 2. Spannungssprung am Kollektor: von U_B − U_F (gesperrt) auf U_CE,sat -----
   Res.DeltaU := Inp.U - Inp.Ud - BJT_UCE_SAT;
-  // Wird die Basis stärker gesperrt, als der BC547 verträgt, kommt je eine
-  // 1N4148 vor die Basis. Sie verschiebt die Einschaltschwelle um 0,6 V und
-  // fehlt dem Basisstrom (siehe 5.).
-  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit würde die Basis ohne Diode negativ
+  // Wird die Basis stärker gesperrt als die 6 V aus dem Datenblatt, empfiehlt
+  // die Anzeige je eine 1N4148 vor der Basis (grau gezeichnet). In der Praxis
+  // läuft die Schaltung bis etwa 12 V auch ohne; gerechnet wird ohne Dioden.
+  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
   Res.BaseDiode := Res.URev > BJT_UEB_MAX;
-  if Res.BaseDiode then
-    Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE + DIODE_UF)
-  else
-    Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE);
+  Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE);
   Res.C := Inp.C;
 
   // ----- 3. Zeitwiderstände -----
@@ -501,19 +498,13 @@ begin
   Res.TOff1 := Res.TLow;
 
   // ----- 5. Sättigung: Basisstrom über den grösseren R_B (ungünstigster Fall) -----
-  // Wird die Basis zu stark gesperrt, empfiehlt die Anzeige je eine 1N4148
-  // vor der Basis. Deren Durchlassspannung (ca. 0,6 V) fehlt dann dem
-  // Basisstrom, deshalb rechnet der Basisstrom in diesem Fall mit ihr.
   IC := Res.Led1.IAct;
-  if Res.BaseDiode then
-    Res.IB := (Inp.U - BJT_UBE - DIODE_UF) / Max(Res.R1, Res.R2)
-  else
-    Res.IB := (Inp.U - BJT_UBE) / Max(Res.R1, Res.R2);
+  Res.IB := (Inp.U - BJT_UBE) / Max(Res.R1, Res.R2);
   if IC > 0 then
     Res.Overdrive := Res.IB * BJT_BETA / IC;
 
   // ----- 6. Hinweise -----
-  if Res.URev > BJT_UEB_MAX then
+  if Res.URev > BJT_UEB_WARN then
     Include(Res.Warnings, bwBaseReverse);
   if Res.Overdrive < BJT_OVERDRIVE_MIN then
     Include(Res.Warnings, bwNotSaturated);

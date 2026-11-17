@@ -22,16 +22,18 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ### Anzeige
 - Empfohlene Bauform: Auslastung, Farbe, Statuszeile und Erwärmung beziehen sich immer auf die empfohlene Bauform («½ W zu 33 % belastet», grün). Vorher stand bei der Empfehlung ½ W eine gelbe «Auslastung 66 %» für ¼ W in der Statuszeile. Wie stark ¼ W belastet wäre, steht im Nebensatz der Statuszeile und als Begründung im Rechenweg.
-- Multivibrator: Mit den empfohlenen Dioden 1N4148 rechnen Basisstrom und Zeitfaktor k deren 0,6 V mit. Die Statuszeile ist dann grün («Mit 1N4148») und sagt, warum die grau gezeichneten Dioden nötig sind, statt zu warnen.
+- Multivibrator: Sperrspannung der Basis über 6 V (Datenblatt BC547) ergibt nur einen ruhigen Tipp in Grün mit den grau gezeichneten 1N4148 als Schutz, denn die Schaltung läuft in der Praxis auch ohne. Gelb gewarnt wird erst über 12 V. Gerechnet wird ohne Dioden.
 - LM317-Grenze: «höchstens 40 V zwischen IN und OUT» statt «am Eingang».
 - Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Herkunft der 1,3 V beim Basiswiderstand und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
 - Multivibrator: Elko-Beschriftung zweizeilig («C2 = 22 µF», darunter «16 V»), damit sie T2 nicht berührt; «10 nF» beim NE555 mit Abstand.
 - Karten: kein Umbruch direkt vor oder nach «→» und «=».
-- Karten: Passt ein Untertext nicht ganz in die Karte (lange Texte, grosse Skalierung), wird die Schrift etwas kleiner statt die letzte Zeile abzuschneiden. Konstantstrom-Karte «LED-Strom» kürzer («Soll 20,0 mA; gleich von 14,4 V bis 40 V»).
+- Karten: Untertexte kürzer, damit sie auf echtem Windows bei 100 % in zwei Zeilen passen und nichts abgeschnitten ist (z. B. «Soll 20,0 mA; gleich von 14,4 V bis 40 V», «18,64 / 17,27 mA · bis 98,5 mW → ¼ W»). «ausgelastet» statt «belastet», wie in Statuszeile und Rechenweg.
+- Konstantstrom bei 150-200 %: Erscheint links eine Bildlaufleiste, wird die Spalte breiter, damit die Auswahllisten nicht angeschnitten sind.
+- Kopieren: Kopfzeile «Blinkschaltung: Multivibrator (2 Transistoren)» statt doppelter Klammern.
 - NE555 über 16 V: Im Schaltplan steht «U_OUT = –» statt einer Ausgangsspannung.
 - Kartentexte brechen nicht mehr zwischen Bruch und Einheit um («⅛ W»).
 - Konstantstrom: «2 Transistoren (T1 je nach Strom)» statt «(T1 nach Strom)».
-- Karte «Tatsächlicher Strom» und «LED-Strom»: «mit 100 Ω statt ideal 90 Ω (Soll 20,0 mA)» statt «berechnet 90 Ω → 20,0 mA», das wie der tatsächliche Strom aussah.
+- Karte «Tatsächlicher Strom» und «LED-Strom»: «100 Ω statt ideal 90 Ω (Soll 20,0 mA)» statt «berechnet 90 Ω → 20,0 mA», das wie der tatsächliche Strom aussah.
 - Spannung zu klein: Die Meldung nennt die Abhilfe («Abhilfe: höchstens 3 LEDs in Reihe oder mehr Spannung»).
 - Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
 - Multivibrator: Karte «Basisstrom» gelb, solange die Basis-Warnung gilt.

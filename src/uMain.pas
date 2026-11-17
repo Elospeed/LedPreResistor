@@ -363,13 +363,13 @@ resourcestring
   rsSchemUFN = 'U_F = %d × %s';
   rsCardStd = 'Normwert (%s)';
   rsCardCurrent = 'Tatsächlicher Strom';
-  rsCardCurrentSub = 'mit %s statt ideal %s (Soll %s)';
+  rsCardCurrentSub = '%s statt ideal %s (Soll %s)';
   rsCardCurrentSubExact = 'Normwert passt genau (Soll %s)';
   rsCardPower = 'Verlustleistung';
   rsCardPowerSub = 'am Widerstand';
   rsCardRating = 'Empfohlene Bauform';
-  rsCardRatingSub = '%s wäre zu %s belastet';
-  rsCardRatingSubOk = '%s zu %s belastet';
+  rsCardRatingSub = '%s wäre zu %s ausgelastet';
+  rsCardRatingSubOk = '%s zu %s ausgelastet';
   rsCardRatingNone = '> 1 W';
   rsCardRatingNoneSub = 'zu viel für einen Vorwiderstand';
   rsRechenweg = 'Rechenweg';
@@ -402,7 +402,7 @@ resourcestring
   rsStatusLoad = 'Auslastung %s';
   rsStatusWarn = '%s: ca. +%d K über Umgebung – %s empfohlen';
   rsStatusOk = '%s: ca. +%d K über Umgebung – reicht';
-  rsStatusOkStd = '%s: ca. +%d K über Umgebung (¼ W wäre zu %s belastet)';
+  rsStatusOkStd = '%s: ca. +%d K über Umgebung (¼ W wäre zu %s ausgelastet)';
   rsStatusNone = '%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand';
   rsStatusTotal = 'Gesamtleistung %s';
   rsErrU = 'Bitte eine Speisespannung über 0 bis %s eingeben (Kleinspannung).';
@@ -494,7 +494,7 @@ resourcestring
   rsBCardDutySubVcc = 'LED leuchtet bei Low';
   rsBCardBase = 'Basisstrom';
   rsBCardBaseSub = '%s-fach übersteuert (β = %d)';
-  rsBCardBaseSubLow = 'zu wenig: nur %s-fach des Nötigen (β = %d)';
+  rsBCardBaseSubLow = 'nur %s-fach des Nötigen (β = %d)';
   rsBCardRv = 'Vorwiderstand (%s)';
   rsBCardRvSub = '%s · %s → %s';
   rsErrBR1 = 'Bitte R1 grösser als 0 eingeben.';
@@ -508,8 +508,9 @@ resourcestring
   rsErrBUTooLow = 'Die Speisespannung reicht nicht: am Ausgang bleibt %s, die LED braucht %s.';
   rsChipSupply = 'NE555: unter 4,5 V';
   rsWarnSupply = 'Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) nehmen';
-  rsChipBase = 'Mit 1N4148';
-  rsWarnBase = 'Ohne Dioden läge −%s an der Basis (BC547: max. 6 V): die grau gezeichneten 1N4148 einbauen';
+  rsChipBase = 'Basis −%s';
+  rsWarnBase = 'Basis wird mit −%s gesperrt, der BC547 verträgt 6 V: die grau gezeichneten 1N4148 einbauen oder Ub senken';
+  rsHintBase = 'Tipp: Basis bis −%s gesperrt (BC547: 6 V); läuft meist, geschützt mit den grauen 1N4148';
   rsChipSat = 'Basisstrom knapp';
   rsWarnSat = 'Der Transistor schaltet nicht sicher durch: RB kleiner und dafür C grösser wählen';
   rsChipR1 = 'R1 unter 1 kΩ';
@@ -539,14 +540,12 @@ resourcestring
   rsBStepRv = 'Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsBStepRvBoth = 'Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B, Ausgang Low ≈ 0,1 V) **%s** → I = **%s** / **%s**';
   rsBStepMultiK = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**';
-  rsBStepMultiKD = 'Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → mit 1N4148: k = ln((U_B − 1,2 V + ΔU) / (U_B − 1,2 V)) = **%s**';
   rsBStepMultiT = 'LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**';
   rsBStepMultiRev = 'Aus t_1 = %s (LED 1) und t_2 = %s (LED 2): R_B_2 = t_1 / (k · C) = %s → **%s**, R_B_1 = t_2 / (k · C) = %s → **%s** (nächste %s-Werte)';
   rsBStepMultiF = 'Frequenz: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepMultiBase = 'Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
-  rsBStepMultiBaseD = 'Basisstrom mit 1N4148: I_B = (U_B − 0,6 V − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)';
   rsBStepMultiRv = 'Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
-  rsBCopyTitle = 'LedPreResistor %s – Blinkschaltung (%s)';
+  rsBCopyTitle = 'LedPreResistor %s – Blinkschaltung: %s';
   rsBCopyInput = 'Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s';
   rsBCopyParts = 'Bauteile: %s = %s, %s = %s, C = %s';
   rsBCopyTimes = 'LED an %s, aus %s, Frequenz %s, Tastgrad %s';
@@ -556,7 +555,7 @@ resourcestring
   rsBCardDuty1 = 'Tastgrad (LED 1 an)';
   rsBStepFreq1 = 'Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepFreqRev1 = 'Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**';
-  rsBCardRvSub2 = 'LED 1 %s / LED 2 %s · bis %s → %s';
+  rsBCardRvSub2 = '%s / %s · bis %s → %s';
   { Konstantstrom }
   rsTabKsq = 'Konstantstrom';
   rsHeadSupply = 'SPEISESPANNUNG';
@@ -568,14 +567,14 @@ resourcestring
   rsKCardRSub = '%s · %s (%s)';
   rsKCardI = 'LED-Strom';
   rsKCardISubL = 'Soll %s; gleich von %s bis %s';
-  rsKCardISubLFix = 'Soll %s; auch bei schwankender Spannung gleich';
-  rsKCardISubT = 'Soll %s; je 10 °C wärmer ca. %s weniger';
+  rsKCardISubLFix = 'Soll %s; bleibt gleich';
+  rsKCardISubT = 'Soll %s; −%s je 10 °C wärmer';
   rsKCardLossL = 'Verlust im Regler';
   rsKCardLossT = 'Verlust in T1';
   rsKCardLossSubT = '%s; RB = %s';
   rsKCardNeed = 'Mindestspannung';
-  rsKCardNeedSubL = '%s + 1,25 V + ca. 2 V Regler';
-  rsKCardNeedSubT = '%s + 0,6 V + ca. 0,6 V an T1';
+  rsKCardNeedSubL = '%s + 1,25 V + 2 V Regler';
+  rsKCardNeedSubT = '%s + 0,6 V + 0,6 V an T1';
   rsKPartLM317L = 'LM317L (TO-92) reicht, ohne Kühlkörper';
   rsKPartLM317 = 'LM317 (TO-220) ohne Kühlkörper';
   rsKPartFree = '%s ohne Kühlkörper';
@@ -613,7 +612,7 @@ resourcestring
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
   rsKChipRPower = 'Mess-R über 1 W';
   rsKWarnRPower = 'Der Messwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen';
-  rsKCopyTitle = 'LedPreResistor %s – Konstantstrom (%s)';
+  rsKCopyTitle = 'LedPreResistor %s – Konstantstrom: %s';
   rsKCopyR = 'Messwiderstand: %s (%s, %s), berechnet %s';
   rsKCopyLoss = 'Verlust: %s → %s';
   rsKCopyNeed = 'Mindestspannung: %s';
@@ -691,7 +690,7 @@ end;
 ------------------------------------------------------------------------------
   Zweite Zeile der Karte «Tatsächlicher Strom» bzw. «LED-Strom»: welcher
   Normwert statt des idealen Werts eingesetzt ist und welcher Strom gewollt
-  war, z. B. «mit 100 Ω statt ideal 90 Ω (Soll 20,0 mA)». So liest niemand
+  war, z. B. «100 Ω statt ideal 90 Ω (Soll 20,0 mA)». So liest niemand
   den Sollstrom als tatsächlichen Strom.
   Parameter: R     - eingesetzter Normwert in Ω
              RCalc - idealer (berechneter) Wert in Ω
@@ -863,46 +862,11 @@ begin
 end;
 
 {------------------------------------------------------------------------------
-  WrapLineCount
-------------------------------------------------------------------------------
-  Zählt, wie viele Zeilen der Text bei Umbruch an Leerzeichen in der Breite
-  W braucht (geschützte Leerzeichen bleiben zusammen, wie beim Zeichnen).
-  Parameter: C - Zeichenfläche mit der gewählten Schrift
-             S - Text
-             W - verfügbare Breite in Pixel
-------------------------------------------------------------------------------}
-function WrapLineCount(C: TCanvas; const S: string; W: Integer): Integer;
-var
-  Words: TStringArray;                                   // Wörter (an Leerzeichen getrennt)
-  I: Integer;                                            // Wort-Index
-  Line: string;                                          // aktuelle Zeile
-begin
-  Result := 0;
-  if S = '' then Exit;
-  Words := S.Split([' ']);
-  Line := '';
-  Result := 1;
-  for I := 0 to High(Words) do
-  begin
-    if Line = '' then
-      Line := Words[I]
-    else if C.TextWidth(Line + ' ' + Words[I]) <= W then
-      Line := Line + ' ' + Words[I]
-    else
-    begin
-      Inc(Result);
-      Line := Words[I];
-    end;
-  end;
-end;
-
-{------------------------------------------------------------------------------
   DrawCardSub
 ------------------------------------------------------------------------------
-  Untertext einer Karte mit Zeilenumbruch. Passt er mit Schriftgrösse 8 nicht
-  ganz in den Bereich (lange Texte, grosse Windows-Skalierung, andere
-  Schriftbreiten), wird die Schrift schrittweise bis 6 verkleinert, damit
-  nie eine Zeile abgeschnitten ist.
+  Untertext einer Karte mit Zeilenumbruch, immer 8 pt (lesbar). Die Texte
+  sind so kurz gehalten, dass sie bei 100 bis 200 % in zwei Zeilen passen;
+  Details stehen im Rechenweg.
   Parameter: C    - Zeichenfläche (Schriftname und Farbe schon gesetzt)
              Area - verfügbarer Bereich
              S    - Text (mit geschützten Leerzeichen, siehe KeepUnits)
@@ -910,22 +874,13 @@ end;
 procedure DrawCardSub(C: TCanvas; Area: TRect; const S: string);
 var
   TS: TTextStyle;                                        // Textausrichtung mit Zeilenumbruch
-  Size: Integer;                                         // Schriftgrösse
 begin
-  Size := 8;
-  C.Font.Size := Size;
-  while (Size > 6) and
-        (WrapLineCount(C, S, Area.Right - Area.Left) * C.TextHeight('Ag') > Area.Bottom - Area.Top) do
-  begin
-    Dec(Size);
-    C.Font.Size := Size;
-  end;
+  C.Font.Size := 8;
   TS := C.TextStyle;
   TS.Wordbreak := True;
   TS.SingleLine := False;
   TS.Clipping := True;
   C.TextRect(Area, Area.Left, Area.Top, S, TS);
-  C.Font.Size := 8;
 end;
 
 {------------------------------------------------------------------------------
@@ -2276,7 +2231,17 @@ end;
   rollt die Spalte (Mindesthöhe der Vorschau)
 ------------------------------------------------------------------------------}
 procedure TFormMain.PanelLeftResize(Sender: TObject);
+var
+  W: Integer;                                            // nötige Breite der Spalte
 begin
+  // Reicht die Höhe nicht (z. B. Konstantstrom bei 150-200 %), erscheint eine
+  // Bildlaufleiste. Dann wird die Spalte um deren Breite breiter, damit die
+  // Auswahllisten rechts nicht angeschnitten sind (VM-Test 17.11.2026).
+  W := Px(270);
+  if PanelPreview.Top + PanelPreview.Constraints.MinHeight + Px(8) > PanelLeft.ClientHeight then
+    Inc(W, GetSystemMetrics(SM_CXVSCROLL));
+  if PanelLeft.Width <> W then
+    PanelLeft.Width := W;
   PanelPreview.Height := Max(PanelPreview.Constraints.MinHeight,
     PanelLeft.ClientHeight - PanelPreview.Top - Px(8));
 end;
@@ -4041,7 +4006,7 @@ begin
   end;
   V.Diode := FBInput.Diode;
   // Multivibrator: bei der Warnung «Basis gesperrt» die empfohlenen Dioden grau zeigen
-  V.BaseDiodes := (FBInput.Circuit = bcMulti) and (bwBaseReverse in FBRes.Warnings);
+  V.BaseDiodes := (FBInput.Circuit = bcMulti) and (FBRes.Status = bsOk) and FBRes.BaseDiode;
   V.Conn := FBInput.Conn;
   V.Elko := FBInput.C >= 1e-6 * 0.999;
 
@@ -4223,7 +4188,7 @@ begin
           if Ok then
           begin
             // gelb, wenn der Transistor nicht sicher durchschaltet
-            if bwNotSaturated in FBRes.Warnings then
+            if (bwNotSaturated in FBRes.Warnings) or (bwBaseReverse in FBRes.Warnings) then
               VC := clrWarn
             else
               VC := clrOk;
@@ -4350,10 +4315,7 @@ begin
   end
   else
   begin
-    if Res.BaseDiode then
-      Result[0] := Format(_(rsBStepMultiKD), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)])
-    else
-      Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
+    Result[0] := Format(_(rsBStepMultiK), [FormatVolt(Res.DeltaU), FormatNum(Res.K, 3, 3)]);
     if Inp.Reverse then
       Result[1] := Format(_(rsBStepMultiRev), [FormatSeconds(Inp.Duty / Inp.F), FormatSeconds((1 - Inp.Duty) / Inp.F),
         FormatOhm(Res.R2Calc), FormatOhm(Res.R2), FormatOhm(Res.R1Calc), FormatOhm(Res.R1), Ser])
@@ -4361,12 +4323,8 @@ begin
       Result[1] := Format(_(rsBStepMultiT), [FormatNum(Res.K, 3, 3), FormatOhm(Res.R2), FormatCap(Res.C),
         FormatSeconds(Res.THigh), FormatSeconds(Res.TLow)]);
     Result[2] := Format(_(rsBStepMultiF), [FormatSeconds(Res.T), FormatFreq(Res.F), FormatPercent1(Res.Duty1)]);
-    if Res.BaseDiode then
-      Result[3] := Format(_(rsBStepMultiBaseD), [FormatVolt(Inp.U - BJT_UBE - DIODE_UF), FormatOhm(Max(Res.R1, Res.R2)),
-        FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)])
-    else
-      Result[3] := Format(_(rsBStepMultiBase), [FormatVolt(Inp.U - BJT_UBE), FormatOhm(Max(Res.R1, Res.R2)),
-        FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)]);
+    Result[3] := Format(_(rsBStepMultiBase), [FormatVolt(Inp.U - BJT_UBE), FormatOhm(Max(Res.R1, Res.R2)),
+      FormatMilliAmp(Res.IB), FormatNum(Res.Overdrive, 1, 1), Round(BJT_BETA)]);
     Result[4] := ExactStd(Format(_(rsBStepMultiRv), [FormatVolt(Res.Led1.UR), FormatMilliAmp(Inp.I),
       FormatOhm(Res.Led1.RCalc), Ser, FormatOhm(Res.Led1.R), FormatMilliAmp(Res.Led1.IAct)]),
       Ser, Res.Led1.RCalc, Res.Led1.R);
@@ -4415,6 +4373,8 @@ begin
   // ----- 2. Hinweise sammeln -----
   if bwSupply555 in FBRes.Warnings then
     Add(_(rsChipSupply), Format(_(rsWarnSupply), [FormatVolt(FBInput.U)]));
+  if bwBaseReverse in FBRes.Warnings then
+    Add(Format(_(rsChipBase), [FormatVolt(FBRes.URev)]), Format(_(rsWarnBase), [FormatVolt(FBRes.URev)]));
   if bwNotSaturated in FBRes.Warnings then
     Add(_(rsChipSat), _(rsWarnSat));
   if bwR1Small in FBRes.Warnings then
@@ -4435,9 +4395,9 @@ begin
   end
   else if FBRes.BaseDiode then
   begin
-    // kein Fehler: die Dioden sind gezeichnet und eingerechnet, nur einbauen
-    ChipText := _(rsChipBase);
-    Txt := Format(_(rsWarnBase), [FormatVolt(FBRes.URev)]);
+    // 6 bis 12 V Sperrspannung: läuft in der Praxis, nur ein ruhiger Tipp
+    ChipText := _(rsChipOkMulti);
+    Txt := Format(_(rsHintBase), [FormatVolt(FBRes.URev)]);
     Sym := 0;
     Fore := clrOk;
     Back := clrOkBack;
