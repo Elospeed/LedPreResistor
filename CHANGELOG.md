@@ -7,7 +7,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.5.2 – unveröffentlicht
+## 2.5.2 – 17. November 2026
 
 ### Schaltplan
 - NE555: Die Diode über R2 war seit 2.3 verkehrt herum gezeichnet. Richtig ist Anode am Knoten R1/R2 (Pin 7), Kathode am Kondensator (Pin 6/2): Beim Laden leitet sie, beim Entladen sperrt sie. Der Verbindungstest prüft jetzt auch die Richtung.
