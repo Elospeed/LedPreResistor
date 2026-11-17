@@ -7,7 +7,56 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.5.1 – unveröffentlicht
+## 2.5.2 – unveröffentlicht
+
+### Schaltplan
+- NE555: Die Diode über R2 war seit 2.3 verkehrt herum gezeichnet. Richtig ist Anode am Knoten R1/R2 (Pin 7), Kathode am Kondensator (Pin 6/2): Beim Laden leitet sie, beim Entladen sperrt sie. Der Verbindungstest prüft jetzt auch die Richtung.
+- Gepolte Bauteile durchgesehen: LEDs (Anode zum Plus), Dioden, Elkos (Plus am NE555-Zeitglied bzw. am Kollektor), Transistoren (C/B/E, Emitterpfeil), LM317 (IN/OUT/ADJ), NE555-Pins. Elkos melden dem Test jetzt «+» und «−», ein verkehrt gepoltes Bauteil fällt im automatischen Build auf.
+- Stränge parallel: Der zweite Strang ist genau wie der erste gezeichnet: eigener Widerstand mit Farbringen und gleich viele LEDs (ab 4 LEDs mit Punkten dazwischen). Über den Säulen steht «Strang 1» und «Strang 2» bzw. «… Strang k». Vorher war er nur grau mit einer LED angedeutet, und «× k» daneben liess sich als zusätzliche Stränge lesen.
+- Stränge parallel: Der Strompfeil unten liegt auf der gemeinsamen Rückleitung und zeigt den Gesamtstrom aller Stränge («I = 35,12 mA gesamt (2 × 17,56 mA)»); der Strom je Strang steht unter «k Stränge parallel».
+- Konstantstrom: bis 3 LEDs einzeln, ab 4 LEDs mit Punkten dazwischen (wie beim Vorwiderstand). Vorher waren es ab 2 LEDs immer zwei Symbole.
+- Multivibrator: Kreuzungen ohne Verbindung mit kleiner Brücke. Wird die Basis zu stark gesperrt, sind die empfohlenen Dioden 1N4148 vor den Basen grau eingezeichnet.
+- Blinkschaltungen: Bei Elkos steht die nötige Spannungsfestigkeit dabei («22 µF/16 V»).
+
+### Grenzen der Bauteile
+- Zu grosse Werte ergeben kein Resultat mehr, sondern eine Meldung mit der Grenze: NE555 höchstens 16 V und 200 mA, Multivibrator (BC547) höchstens 45 V und 100 mA, LM317 höchstens 40 V (sonst LM317HV), zwei Transistoren höchstens 45 V. Bei LM317 und T1 zählt die ganze Speisespannung, weil sie beim Einschalten oder bei kurzgeschlossenen LEDs anliegt.
+- NE555 unter 4,5 V: Hinweis auf die CMOS-Version (TLC555, ICM7555).
+
+### Anzeige
+- Empfohlene Bauform: Auslastung, Farbe, Statuszeile und Erwärmung beziehen sich immer auf die empfohlene Bauform («½ W zu 33 % belastet», grün). Vorher stand bei der Empfehlung ½ W eine gelbe «Auslastung 66 %» für ¼ W in der Statuszeile. Wie stark ¼ W belastet wäre, steht im Nebensatz der Statuszeile und als Begründung im Rechenweg.
+- Multivibrator: Sperrspannung der Basis über 6 V (Datenblatt BC547) ergibt nur einen ruhigen Tipp in Grün mit den grau gezeichneten 1N4148 als Schutz, denn die Schaltung läuft in der Praxis auch ohne. Gelb gewarnt wird erst über 12 V. Gerechnet wird ohne Dioden.
+- LM317-Grenze: «höchstens 40 V zwischen IN und OUT» statt «am Eingang».
+- Rechenweg: Ist 1 W empfohlen, nennt die Begründung auch ½ W («¼ W zu 144 % (> 50 %; ½ W: 72 %) → 1 W»).
+- Rechenweg: «genau ein E12-Wert: 120 Ω», wenn der ideale Wert schon ein Normwert ist; Basiswiderstand als «(U_B − 0,6 V − 0,7 V) / I» statt mit unerklärten 1,3 V und «Ausgang Low ≈ 0,1 V» beim Wechselblinker genannt.
+- Multivibrator: Elko-Beschriftung zweizeilig («C2 = 22 µF», darunter «16 V»), damit sie T2 nicht berührt; «10 nF» beim NE555 mit Abstand.
+- Karten: kein Umbruch direkt vor oder nach «→» und «=».
+- Karten: Untertexte kürzer, damit sie auf echtem Windows bei 100 % in zwei Zeilen passen und nichts abgeschnitten ist (z. B. «Soll 20,0 mA; gleich von 14,4 V bis 40 V», «18,64 / 17,27 mA · bis 98,5 mW → ¼ W»). «ausgelastet» statt «belastet», wie in Statuszeile und Rechenweg.
+- Konstantstrom bei 150-200 %: Erscheint links eine Bildlaufleiste, wird die Spalte breiter, damit die Auswahllisten nicht angeschnitten sind.
+- Kopieren: Kopfzeile «Blinkschaltung: Multivibrator (2 Transistoren)» statt doppelter Klammern.
+- NE555 über 16 V: Im Schaltplan steht «U_OUT = –» statt einer Ausgangsspannung.
+- Kartentexte brechen nicht mehr zwischen Bruch und Einheit um («⅛ W»).
+- Konstantstrom: «2 Transistoren (T1 je nach Strom)» statt «(T1 nach Strom)».
+- Karte «Tatsächlicher Strom» und «LED-Strom»: «100 Ω statt ideal 90 Ω (Soll 20,0 mA)» statt «berechnet 90 Ω → 20,0 mA», das wie der tatsächliche Strom aussah.
+- Spannung zu klein: Die Meldung nennt die Abhilfe («Abhilfe: höchstens 3 LEDs in Reihe oder mehr Spannung»).
+- Wechselblinker: Karte «Vorwiderstand» mit «LED 1 18,21 mA / LED 2 18,51 mA».
+- Multivibrator: Karte «Basisstrom» gelb, solange die Basis-Warnung gilt.
+- Multivibrator: Bei zu kleinem Basisstrom heisst es «zu wenig: nur 0,7-fach des Nötigen» statt «0,7-fach übersteuert».
+- Konstantstrom: «Messwiderstand» statt «Fühlerwiderstand».
+- Eingaben: Lange Beschriftungen wie «Durchlassspannung» werden bei 100 % nicht mehr abgeschnitten.
+
+### Kopieren
+- Stränge parallel: Strom «je Strang» und die Leistung getrennt nach je Widerstand, alle Widerstände, alle LEDs und gesamt. Vorher stand die Leistung eines Widerstands neben der Summe aller LEDs.
+- Farbname klein wie im Schaltplan («LED weiss»), «Sollstrom» statt «Strom» für den eingegebenen Wert.
+
+### Blinkschaltung
+- LED-Vorschau: Sehr kurze Phasen (z. B. 7 ms Aufblitzen beim NE555 mit Diode) blinken jetzt als kurzes Aufblitzen, statt dass beide LEDs gedimmt dauernd leuchten. Dauerlicht nur noch, wenn die Frequenz zu hoch fürs Auge ist.
+- Wechselblinker (NE555, beide LEDs) und Multivibrator: Karten, Vorschau, Rechenweg und Kopiertext nennen die Zeiten und den Tastgrad je LED («LED 1 / LED 2 an», «Tastgrad (LED 1 an)»).
+
+### Tests
+- Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator mit und ohne Dioden, LM317, zwei Transistoren, jeweils mit 1 bis 30 LEDs): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
+- Grenzwerte der Bauteile genau an und knapp über der Grenze, Bezug auf die empfohlene Bauform, Basisstrom mit Diode.
+
+## 2.5.1 – 17. November 2026
 
 ### Schaltplan
 - Stränge parallel: Der angedeutete zweite Strang zweigt jetzt vor dem ersten Vorwiderstand ab (direkt an der Quelle), wie es elektrisch richtig ist. Vorher hing er zeichnerisch hinter dem ersten Widerstand.
@@ -16,9 +65,6 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - Neuer Schritt 6 «Aufteilung der Leistung»: wie viel der Leistung aus der Quelle in den LEDs ankommt und wie viel die Widerstände verheizen, je mit Anteil in Prozent (bei Strängen parallel für alle Stränge zusammen).
 
 ## Unveröffentlicht
-
-### Tests
-- Neue Verbindungstests für alle Schaltpläne (LED-Vorwiderstand, NE555, Multivibrator, LM317, zwei Transistoren): Jeder Plan meldet beim Zeichnen seine Leitungen und Bauteile, der Test prüft, welche Anschlüsse verbunden sind. Ein Fehler wie in 2.5 (zweiter Strang hinter dem ersten Widerstand) fällt so im automatischen Build auf.
 
 ### Projektseite
 - Kurzer Satz zur Herkunft des Projekts angepasst; Klicks auf externe Links im Seitenfuss und in den Fragen werden anonym mitgezählt (GoatCounter, ohne Cookies).

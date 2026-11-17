@@ -60,7 +60,10 @@ const
   BJT_UCE_SAT = 0.2;                                     // V, Kollektor-Emitter-Spannung, voll durchgeschaltet
   BJT_UBE = 0.6;                                         // V, Basis-Emitter-Spannung, wenn er leitet
   BJT_BETA = 100.0;                                      // Stromverstärkung (eher niedrig angenommen)
-  BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis
+  BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis (Datenblatt)
+  BJT_UEB_WARN = 12.0;                                   // V, ab hier ernsthaft: Warnung statt Tipp
+  BJT_UCE_MAX = 45.0;                                    // V, BC547: höchste Kollektor-Emitter-Spannung
+  BJT_IC_MAX = 0.1;                                      // A, BC547: höchster Kollektorstrom
   BJT_OVERDRIVE_MIN = 1.0;                               // Basisstrom mindestens I_C / β (Übersteuerung 1)
 
   // Grenzen für Hinweise
@@ -113,15 +116,18 @@ type
     bsInvalidDuty,                                       // Tastgrad nicht zwischen 0 und 100 %
     bsDutyNeedsDiode,                                    // NE555 ohne Diode: High-Anteil muss über 50 % sein
     bsUTooLow,                                           // es bleibt keine Spannung für den Vorwiderstand
+    bsSupply555,                                         // NE555: mehr als 16 V
+    bsCurrent555,                                        // NE555: mehr als 200 mA am Ausgang
+    bsMultiVoltage,                                      // Multivibrator: mehr als 45 V für den BC547
+    bsMultiCurrent,                                      // Multivibrator: mehr als 100 mA für den BC547
     bsNoStdValue                                         // kein Normwert gefunden (sollte nicht vorkommen)
   );
 
   // Hinweise zu einem gültigen Resultat (gerechnet wird trotzdem)
   TBlinkWarning = (
-    bwSupply555,                                         // NE555 ausserhalb 4,5–16 V
+    bwSupply555,                                         // NE555 unter 4,5 V (CMOS-Version nehmen)
     bwR1Small,                                           // NE555: R1 unter 1 kΩ
-    bwOutCurrent,                                        // NE555: Ausgangsstrom über 200 mA
-    bwBaseReverse,                                       // Multivibrator: Basis wird mit mehr als 6 V gesperrt
+    bwBaseReverse,                                       // Multivibrator: Basis wird mit mehr als 12 V gesperrt (Dioden nötig)
     bwNotSaturated,                                      // Multivibrator: Basisstrom reicht nicht sicher
     bwRHigh,                                             // Zeitwiderstand über 1 MΩ (Leckstrom des Elkos)
     bwTooFast                                            // schneller als das Auge: wirkt wie Dauerlicht
@@ -157,6 +163,7 @@ type
     URev: Double;                                        // Multivibrator: Sperrspannung der Basis in V
     IB: Double;                                          // Multivibrator: Basisstrom in A
     Overdrive: Double;                                   // Multivibrator: I_B · β / I_C
+    BaseDiode: Boolean;                                  // Multivibrator: Sperrspannung über 6 V, 1N4148 vor jeder Basis empfohlen (grau gezeichnet)
     Led1, Led2: TLedResistor;                            // Vorwiderstände (LED 2 nur bei Wechselblinker)
   end;
 
@@ -199,11 +206,15 @@ function NearestStdValue(R: Double; Series: TESeries; out Std: TStdValue): Boole
   Formel:    K = ln((U_B − 0,6 + ΔU) / (U_B − 0,6))
              Ist ΔU = U_B − 0,6 (Lehrbuchfall), ist K = ln 2.
   Beispiel:  U_B = 9 V, ΔU = 6,8 V: K = ln(15,2 / 8,4) = 0,593
+             Mit einer Diode 1N4148 vor der Basis schaltet der Transistor
+             erst bei 0,6 V + 0,6 V = 1,2 V am Kondensator wieder ein:
+             K = ln((U_B − 1,2 + ΔU) / (U_B − 1,2)).
   Parameter: U      - Speisespannung U_B in V
              DeltaU - Spannungssprung am Kollektor in V
+             UTh    - Einschaltschwelle am Kondensator in V (0,6 V, mit Diode 1,2 V)
   Rückgabe:  K; bei unsinnigen Werten ln 2
 ------------------------------------------------------------------------------}
-function MultiFactor(U, DeltaU: Double): Double;
+function MultiFactor(U, DeltaU: Double; UTh: Double = 0.6): Double;
 
 {------------------------------------------------------------------------------
   LedResistor
@@ -266,11 +277,11 @@ end;
 {------------------------------------------------------------------------------
   MultiFactor - siehe Interface
 ------------------------------------------------------------------------------}
-function MultiFactor(U, DeltaU: Double): Double;
+function MultiFactor(U, DeltaU: Double; UTh: Double): Double;
 begin
-  if (U - BJT_UBE <= 0) or (DeltaU <= 0) then
+  if (U - UTh <= 0) or (DeltaU <= 0) then
     Exit(Ln(2));                                         // Lehrbuchwert als Notlösung
-  Result := Ln((U - BJT_UBE + DeltaU) / (U - BJT_UBE));
+  Result := Ln((U - UTh + DeltaU) / (U - UTh));
 end;
 
 {------------------------------------------------------------------------------
@@ -416,12 +427,10 @@ begin
   end;
 
   // ----- 4. Hinweise -----
-  if (Inp.U < NE555_U_MIN) or (Inp.U > NE555_U_MAX) then
-    Include(Res.Warnings, bwSupply555);
+  if Inp.U < NE555_U_MIN then
+    Include(Res.Warnings, bwSupply555);                  // darunter: CMOS-Version (TLC555)
   if Res.R1 < NE555_R1_MIN then
     Include(Res.Warnings, bwR1Small);
-  if Max(Res.Led1.IAct, Res.Led2.IAct) > NE555_I_MAX then
-    Include(Res.Warnings, bwOutCurrent);
   if Max(Res.R1, Res.R2) > R_TIMING_MAX then
     Include(Res.Warnings, bwRHigh);
 end;
@@ -454,7 +463,12 @@ begin
   end;
   // ----- 2. Spannungssprung am Kollektor: von U_B − U_F (gesperrt) auf U_CE,sat -----
   Res.DeltaU := Inp.U - Inp.Ud - BJT_UCE_SAT;
-  Res.K := MultiFactor(Inp.U, Res.DeltaU);
+  // Wird die Basis stärker gesperrt als die 6 V aus dem Datenblatt, empfiehlt
+  // die Anzeige je eine 1N4148 vor der Basis (grau gezeichnet). In der Praxis
+  // läuft die Schaltung bis etwa 12 V auch ohne; gerechnet wird ohne Dioden.
+  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
+  Res.BaseDiode := Res.URev > BJT_UEB_MAX;
+  Res.K := MultiFactor(Inp.U, Res.DeltaU, BJT_UBE);
   Res.C := Inp.C;
 
   // ----- 3. Zeitwiderstände -----
@@ -488,10 +502,9 @@ begin
   Res.IB := (Inp.U - BJT_UBE) / Max(Res.R1, Res.R2);
   if IC > 0 then
     Res.Overdrive := Res.IB * BJT_BETA / IC;
-  Res.URev := Res.DeltaU - BJT_UBE;                      // so weit wird die Basis negativ
 
   // ----- 6. Hinweise -----
-  if Res.URev > BJT_UEB_MAX then
+  if Res.URev > BJT_UEB_WARN then
     Include(Res.Warnings, bwBaseReverse);
   if Res.Overdrive < BJT_OVERDRIVE_MIN then
     Include(Res.Warnings, bwNotSaturated);
@@ -530,7 +543,16 @@ begin
   else if Input.Reverse and not ((Input.Duty > 0) and (Input.Duty < 1)) then
     Result.Status := bsInvalidDuty
   else if not (Input.C > 0) then
-    Result.Status := bsInvalidC;
+    Result.Status := bsInvalidC
+  // Grenzwerte der Bauteile: darüber gibt es kein Resultat, nur die Grenze
+  else if (Input.Circuit = bcNE555) and (Input.U > NE555_U_MAX + 1e-9) then
+    Result.Status := bsSupply555
+  else if (Input.Circuit = bcNE555) and (Input.I > NE555_I_MAX + 1e-9) then
+    Result.Status := bsCurrent555
+  else if (Input.Circuit = bcMulti) and (Input.U > BJT_UCE_MAX + 1e-9) then
+    Result.Status := bsMultiVoltage
+  else if (Input.Circuit = bcMulti) and (Input.I > BJT_IC_MAX + 1e-9) then
+    Result.Status := bsMultiCurrent;
   if Result.Status <> bsOk then
     Exit;
 

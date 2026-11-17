@@ -243,6 +243,13 @@ begin
   E := Basis(kcLM317); E.I := 0;    AssertTrue(CalculateKsq(E).Status = ksInvalidI);
   E := Basis(kcLM317); E.N := 0;    AssertTrue(CalculateKsq(E).Status = ksInvalidN);
   E := Basis(kcLM317); E.I := 2;    AssertTrue(CalculateKsq(E).Status = ksTooMuchCurrent);
+  // Spannungsgrenzen: LM317 40 V, T1 45 V (an der Grenze erlaubt, knapp darüber Fehler)
+  E := Basis(kcLM317); E.UMax := 40;    AssertTrue('LM317 40 V', CalculateKsq(E).Status = ksOk);
+  E := Basis(kcLM317); E.UMax := 40.1;  AssertTrue('LM317 40,1 V', CalculateKsq(E).Status = ksOverVoltage);
+  E := Basis(kcLM317); E.UMin := 50; E.UMax := 17;  // vertauscht: zählt die grössere
+  AssertTrue('LM317 17 … 50 V', CalculateKsq(E).Status = ksOverVoltage);
+  E := Basis(kcTransistors); E.UMax := 45;   AssertTrue('T1 45 V', CalculateKsq(E).Status = ksOk);
+  E := Basis(kcTransistors); E.UMax := 45.1; AssertTrue('T1 45,1 V', CalculateKsq(E).Status = ksOverVoltage);
 end;
 
 initialization

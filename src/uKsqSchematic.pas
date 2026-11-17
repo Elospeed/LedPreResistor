@@ -10,7 +10,7 @@
              dort der Widerstand R, fliesst I = 1,25 V / R, egal wie viele
              LEDs dahinter hängen.
              Zwei Transistoren: T1 lässt den LED-Strom durch. Sobald an R_S
-             (Fühlerwiderstand) etwa 0,65 V abfallen, schaltet T2 ein und
+             (Messwiderstand) etwa 0,65 V abfallen, schaltet T2 ein und
              nimmt T1 den Basisstrom weg. So bleibt I = 0,65 V / R_S.
 
   Technik:   Die Zeichenhilfen (Leitung, Widerstand, LED, Transistor, Punkt,
@@ -19,7 +19,8 @@
              Die LEDs leuchten hier dauernd (kein Blinken).
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 Bauteile für die Verbindungstests benannt
+  Versionen: 2.5.2 17.11.2026 ab 4 LEDs in Reihe: LED, Punkte, LED (wie Vorwiderstand)
+             2.5.1 17.11.2026 Bauteile für die Verbindungstests benannt
              2.4  14.11.2026  neu: Schaltpläne LM317 und zwei Transistoren
 ==============================================================================}
 unit uKsqSchematic;
@@ -49,8 +50,8 @@ type
     LedText: string;                                     // "2 × LED weiss"
     UFText: string;                                      // "U_F = 2 × 3,2 V"
     LedColor: TColor;                                    // Leuchtfarbe der LEDs
-    TwoLeds: Boolean;                                    // zwei LED-Symbole zeichnen (mehrere LEDs in Reihe)
-    Bands: TBandArray;                                   // Farbringe von R bzw. R_S (Fühlerwiderstand)
+    LedCount: Integer;                                   // LEDs in Reihe (1 bis 3 einzeln, ab 4 LED, Punkte, LED)
+    Bands: TBandArray;                                   // Farbringe von R bzw. R_S (Messwiderstand)
     BandsB: TBandArray;                                  // Farbringe von R_B
   end;
 
@@ -86,7 +87,7 @@ procedure DrawSchematicKsqT(Canvas: TCanvas; const Rect: TRect;
 implementation
 
 uses
-  Math, uTheme, uSmooth, uSchemNetz;
+  SysUtils, Math, uTheme, uSmooth, uSchemNetz;
 
 {------------------------------------------------------------------------------
   Leds
@@ -95,7 +96,7 @@ uses
   Parameter: C, M - Leinwand und Umrechnung Vorlage -> Pixel
              X    - waagrechte Lage der Leitung (Vorlage)
              Top  - Oberkante der ersten LED (Vorlage)
-             V    - LED-Farbe und TwoLeds (zwei Symbole = mehrere in Reihe)
+             V    - LED-Farbe und LedCount (1 bis 3 einzeln, ab 4: LED, Punkte, LED)
              Col  - Farben
   Rückgabe:  Unterkante der letzten LED (Vorlage); dort geht die Leitung
              weiter.
@@ -104,18 +105,50 @@ function Leds(C: TCanvas; const M: TMap; X, Top: Double; const V: TKsqSchemValue
   const Col: TBlinkSchemColors): Double;
 var
   BV: TBlinkSchemValues;                                 // für LedDown: nur die Leuchtfarbe
+  N: Integer;                                            // LEDs in Reihe
 begin
   BV := Default(TBlinkSchemValues);
   BV.LedColor := V.LedColor;
+  N := Max(1, V.LedCount);
   NetzName('LED1');                                      // Namen für die Verbindungstests
   LedDown(C, M, X, Top, True, BV, Col);
   Result := Top + 24;                                    // eine LED ist 24 Punkte hoch
-  if V.TwoLeds then
+  if N >= 4 then
   begin
-    Wire(C, M, [X, Result, X, Result + 8]);              // 8 Punkte Leitung dazwischen
+    // drei Punkte für die LEDs dazwischen, wie beim Vorwiderstand
+    Wire(C, M, [X, Result, X, Result + 8]);
+    C.Brush.Style := bsSolid;
+    C.Brush.Color := Col.Line;
+    C.Pen.Width := 1;
+    C.Ellipse(MX(M, X - 2), MY(M, Result + 10), MX(M, X + 2), MY(M, Result + 14));
+    C.Ellipse(MX(M, X - 2), MY(M, Result + 18), MX(M, X + 2), MY(M, Result + 22));
+    C.Ellipse(MX(M, X - 2), MY(M, Result + 26), MX(M, X + 2), MY(M, Result + 30));
+    C.Brush.Style := bsClear;
+    C.Pen.Width := MW(M, 1.6);
+    NetzName('PUNKTE');                                  // steht für die ausgelassenen LEDs
+    NetzBauteil('LED', ['A', 'K'], [X, Result + 8, X, Result + 32]);
+    Wire(C, M, [X, Result + 32, X, Result + 40]);
+    Result := Result + 40;
+  end
+  else if N = 3 then
+  begin
+    // drei LEDs einzeln (gleich hoch wie LED, Punkte, LED)
+    Wire(C, M, [X, Result, X, Result + 8]);
     NetzName('LED2');
     LedDown(C, M, X, Result + 8, True, BV, Col);
-    Result := Result + 32;
+    Wire(C, M, [X, Result + 32, X, Result + 40]);
+    Result := Result + 40;
+  end
+  else if N = 2 then
+  begin
+    Wire(C, M, [X, Result, X, Result + 8]);              // 8 Punkte Leitung dazwischen
+    Result := Result + 8;
+  end;
+  if N >= 2 then
+  begin
+    NetzName('LED' + IntToStr(N));                       // die letzte heisst wie ihre Nummer
+    LedDown(C, M, X, Result, True, BV, Col);
+    Result := Result + 24;
   end;
 end;
 
@@ -158,7 +191,8 @@ begin
   NetzName('R');
   ResBands(C, M, 420, 72, 120, V.Bands, Col);            // R senkrecht mit Ringen
   // ----- 3. LEDs vom Knoten nach Masse -----
-  if V.TwoLeds then Top := 168 else Top := 186;          // zwei LEDs: höher beginnen
+  // mehr LEDs: höher beginnen (eine 24, zwei 56, drei oder mit Punkten 88 Punkte hoch)
+  if V.LedCount >= 3 then Top := 156 else if V.LedCount = 2 then Top := 168 else Top := 186;
   Wire(C, M, [420, 150, 420, Top]);
   Bot := Leds(C, M, 420, Top, V, Col);
   Wire(C, M, [420, Bot, 420, 280]);
@@ -180,7 +214,7 @@ begin
   Txt(C, M, 404, 138, V.RefText, Col.Dim, 2, False);     // 1,25 V links vom Knoten
   Txt(C, M, 436, 96, V.RText, Col.Accent, 0, True);
   Txt(C, M, 436, 116, V.RSubText, Col.Dim, 0, False);
-  if V.TwoLeds then                                      // Text mittig neben den LEDs
+  if V.LedCount >= 2 then                                // Text mittig neben den LEDs
   begin
     Txt(C, M, 462, 196, V.LedText, Col.Text, 0, False);
     Txt(C, M, 462, 216, V.UFText, Col.Dim, 0, False);
@@ -239,7 +273,7 @@ begin
   Wire(C, M, [270, 150, 270, 208]);                      // Kollektor T2 an Basisleitung
   Wire(C, M, [270, 252, 270, 280]);                      // Emitter T2 an Masse
   // ----- 3. LEDs von +U_B zum Kollektor von T1 -----
-  if V.TwoLeds then Top := 44 else Top := 62;
+  if V.LedCount >= 3 then Top := 36 else if V.LedCount = 2 then Top := 44 else Top := 62;
   Wire(C, M, [420, 30, 420, Top]);
   Bot := Leds(C, M, 420, Top, V, Col);
   Wire(C, M, [420, Bot, 420, 128]);
@@ -267,7 +301,7 @@ begin
   Txt(C, M, 22, 284, 'GND', Col.Text, 0, False);
   Txt(C, M, 66, 22, V.UBText, Col.Dim, 0, False);
   Txt(C, M, 186, 76, V.RBText, Col.Accent, 2, True);
-  if V.TwoLeds then
+  if V.LedCount >= 2 then
   begin
     Txt(C, M, 462, 66, V.LedText, Col.Text, 0, False);
     Txt(C, M, 462, 86, V.UFText, Col.Dim, 0, False);

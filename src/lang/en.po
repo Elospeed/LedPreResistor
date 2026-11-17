@@ -118,8 +118,12 @@ msgid "Tatsächlicher Strom"
 msgstr "Actual current"
 
 #: uMain.pas rsCardCurrentSub
-msgid "berechnet %s → %s"
-msgstr "calculated %s → %s"
+msgid "%s statt ideal %s (Soll %s)"
+msgstr "%s vs. ideal %s (target %s)"
+
+#: uMain.pas rsCardCurrentSubExact
+msgid "Normwert passt genau (Soll %s)"
+msgstr "standard value fits exactly (target %s)"
 
 #: uMain.pas rsCardPower
 msgid "Verlustleistung"
@@ -134,11 +138,11 @@ msgid "Empfohlene Bauform"
 msgstr "Recommended rating"
 
 #: uMain.pas rsCardRatingSub
-msgid "%s wäre zu %s belastet"
+msgid "%s wäre zu %s ausgelastet"
 msgstr "%s would be loaded to %s"
 
 #: uMain.pas rsCardRatingSubOk
-msgid "%s zu %s belastet"
+msgid "%s zu %s ausgelastet"
 msgstr "%s loaded to %s"
 
 #: uMain.pas rsCardRatingNoneSub
@@ -163,7 +167,7 @@ msgstr "Buy me a coffee"
 
 #: uMain.pas rsStep2
 msgid "Idealer Widerstand: R = U_R / I = %s / %s A = **%s** → nächster %s-Wert darüber: **%s**"
-msgstr "Ideal resistance: R = U_R / I = %s / %s A = **%s** → next %s value up: **%s**"
+msgstr "Ideal resistance: R = U_R / I = %s / %s A = **%s** → next %s value above: **%s**"
 
 #: uMain.pas rsStep3
 msgid "Tatsächlicher Strom: I = %s / %s = **%s**"
@@ -176,6 +180,9 @@ msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → %s loaded to %s%
 #: uMain.pas rsStep4Over50
 msgid " (> 50 %)"
 msgstr " (> 50%)"
+
+msgid " (> 50 %%; %s: %s)"
+msgstr " (> 50%%; %s: %s)"
 
 #: uMain.pas rsStep4None
 msgid "Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**"
@@ -196,6 +203,9 @@ msgstr "%s: about +%d K above ambient – %s recommended"
 #: uMain.pas rsStatusOk
 msgid "%s: ca. +%d K über Umgebung – reicht"
 msgstr "%s: about +%d K above ambient – fine"
+
+msgid "%s: ca. +%d K über Umgebung (¼ W wäre zu %s ausgelastet)"
+msgstr "%s: about +%d K above ambient (¼ W would be loaded to %s)"
 
 #: uMain.pas rsStatusNone
 msgid "%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand"
@@ -225,6 +235,18 @@ msgstr "Please enter 1 to %d LEDs in series (whole number)."
 msgid "Die Speisespannung (%s) muss grösser sein als %d × %s = %s."
 msgstr "The supply voltage (%s) must be greater than %d × %s = %s."
 
+#: uMain.pas rsErrUTooLowMaxN
+msgid " Abhilfe: höchstens %d LEDs in Reihe oder mehr Spannung."
+msgstr " Fix: at most %d LEDs in series or a higher voltage."
+
+#: uMain.pas rsErrUTooLowMax1
+msgid " Abhilfe: 1 LED in Reihe oder mehr Spannung."
+msgstr " Fix: 1 LED in series or a higher voltage."
+
+#: uMain.pas rsErrUTooLowNoLed
+msgid " Abhilfe: mehr Spannung oder eine LED mit kleinerer Durchlassspannung."
+msgstr " Fix: a higher voltage or an LED with a lower forward voltage."
+
 #: uMain.pas rsErrNoStd
 msgid "Kein Normwert gefunden."
 msgstr "No standard value found."
@@ -234,8 +256,8 @@ msgid "LedPreResistor %s – Vorwiderstand"
 msgstr "LedPreResistor %s – series resistor"
 
 #: uMain.pas rsCopyInput
-msgid "Speisespannung %s, %d × LED %s mit U_F = %s, Strom %s"
-msgstr "Supply voltage %s, %d × %s LED with U_F = %s, current %s"
+msgid "Speisespannung %s, %d × LED %s mit U_F = %s, Sollstrom %s"
+msgstr "Supply voltage %s, %d × %s LED with U_F = %s, target current %s"
 
 #: uMain.pas rsCopyStd
 msgid "Vorwiderstand: %s (%s, %s), berechnet %s"
@@ -293,10 +315,9 @@ msgstr "pcs"
 msgid "LED-VORSCHAU"
 msgstr "LED PREVIEW"
 
-
 #: uMain.pas rsAbout
 msgid "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004."
-msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware «LED Pre-Resistor»."
+msgstr "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware \"LED Pre-Resistor\"."
 
 #: uMain.pas rsTabResistor
 msgid "Vorwiderstand"
@@ -441,6 +462,9 @@ msgstr "Base current"
 msgid "%s-fach übersteuert (β = %d)"
 msgstr "%s× overdriven (β = %d)"
 
+msgid "nur %s-fach des Nötigen (β = %d)"
+msgstr "only %s× of what is needed (β = %d)"
+
 #: uMain.pas rsBCardRv
 msgid "Vorwiderstand (%s)"
 msgstr "Series resistor (%s)"
@@ -475,7 +499,7 @@ msgstr "Please enter a frequency greater than 0."
 
 #: uMain.pas rsErrBDuty
 msgid "Bitte für «LED an» einen Wert zwischen 0 und 100 % eingeben."
-msgstr "Please enter a value between 0 and 100% for «LED on»."
+msgstr "Please enter a value between 0 and 100% for \"LED on\"."
 
 #: uMain.pas rsErrBDiode
 msgid "Ohne Diode ist der Ausgang immer mehr als die Hälfte der Zeit High: Diode über R2 einschalten oder mehr als 50 % wählen."
@@ -486,20 +510,23 @@ msgid "Die Speisespannung reicht nicht: am Ausgang bleibt %s, die LED braucht %s
 msgstr "The supply voltage is not enough: %s is left at the output, the LED needs %s."
 
 #: uMain.pas rsChipSupply
-msgid "NE555: 4,5–16 V"
-msgstr "NE555: 4.5–16 V"
+msgid "NE555: unter 4,5 V"
+msgstr "NE555: below 4.5 V"
 
 #: uMain.pas rsWarnSupply
-msgid "Speisespannung %s liegt ausserhalb 4,5–16 V: die CMOS-Version (TLC555, ICM7555) nehmen"
-msgstr "Supply voltage %s is outside 4.5–16 V: use the CMOS version (TLC555, ICM7555)"
+msgid "Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) nehmen"
+msgstr "Supply voltage %s is below 4.5 V: use the CMOS version (TLC555, ICM7555)"
 
 #: uMain.pas rsChipBase
 msgid "Basis −%s"
 msgstr "Base −%s"
 
 #: uMain.pas rsWarnBase
-msgid "Basis wird mit ca. −%s gesperrt, der BC547 verträgt 6 V: Diode 1N4148 vor jede Basis oder Ub senken"
-msgstr "Base is reverse-biased to about −%s, the BC547 tolerates 6 V: put a 1N4148 diode in front of each base or lower Ub"
+msgid "Basis wird mit −%s gesperrt, der BC547 verträgt 6 V: die grau gezeichneten 1N4148 einbauen oder Ub senken"
+msgstr "Base is reverse-biased to −%s, the BC547 takes 6 V: fit the 1N4148 drawn in grey or lower Ub"
+
+msgid "Tipp: Basis bis −%s gesperrt (BC547: 6 V); läuft meist, geschützt mit den grauen 1N4148"
+msgstr "Tip: base reverse-biased to −%s (BC547: 6 V); usually works, protected with the grey 1N4148"
 
 #: uMain.pas rsChipSat
 msgid "Basisstrom knapp"
@@ -517,13 +544,21 @@ msgstr "R1 below 1 kΩ"
 msgid "R1 sollte mindestens 1 kΩ haben, sonst wird der Entladetransistor (Pin 7) überlastet"
 msgstr "R1 should be at least 1 kΩ, otherwise the discharge transistor (pin 7) is overloaded"
 
-#: uMain.pas rsChipOut
-msgid "Ausgang über 200 mA"
-msgstr "Output over 200 mA"
+#: uMain.pas rsErrBSupply555
+msgid "Der NE555 verträgt höchstens 16 V: Speisespannung bis 16 V wählen."
+msgstr "The NE555 takes at most 16 V: choose a supply voltage up to 16 V."
 
-#: uMain.pas rsWarnOut
-msgid "Mehr als 200 mA ist zu viel für den Ausgang des NE555: Transistor nachschalten"
-msgstr "More than 200 mA is too much for the NE555 output: add a transistor"
+#: uMain.pas rsErrBCurrent555
+msgid "Der Ausgang des NE555 liefert höchstens 200 mA: LED-Strom bis 200 mA wählen."
+msgstr "The NE555 output delivers at most 200 mA: choose an LED current up to 200 mA."
+
+#: uMain.pas rsErrBMultiU
+msgid "Der BC547 verträgt höchstens 45 V: Speisespannung bis 45 V wählen."
+msgstr "The BC547 takes at most 45 V: choose a supply voltage up to 45 V."
+
+#: uMain.pas rsErrBMultiI
+msgid "Der BC547 schaltet höchstens 100 mA: LED-Strom bis 100 mA wählen."
+msgstr "The BC547 switches at most 100 mA: choose an LED current up to 100 mA."
 
 #: uMain.pas rsChipRHigh
 msgid "R über 1 MΩ"
@@ -602,12 +637,13 @@ msgid "Vorwiderstand: R = (%s − %s) / %s = %s → nächster %s-Wert darüber: 
 msgstr "Series resistor: R = (%s − %s) / %s = %s → next %s value above: **%s** → I = **%s**"
 
 #: uMain.pas rsBStepRvBoth
-msgid "Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B) **%s** → I = **%s** / **%s**"
-msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B) **%s** → I = **%s** / **%s**"
+msgid "Vorwiderstände: LED 1 (nach Masse) **%s**, LED 2 (nach +U_B, Ausgang Low ≈ 0,1 V) **%s** → I = **%s** / **%s**"
+msgstr "Series resistors: LED 1 (to ground) **%s**, LED 2 (to +U_B, output Low ≈ 0.1 V) **%s** → I = **%s** / **%s**"
 
 #: uMain.pas rsBStepMultiK
 msgid "Sprung am Kollektor: ΔU = U_B − U_F − 0,2 V = **%s** → k = ln((U_B − 0,6 V + ΔU) / (U_B − 0,6 V)) = **%s**"
 msgstr "Collector step: ΔU = U_B − U_F − 0.2 V = **%s** → k = ln((U_B − 0.6 V + ΔU) / (U_B − 0.6 V)) = **%s**"
+
 
 #: uMain.pas rsBStepMultiT
 msgid "LED 1 an (T2 gesperrt): t_1 = k · R_B_2 · C = %s × %s × %s = **%s** · LED 2 an: t_2 = k · R_B_1 · C = **%s**"
@@ -625,17 +661,18 @@ msgstr "Frequency: f = 1 / (t_1 + t_2) = 1 / %s = **%s** · LED 1 on: **%s**"
 msgid "Basisstrom: I_B = (U_B − 0,6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s-fach** (β = %d)"
 msgstr "Base current: I_B = (U_B − 0.6 V) / R_B = %s / %s = **%s** → I_B · β / I_C = **%s×** (β = %d)"
 
+
 #: uMain.pas rsBStepMultiRv
 msgid "Vorwiderstand: R = (U_B − U_F − 0,2 V) / I = %s / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
 msgstr "Series resistor: R = (U_B − U_F − 0.2 V) / I = %s / %s = %s → next %s value above: **%s** → I = **%s**"
 
 #: uMain.pas rsBCopyTitle
-msgid "LedPreResistor %s – Blinkschaltung (%s)"
-msgstr "LedPreResistor %s – blink circuit (%s)"
+msgid "LedPreResistor %s – Blinkschaltung: %s"
+msgstr "LedPreResistor %s – Blink circuit: %s"
 
 #: uMain.pas rsBCopyInput
-msgid "Speisespannung %s, LED %s mit U_F = %s, Strom %s"
-msgstr "Supply voltage %s, LED %s with U_F = %s, current %s"
+msgid "Speisespannung %s, LED %s mit U_F = %s, Sollstrom %s"
+msgstr "Supply voltage %s, %s LED with U_F = %s, target current %s"
 
 #: uMain.pas rsBCopyParts
 msgid "Bauteile: %s = %s, %s = %s, C = %s"
@@ -651,9 +688,6 @@ msgstr "Series resistor: %s"
 
 msgid "Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte."
 msgstr "Note: take the forward voltage and current from the datasheet of the LED you use; the presets are only typical values."
-
-msgid "%s · Vorschau gedimmt, zu schnell zum Anzeigen"
-msgstr "%s · preview dimmed, too fast to show"
 
 msgid "aus Zeiten"
 msgstr "from times"
@@ -676,8 +710,28 @@ msgid "Bitte 1 bis %d Stränge angeben (ganze Zahl)."
 msgstr "Please enter 1 to %d strings (whole number)."
 
 #: uMain.pas rsSchemStrings
-msgid "× %d Stränge, je eigener R"
-msgstr "× %d strings, each with its own R"
+msgid "%d Stränge parallel, je eigener R"
+msgstr "%d parallel strings, each with its own R"
+
+#: uMain.pas rsSchemString1
+msgid "Strang 1"
+msgstr "String 1"
+
+#: uMain.pas rsSchemString2
+msgid "Strang 2"
+msgstr "String 2"
+
+#: uMain.pas rsSchemStringN
+msgid "… Strang %d"
+msgstr "… String %d"
+
+#: uMain.pas rsSchemIString
+msgid "I = %s je Strang"
+msgstr "I = %s per string"
+
+#: uMain.pas rsSchemITotal
+msgid "I = %s gesamt (%d × %s)"
+msgstr "I = %s total (%d × %s)"
 
 #: uMain.pas rsCardCurrentSubStrings
 msgid "je Strang; %d Stränge: gesamt %s"
@@ -715,6 +769,14 @@ msgstr "(%d strings)"
 msgid "Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s"
 msgstr "Parallel strings: %d, each with its own series resistor; total current %s"
 
+#: uMain.pas rsCopyCurrentStrings
+msgid "Tatsächlicher Strom: %s je Strang"
+msgstr "Actual current: %s per string"
+
+#: uMain.pas rsCopyPowerStrings
+msgid "Leistung je Widerstand: %s; alle Widerstände: %s, alle LEDs: %s, gesamt: %s"
+msgstr "Power per resistor: %s; all resistors: %s, all LEDs: %s, total: %s"
+
 #: uMain.pas rsTabKsq
 msgid "Konstantstrom"
 msgstr "Constant current"
@@ -736,11 +798,11 @@ msgid "LM317 (Regler, bis 1,5 A)"
 msgstr "LM317 (regulator, up to 1.5 A)"
 
 #: uMain.pas rsKsqTrans
-msgid "2 Transistoren (T1 nach Strom)"
-msgstr "2 transistors (T1 by current)"
+msgid "2 Transistoren (T1 je nach Strom)"
+msgstr "2 transistors (T1 chosen by current)"
 
 #: uMain.pas rsKCardR
-msgid "Fühlerwiderstand (%s)"
+msgid "Messwiderstand (%s)"
 msgstr "Sense resistor (%s)"
 
 #: uMain.pas rsKCardRSub
@@ -748,16 +810,16 @@ msgid "%s · %s (%s)"
 msgstr "%s · %s (%s)"
 
 #: uMain.pas rsKCardISubL
-msgid "berechnet %s → %s; bleibt von %s bis %s gleich"
-msgstr "calculated %s → %s; stays the same from %s to %s"
+msgid "Soll %s; gleich von %s bis %s"
+msgstr "target %s; same from %s to %s"
 
 #: uMain.pas rsKCardISubLFix
-msgid "berechnet %s → %s; bleibt auch bei schwankender Spannung gleich"
-msgstr "calculated %s → %s; stays the same even if the voltage varies"
+msgid "Soll %s; bleibt gleich"
+msgstr "target %s; stays the same"
 
 #: uMain.pas rsKCardISubT
-msgid "berechnet %s → %s; pro 10 °C wärmer ca. %s weniger"
-msgstr "calculated %s → %s; about %s less per 10 °C warmer"
+msgid "Soll %s; −%s je 10 °C wärmer"
+msgstr "target %s; −%s per 10 °C warmer"
 
 #: uMain.pas rsKCardLossL
 msgid "Verlust im Regler"
@@ -776,12 +838,12 @@ msgid "Mindestspannung"
 msgstr "Minimum voltage"
 
 #: uMain.pas rsKCardNeedSubL
-msgid "%s + 1,25 V + ca. 2 V Regler"
-msgstr "%s + 1.25 V + approx. 2 V regulator"
+msgid "%s + 1,25 V + 2 V Regler"
+msgstr "%s + 1.25 V + 2 V regulator"
 
 #: uMain.pas rsKCardNeedSubT
-msgid "%s + 0,6 V + ca. 0,6 V an T1"
-msgstr "%s + 0.6 V + approx. 0.6 V across T1"
+msgid "%s + 0,6 V + 0,6 V an T1"
+msgstr "%s + 0.6 V + 0.6 V at T1"
 
 #: uMain.pas rsKPartLM317L
 msgid "LM317L (TO-92) reicht, ohne Kühlkörper"
@@ -840,8 +902,8 @@ msgid "Tatsächlicher Strom: I = 0,6 V / %s = **%s** · Leistung an R_S: **%s** 
 msgstr "Actual current: I = 0.6 V / %s = **%s** · power in R_S: **%s** → %s · U_B_E drops by approx. 2 mV/K: about %s less per 10 °C"
 
 #: uMain.pas rsKStepT3
-msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 1,3 V) / %s = %s → Normwert darunter: **%s**"
-msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 1.3 V) / %s = %s → standard value below: **%s**"
+msgid "Basiswiderstand für %s (T1 %s braucht I / β = %s): R_B = (%s − 0,6 V − 0,7 V) / %s = %s → Normwert darunter: **%s**"
+msgstr "Base resistor for %s (T1 %s needs I / β = %s): R_B = (%s − 0.6 V − 0.7 V) / %s = %s → standard value below: **%s**"
 
 #: uMain.pas rsKStepT4
 msgid "Mindestspannung: U_m_i_n = %s + 0,6 V + ca. 0,6 V (T1) = **%s** → Reserve bei %s: **%s**"
@@ -873,7 +935,7 @@ msgstr "With a series resistor: +%s current at %s, here only approx. +%s"
 
 #: uMain.pas rsKOkFix
 msgid "Tipp: bei «bis» die höchste Spannung eingeben (Auto z. B. 14,4 V)"
-msgstr "Tip: enter the highest voltage under «to» (e.g. car 14.4 V)"
+msgstr "Tip: enter the highest voltage under \"to\" (e.g. car 14.4 V)"
 
 #: uMain.pas rsKChipHeat
 msgid "Kühlkörper nötig"
@@ -907,17 +969,13 @@ msgstr "below 10 mA"
 msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren"
 msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
 
-#: uMain.pas rsKChipVolt
-msgid "Spannung zu hoch"
-msgstr "Voltage too high"
+#: uMain.pas rsErrKVoltL
+msgid "Der LM317 verträgt höchstens 40 V zwischen IN und OUT: bis 40 V wählen oder LM317HV nehmen."
+msgstr "The LM317 takes at most 40 V between IN and OUT: choose up to 40 V or use an LM317HV."
 
-#: uMain.pas rsKWarnVoltL
-msgid "Mehr als 40 V zwischen IN und OUT verträgt der LM317 nicht: Spannung senken oder mehr LEDs in Reihe"
-msgstr "The LM317 cannot take more than 40 V between IN and OUT: lower the voltage or put more LEDs in series"
-
-#: uMain.pas rsKWarnVoltT
-msgid "Mehr als 45 V an T1 verträgt der Transistor nicht: Spannung senken oder mehr LEDs in Reihe"
-msgstr "The transistor cannot take more than 45 V across T1: lower the voltage or put more LEDs in series"
+#: uMain.pas rsErrKVoltT
+msgid "T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen."
+msgstr "T1 takes at most 45 V (all of it is across T1 if the LEDs short): choose up to 45 V."
 
 #: uMain.pas rsKChipBase
 msgid "RB wird warm"
@@ -928,19 +986,19 @@ msgid "T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei gr
 msgstr "T1 needs a lot of base current: RB (%s) dissipates up to %s, use %s – for large currents the LM317 is simpler"
 
 #: uMain.pas rsKChipRPower
-msgid "Fühler-R über 1 W"
+msgid "Mess-R über 1 W"
 msgstr "Sense R over 1 W"
 
 #: uMain.pas rsKWarnRPower
-msgid "Der Fühlerwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen"
+msgid "Der Messwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen"
 msgstr "The sense resistor dissipates %s: use a power resistor (2–5 W)"
 
 #: uMain.pas rsKCopyTitle
-msgid "LedPreResistor %s – Konstantstrom (%s)"
-msgstr "LedPreResistor %s – Constant current (%s)"
+msgid "LedPreResistor %s – Konstantstrom: %s"
+msgstr "LedPreResistor %s – Constant current: %s"
 
 #: uMain.pas rsKCopyR
-msgid "Fühlerwiderstand: %s (%s, %s), berechnet %s"
+msgid "Messwiderstand: %s (%s, %s), berechnet %s"
 msgstr "Sense resistor: %s (%s, %s), calculated %s"
 
 #: uMain.pas rsKCopyLoss
@@ -1004,9 +1062,39 @@ msgid "U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 
 msgstr "U_B supply voltage · U_F forward voltage · t_1, t_2 on time of LED 1 and 2 · k time factor · R_B_1, R_B_2 base resistors · C capacitor · I_B base current · I_C collector current · β current gain"
 
 #: uMain.pas rsLegendLM
-msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Fühlerwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung"
+msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Messwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung"
 msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R sense resistor · I LED current · P power · U_m_i_n minimum supply voltage"
 
 #: uMain.pas rsLegendKT
-msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Fühlerwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung"
+msgid "U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Messwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung"
 msgstr "U_B supply voltage · U_L_E_D voltage of all LEDs · R_S sense resistor · R_B base resistor · U_B_E base-emitter voltage · β current gain · P power · U_m_i_n minimum supply voltage"
+
+#: uMain.pas rsBCopyRv2
+msgid "Vorwiderstände: LED 1 %s, LED 2 %s"
+msgstr "Series resistors: LED 1 %s, LED 2 %s"
+
+#: uMain.pas rsBCopyTimes2
+msgid "LED 1 an %s, LED 2 an %s, Frequenz %s, Tastgrad LED 1 %s"
+msgstr "LED 1 on %s, LED 2 on %s, frequency %s, duty cycle LED 1 %s"
+
+#: uMain.pas rsBCardDuty1
+msgid "Tastgrad (LED 1 an)"
+msgstr "Duty cycle (LED 1 on)"
+
+#: uMain.pas rsBCardRvSub2
+msgid "%s / %s · bis %s → %s"
+msgstr "%s / %s · up to %s → %s"
+
+#: uMain.pas rsBStepFreq1
+msgid "Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**"
+msgstr "Frequency: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 on: **%s**"
+
+#: uMain.pas rsBStepFreqRev1
+msgid "Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**"
+msgstr "With the standard values: t_H = %s, t_L = %s → f = **%s** · LED 1 on: **%s**"
+
+msgid "nächster %s-Wert darüber"
+msgstr "next %s value above"
+
+msgid "genau ein %s-Wert"
+msgstr "exactly an %s value"

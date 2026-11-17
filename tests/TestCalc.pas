@@ -9,7 +9,8 @@
              Prozedur unter «published» ist ein Test.
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+  Versionen: 2.5.2 17.11.2026 Bezug ⅛ W (RefW)
+             2.4  14.11.2026  Kommentare ausführlicher
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit TestCalc;
@@ -33,6 +34,7 @@ type
   published
     procedure BeispielRechnung;
     procedure BeispielBelastbarkeit;
+    procedure BezugAchtelWatt;
     procedure MehrereLedsInReihe;
     procedure StraengeParallel;
     procedure SpannungZuKlein;
@@ -98,9 +100,33 @@ var
   R: TCalcResult;                                        // Resultat
 begin
   R := Calculate(Beispiel);
-  AssertEquals('Auslastung ¼ W in %', 66, Round(R.Load * 100));
-  AssertTrue('Warnung (gelb)', R.LoadLevel = llWarning);
+  AssertEquals('Auslastung ¼ W in %', 66, Round(R.LoadStd * 100));
   AssertEquals('Empfehlung ½ W', 0.5, R.RecommendedW, 1e-12);
+  // Auslastung, Farbe und Erwärmung gelten für die empfohlene Bauform
+  AssertEquals('Bezug ½ W', 0.5, R.RefW, 1e-12);
+  AssertEquals('Auslastung ½ W in %', 33, Round(R.Load * 100));
+  AssertTrue('mit ½ W grün', R.LoadLevel = llOk);
+end;
+
+{------------------------------------------------------------------------------
+  BezugAchtelWatt
+------------------------------------------------------------------------------
+  5 V, weisse LED 3,2 V, 20 mA: 100 Ω, 18 mA, 32,4 mW. Empfohlen ⅛ W; dann
+  beziehen sich Auslastung (26 %) und Erwärmung auf ⅛ W, damit Karte,
+  Statuszeile und Rechenweg dieselbe Bauform nennen.
+------------------------------------------------------------------------------}
+procedure TTestCalc.BezugAchtelWatt;
+var
+  I: TCalcInput;                                         // Eingaben
+  R: TCalcResult;                                        // Resultat
+begin
+  I := Beispiel;
+  I.U := 5;
+  R := Calculate(I);
+  AssertEquals('Empfehlung ⅛ W', 0.125, R.RecommendedW, 1e-12);
+  AssertEquals('Bezug ⅛ W', 0.125, R.RefW, 1e-12);
+  AssertEquals('Auslastung ⅛ W in %', 26, Round(R.Load * 100));
+  AssertEquals('Erwärmung mit R_th 450 K/W', 15, Round(R.TempRise));
 end;
 
 {------------------------------------------------------------------------------
@@ -215,9 +241,11 @@ procedure TTestCalc.Erwaermung;
 var
   R: TCalcResult;                                        // Resultat
 begin
-  // Beispiel: 164,8 mW in ¼ W * 225 °C/W ≈ 37 °C
+  // Beispiel: 164,8 mW, empfohlen ½ W: 164,8 mW × 112,5 °C/W ≈ 19 °C
+  // (in ¼ W wären es 225 °C/W, also ≈ 37 °C)
   R := Calculate(Beispiel);
-  AssertEquals(37, Round(R.TempRise));
+  AssertEquals(19, Round(R.TempRise));
+  AssertEquals(37, Round(EstimateTempRise(R.PR, 0.25)));
   // gleiche Leistung in ½ W: halber Wärmewiderstand
   AssertEquals(EstimateTempRise(0.1, 0.25) / 2, EstimateTempRise(0.1, 0.5), 1e-12);
 end;

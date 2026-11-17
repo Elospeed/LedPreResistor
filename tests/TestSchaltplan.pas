@@ -52,6 +52,7 @@ type
     procedure ZeichneVorwiderstand(N, K: Integer);
     { Prüft den Plan «LED-Vorwiderstand» mit N LEDs und K Strängen }
     procedure PruefeVorwiderstand(N, K: Integer);
+    procedure KsqKette(const Plan: string; N: Integer; const Von, Bis: string);
   published
     procedure VorwiderstandEineLed;
     procedure VorwiderstandMehrereLedsInReihe;
@@ -144,7 +145,7 @@ end;
   Erwartete Kette: UB.+ -> R1 -> LED1 -> ... -> LEDn -> UB.-. Ab 4 LEDs
   stehen Punkte (PUNKTE) für die ausgelassenen LEDs zwischen LED1 und LEDn.
   Bei mehreren Strängen: R2 hängt direkt an UB.+ (nicht hinter R1), dann
-  LED_S2, dann UB.-.
+  dieselbe Kette S2_LED1 ... S2_LEDn (bzw. S2_PUNKTE) bis UB.-.
 ------------------------------------------------------------------------------}
 procedure TTestSchaltplan.PruefeVorwiderstand(N, K: Integer);
 var
@@ -170,12 +171,26 @@ begin
   Verbunden(Plan, 'LED' + IntToStr(N) + '.K', 'UB.-');
   if K > 1 then
   begin
-    // zweiter Strang mit eigenem Widerstand direkt an der Quelle
+    // zweiter Strang mit eigenem Widerstand direkt an der Quelle und gleich vielen LEDs
     Verbunden(Plan, 'UB.+', 'R2.1');
     Getrennt(Plan, 'R2.1', 'R1.2');                      // der Fehler aus 2.5
-    Verbunden(Plan, 'R2.2', 'LED_S2.A');
+    Getrennt(Plan, 'R2.1', 'R2.2');
+    Verbunden(Plan, 'R2.2', 'S2_LED1.A');
     Getrennt(Plan, 'R2.2', 'R1.2');
-    Verbunden(Plan, 'LED_S2.K', 'UB.-');
+    if N <= 3 then
+    begin
+      for I := 1 to N - 1 do
+        Verbunden(Plan, 'S2_LED' + IntToStr(I) + '.K', 'S2_LED' + IntToStr(I + 1) + '.A');
+      for I := 1 to N do                                 // jede LED des ersten Strangs hat ihr Gegenstück
+        AssertTrue(Plan + ': S2_LED' + IntToStr(I) + ' fehlt', NetzHat('S2_LED' + IntToStr(I) + '.A'));
+    end
+    else
+    begin
+      Verbunden(Plan, 'S2_LED1.K', 'S2_PUNKTE.A');       // auch hier: LED, Punkte, letzte LED
+      Verbunden(Plan, 'S2_PUNKTE.K', 'S2_LED' + IntToStr(N) + '.A');
+    end;
+    Verbunden(Plan, 'S2_LED' + IntToStr(N) + '.K', 'UB.-');
+    Getrennt(Plan, 'S2_LED1.A', 'LED1.A');               // die Stränge berühren sich nur an der Quelle
   end
   else
     AssertFalse(Plan + ': ohne zweiten Strang', NetzHat('R2.1'));
@@ -234,8 +249,8 @@ begin
   T.Verbunden('NE555', 'R1.2', 'R2.1');
   T.Verbunden('NE555', 'R2.2', 'IC.6');
   T.Verbunden('NE555', 'IC.6', 'IC.2');
-  T.Verbunden('NE555', 'IC.6', 'C.1');
-  T.Verbunden('NE555', 'C.2', 'UB.-');
+  T.Verbunden('NE555', 'IC.6', 'C.+');                   // Elko: Plus am Zeitglied, Minus an Masse
+  T.Verbunden('NE555', 'C.-', 'UB.-');
   T.Verbunden('NE555', 'IC.8', 'UB.+');                  // Speisung, Reset, Masse
   T.Verbunden('NE555', 'IC.4', 'UB.+');
   T.Verbunden('NE555', 'IC.1', 'UB.-');
@@ -274,102 +289,155 @@ end;
 procedure TTestSchaltplan.Ne555MitDiode;
 begin
   Zeichne555(Self, cnGnd, True);
-  Verbunden('NE555', 'D.K', 'IC.7');                     // Diode parallel zu R2
-  Verbunden('NE555', 'D.A', 'IC.6');
+  // Diode parallel zu R2, Anode am Knoten R1/R2 (Pin 7), Kathode am
+  // Kondensator (Pin 6): leitet beim Laden, sperrt beim Entladen
+  Verbunden('NE555', 'D.A', 'IC.7');
+  Verbunden('NE555', 'D.K', 'IC.6');
+  Getrennt('NE555', 'D.K', 'IC.7');
 end;
 
 procedure TTestSchaltplan.Multivibrator;
 var
   V: TBlinkSchemValues;                                  // Werte des Plans
+  Dioden: Boolean;                                       // mit den grauen 1N4148 vor den Basen
+  Plan: string;                                          // Name für die Meldungen
+  B1, B2: string;                                        // Anschluss, der zur Basis führt
 begin
-  V := Default(TBlinkSchemValues);
-  V.Elko := True;
-  V.LedColor := clRed;
-  V.Led1Lit := True;
-  NetzStart;
-  DrawSchematicMulti(Flaeche, Rect(0, 0, 600, 300), V, Farben);
-  NetzStop;
-  PruefeGrundregeln('Multivibrator');
-  // linker Zweig: + -> R_V1 -> LED 1 -> T1 -> Masse
-  Verbunden('Multivibrator', 'UB.+', 'RV1.1');
-  Verbunden('Multivibrator', 'RV1.2', 'LED1.A');
-  Verbunden('Multivibrator', 'LED1.K', 'T1.C');
-  Verbunden('Multivibrator', 'T1.E', 'UB.-');
-  // rechter Zweig: + -> R_V2 -> LED 2 -> T2 -> Masse
-  Verbunden('Multivibrator', 'UB.+', 'RV2.1');
-  Verbunden('Multivibrator', 'RV2.2', 'LED2.A');
-  Verbunden('Multivibrator', 'LED2.K', 'T2.C');
-  Verbunden('Multivibrator', 'T2.E', 'UB.-');
-  // Basiswiderstände und Kreuzkopplung
-  Verbunden('Multivibrator', 'UB.+', 'R1.1');
-  Verbunden('Multivibrator', 'R1.2', 'T1.B');
-  Verbunden('Multivibrator', 'UB.+', 'R2.1');
-  Verbunden('Multivibrator', 'R2.2', 'T2.B');
-  Verbunden('Multivibrator', 'C1.1', 'T1.C');            // C1: Kollektor T1 -> Basis T2
-  Verbunden('Multivibrator', 'C1.2', 'T2.B');
-  Verbunden('Multivibrator', 'C2.2', 'T2.C');            // C2: Kollektor T2 -> Basis T1
-  Verbunden('Multivibrator', 'C2.1', 'T1.B');
-  Getrennt('Multivibrator', 'T1.B', 'T2.B');             // die Leitungen kreuzen sich nur
+  for Dioden := False to True do
+  begin
+    V := Default(TBlinkSchemValues);
+    V.Elko := True;
+    V.LedColor := clRed;
+    V.Led1Lit := True;
+    V.BaseDiodes := Dioden;
+    if Dioden then Plan := 'Multivibrator mit Dioden' else Plan := 'Multivibrator';
+    NetzStart;
+    DrawSchematicMulti(Flaeche, Rect(0, 0, 600, 300), V, Farben);
+    NetzStop;
+    PruefeGrundregeln(Plan);
+    // linker Zweig: + -> R_V1 -> LED 1 -> T1 -> Masse
+    Verbunden(Plan, 'UB.+', 'RV1.1');
+    Verbunden(Plan, 'RV1.2', 'LED1.A');
+    Verbunden(Plan, 'LED1.K', 'T1.C');
+    Verbunden(Plan, 'T1.E', 'UB.-');
+    // rechter Zweig: + -> R_V2 -> LED 2 -> T2 -> Masse
+    Verbunden(Plan, 'UB.+', 'RV2.1');
+    Verbunden(Plan, 'RV2.2', 'LED2.A');
+    Verbunden(Plan, 'LED2.K', 'T2.C');
+    Verbunden(Plan, 'T2.E', 'UB.-');
+    // Mit Dioden führen R_B und C zur Anode, die Kathode zur Basis
+    if Dioden then
+    begin
+      B1 := 'D1.A';
+      B2 := 'D2.A';
+      Verbunden(Plan, 'D1.K', 'T1.B');
+      Verbunden(Plan, 'D2.K', 'T2.B');
+      Getrennt(Plan, 'D1.A', 'D1.K');
+      Getrennt(Plan, 'D2.A', 'D2.K');
+    end
+    else
+    begin
+      B1 := 'T1.B';
+      B2 := 'T2.B';
+      AssertFalse(Plan + ': ohne Dioden', NetzHat('D1.A'));
+    end;
+    // Basiswiderstände und Kreuzkopplung
+    Verbunden(Plan, 'UB.+', 'R1.1');
+    Verbunden(Plan, 'R1.2', B1);
+    Verbunden(Plan, 'UB.+', 'R2.1');
+    Verbunden(Plan, 'R2.2', B2);
+    // Elkos: Plus am Kollektor (dort ist die Spannung höher), Minus zur Basis
+    Verbunden(Plan, 'C1.+', 'T1.C');                     // C1: Kollektor T1 -> Basis T2
+    Verbunden(Plan, 'C1.-', B2);
+    Verbunden(Plan, 'C2.+', 'T2.C');                     // C2: Kollektor T2 -> Basis T1
+    Verbunden(Plan, 'C2.-', B1);
+    Getrennt(Plan, 'T1.B', 'T2.B');                      // die Leitungen kreuzen sich nur
+    Getrennt(Plan, 'R1.2', 'C1.-');                      // Brücke über R_B1: keine Verbindung
+    Getrennt(Plan, 'R2.2', 'C2.-');                      // Brücke über R_B2: keine Verbindung
+  end;
 end;
 
 {==============================================================================
   KONSTANTSTROM
 ==============================================================================}
 
+{------------------------------------------------------------------------------
+  KsqKette
+------------------------------------------------------------------------------
+  Prüft die LED-Kette einer Konstantstromquelle von Von (Anode der ersten
+  LED) bis Bis (Kathode der letzten): 1 bis 3 LEDs einzeln, ab 4 LED1,
+  Punkte, LEDn.
+------------------------------------------------------------------------------}
+procedure TTestSchaltplan.KsqKette(const Plan: string; N: Integer; const Von, Bis: string);
+begin
+  Verbunden(Plan, Von, 'LED1.A');
+  if N = 1 then
+    Verbunden(Plan, 'LED1.K', Bis)
+  else
+  begin
+    if N = 2 then
+      Verbunden(Plan, 'LED1.K', 'LED2.A')
+    else if N = 3 then
+    begin
+      Verbunden(Plan, 'LED1.K', 'LED2.A');
+      Verbunden(Plan, 'LED2.K', 'LED3.A');
+    end
+    else
+    begin
+      Verbunden(Plan, 'LED1.K', 'PUNKTE.A');
+      Verbunden(Plan, 'PUNKTE.K', 'LED' + IntToStr(N) + '.A');
+    end;
+    Verbunden(Plan, 'LED' + IntToStr(N) + '.K', Bis);
+  end;
+end;
+
 procedure TTestSchaltplan.KonstantstromLM317;
 var
   V: TKsqSchemValues;                                    // Werte des Plans
-  Zwei: Boolean;                                         // eine oder zwei LEDs
+  N: Integer;                                            // LEDs in Reihe
+  Plan: string;                                          // Name für die Meldungen
 begin
-  for Zwei := False to True do
+  for N in [1, 2, 3, 4, 30] do
   begin
     V := Default(TKsqSchemValues);
-    V.TwoLeds := Zwei;
+    V.LedCount := N;
     V.LedColor := clWhite;
+    Plan := Format('LM317 %d LED', [N]);
     NetzStart;
     DrawSchematicLM317(Flaeche, Rect(0, 0, 580, 300), V, Farben);
     NetzStop;
-    PruefeGrundregeln('LM317');
-    Verbunden('LM317', 'UB.+', 'LM317.IN');
-    Verbunden('LM317', 'LM317.OUT', 'R.1');
-    Verbunden('LM317', 'R.2', 'LM317.ADJ');
-    Verbunden('LM317', 'R.2', 'LED1.A');
-    if Zwei then
-    begin
-      Verbunden('LM317', 'LED1.K', 'LED2.A');
-      Verbunden('LM317', 'LED2.K', 'UB.-');
-    end
-    else
-      Verbunden('LM317', 'LED1.K', 'UB.-');
+    PruefeGrundregeln(Plan);
+    Verbunden(Plan, 'UB.+', 'LM317.IN');
+    Verbunden(Plan, 'LM317.OUT', 'R.1');
+    Verbunden(Plan, 'R.2', 'LM317.ADJ');
+    KsqKette(Plan, N, 'R.2', 'UB.-');
   end;
 end;
 
 procedure TTestSchaltplan.KonstantstromTransistoren;
 var
   V: TKsqSchemValues;                                    // Werte des Plans
-  Zwei: Boolean;                                         // eine oder zwei LEDs
-  Letzte: string;                                        // Name der untersten LED
+  N: Integer;                                            // LEDs in Reihe
+  Plan: string;                                          // Name für die Meldungen
 begin
-  for Zwei := False to True do
+  for N in [1, 2, 3, 4, 30] do
   begin
     V := Default(TKsqSchemValues);
-    V.TwoLeds := Zwei;
+    V.LedCount := N;
     V.LedColor := clWhite;
+    Plan := Format('zwei Transistoren %d LED', [N]);
     NetzStart;
     DrawSchematicKsqT(Flaeche, Rect(0, 0, 600, 300), V, Farben);
     NetzStop;
-    PruefeGrundregeln('zwei Transistoren');
-    if Zwei then Letzte := 'LED2' else Letzte := 'LED1';
-    Verbunden('zwei Transistoren', 'UB.+', 'LED1.A');     // LEDs von Plus zum Kollektor T1
-    if Zwei then Verbunden('zwei Transistoren', 'LED1.K', 'LED2.A');
-    Verbunden('zwei Transistoren', Letzte + '.K', 'T1.C');
-    Verbunden('zwei Transistoren', 'T1.E', 'RS.1');       // Emitter über R_S nach Masse
-    Verbunden('zwei Transistoren', 'RS.2', 'UB.-');
-    Verbunden('zwei Transistoren', 'UB.+', 'RB.1');       // Basisstrom über R_B
-    Verbunden('zwei Transistoren', 'RB.2', 'T1.B');
-    Verbunden('zwei Transistoren', 'T2.C', 'T1.B');       // T2 nimmt T1 den Basisstrom
-    Verbunden('zwei Transistoren', 'T2.B', 'RS.1');       // Fühler: oberes Ende R_S
-    Verbunden('zwei Transistoren', 'T2.E', 'UB.-');
+    PruefeGrundregeln(Plan);
+    KsqKette(Plan, N, 'UB.+', 'T1.C');                   // LEDs von Plus zum Kollektor T1
+    Verbunden(Plan, 'T1.E', 'RS.1');                     // Emitter über R_S nach Masse
+    Verbunden(Plan, 'RS.2', 'UB.-');
+    Verbunden(Plan, 'UB.+', 'RB.1');                     // Basisstrom über R_B
+    Verbunden(Plan, 'RB.2', 'T1.B');
+    Verbunden(Plan, 'T2.C', 'T1.B');                     // T2 nimmt T1 den Basisstrom
+    Verbunden(Plan, 'T2.B', 'RS.1');                     // Fühler: oberes Ende R_S
+    Verbunden(Plan, 'T2.E', 'UB.-');
   end;
 end;
 

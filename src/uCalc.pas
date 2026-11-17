@@ -22,7 +22,10 @@
              (tests/TestCalc.pas).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Stränge parallel (Gesamtstrom, Gesamtleistung)
+  Versionen: 2.5.2 17.11.2026 RefW: Auslastung und Erwärmung beziehen sich
+                              auf die empfohlene Bauform (⅛, ½, 1 W ...);
+                              LoadStd zeigt, wie stark ¼ W belastet wäre
+             2.4  14.11.2026  Stränge parallel (Gesamtstrom, Gesamtleistung)
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit uCalc;
@@ -112,10 +115,12 @@ type
     PR: Double;                                          // Leistung in einem Widerstand in W
     PLed: Double;                                        // Leistung in allen LEDs zusammen in W (alle Stränge)
     PTotal: Double;                                      // Gesamtleistung aus der Quelle in W (alle Stränge)
-    Load: Double;                                        // Auslastung der gewählten Bauform (0.66 = 66 %)
+    RefW: Double;                                        // Bauform, auf die sich Auslastung und Erwärmung beziehen, in W
+    Load: Double;                                        // Auslastung der Bauform RefW (0.33 = 33 %)
+    LoadStd: Double;                                     // Auslastung der üblichen Bauform ¼ W (Input.RatingW), z. B. 0.66
     LoadLevel: TLoadLevel;                               // Bewertung dieser Auslastung
     RecommendedW: Double;                                // kleinste Bauform mit Auslastung <= 50 %, 0 = keine bis 1 W
-    TempRise: Double;                                    // geschätzte Erwärmung der gewählten Bauform in °C
+    TempRise: Double;                                    // geschätzte Erwärmung der Bauform RefW in °C
   end;
 
 {==============================================================================
@@ -252,11 +257,21 @@ begin
   Result.PTotal := Input.U * Result.ITotal;              // aus der Quelle
 
   // ----- 4. Belastung und Erwärmung -----
-  if Input.RatingW > 0 then
-    Result.Load := Result.PR / Input.RatingW;
-  Result.LoadLevel := LoadLevelOf(Result.Load);
+  // Bezug ist die empfohlene Bauform (⅛, ¼, ½, 1 W ...), damit Karte,
+  // Statuszeile und Rechenweg dieselbe Bauform nennen wie die Empfehlung.
+  // Nur wenn keine Bauform reicht, bleibt der Bezug bei ¼ W (rot).
+  // LoadStd sagt zusätzlich, wie stark ein üblicher ¼-W-Widerstand belastet
+  // wäre (Begründung der Empfehlung im Rechenweg).
   Result.RecommendedW := RecommendRating(Result.PR);
-  Result.TempRise := EstimateTempRise(Result.PR, Input.RatingW);
+  Result.RefW := Input.RatingW;
+  if Result.RecommendedW > 0 then
+    Result.RefW := Result.RecommendedW;
+  if Result.RefW > 0 then
+    Result.Load := Result.PR / Result.RefW;
+  if Input.RatingW > 0 then
+    Result.LoadStd := Result.PR / Input.RatingW;
+  Result.LoadLevel := LoadLevelOf(Result.Load);
+  Result.TempRise := EstimateTempRise(Result.PR, Result.RefW);
 end;
 
 {------------------------------------------------------------------------------

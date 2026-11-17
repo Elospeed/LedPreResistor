@@ -15,8 +15,9 @@
   Aufbau:    links die Quelle (+ oben, − unten), oben der Widerstand,
              rechts die LED-Säule (1 bis 3 LEDs einzeln, ab 4 zwei LEDs mit
              Punkten dazwischen), unten der Stromrichtungspfeil. Bei Strängen
-             parallel deutet ein grau gestrichelter Zweig rechts den zweiten
-             Strang mit eigenem Widerstand an, daneben «× k». Die Beschriftungen kommen fertig als Text in
+             parallel steht rechts der zweite Strang, genau wie der erste
+             gezeichnet (eigener Widerstand, gleich viele LEDs), darunter «Strang 1» und
+             «Strang 2» bzw. «… Strang k». Die Beschriftungen kommen fertig als Text in
              TSchematicValues (uMain baut sie, Tiefstellung mit «_»).
 
   Technik:   Nur LCL-Canvas. Geglättet wird über uSmooth (vergrössert
@@ -24,7 +25,10 @@
              darübergeschrieben.
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
+  Versionen: 2.5.2 17.11.2026 Strom je Strang unter «k Stränge parallel»; zweiter
+                              Strang genau wie der erste (gleich viele LEDs,
+                              Farbringe), Säulen mit «Strang 1» / «… Strang k»
+             2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
                               Leitungen und Bauteile an uSchemNetz melden
                               (Verbindungstests)
              2.5  17.11.2026  mehrere LEDs in Reihe als Säule, zweiter Strang
@@ -53,8 +57,11 @@ type
     UBText: string;                                      // z. B. "U_B = 12 V"
     LedText: string;                                     // z. B. "LED weiss" oder "3 × LED weiss" (in Reihe)
     UFText: string;                                      // z. B. "U_F = 3,2 V"
-    IText: string;                                       // z. B. "I = 18,72 mA"
+    IText: string;                                       // z. B. "I = 18,72 mA"; bei Strängen der Gesamtstrom (gemeinsame Rückleitung)
     StringsText: string;                                 // z. B. "× 3 Stränge parallel" (leer = ein Strang)
+    IStringText: string;                                 // Strom je Strang bei Strängen parallel (leer = ein Strang)
+    String1Text: string;                                 // «Strang 1» über der ersten Säule (leer = ein Strang)
+    StringLastText: string;                              // «Strang 2» bzw. «… Strang k» über der zweiten Säule
     LedCount: Integer;                                   // LEDs in Reihe (0 oder 1 = eine)
     StringCount: Integer;                                // Stränge parallel (0 oder 1 = einer)
     LedColor: TColor;                                    // Füllfarbe des LED-Symbols
@@ -233,82 +240,40 @@ var
     Canvas.Font.Style := [];
   end;
 
+const
+  // Lage des zweiten Strangs (Vorlagen-Koordinaten)
+  S2_X = 415;                                            // LED-Säule des zweiten Strangs
+  S2_Y = 9;                                              // obere Leitung über dem ersten Widerstand
+  S2_R1 = 300;                                           // zweiter Widerstand: linker Anschluss
+  S2_R2 = 390;                                           // zweiter Widerstand: rechter Anschluss
+
 var
-  BranchColor: TColor;                                   // Farbe des angedeuteten zweiten Strangs (grau)
   LabelY: Double;                                        // Grundlinie der LED-Beschriftung (unter der Säule)
-
-  {----------------------------------------------------------------------------
-    DashLine
-  ----------------------------------------------------------------------------
-    Gestrichelte Linie in Vorlagen-Koordinaten: Striche 6, Lücken 4.
-    Selbst gezeichnet statt psDash, weil gestrichelte Stifte mit Breite > 1
-    nicht auf allen Systemen gleich aussehen.
-  ----------------------------------------------------------------------------}
-  procedure DashLine(X1, Y1, X2, Y2: Double);
-  var
-    L: Double;                                           // Länge der Linie
-    P: Double;                                           // Anfang des aktuellen Strichs
-    E: Double;                                           // Ende des aktuellen Strichs
-  begin
-    L := Sqrt(Sqr(X2 - X1) + Sqr(Y2 - Y1));
-    if L <= 0 then Exit;
-    P := 0;
-    while P < L do
-    begin
-      E := Min(P + 6, L);
-      Canvas.Line(X(X1 + (X2 - X1) * P / L), Y(Y1 + (Y2 - Y1) * P / L),
-        X(X1 + (X2 - X1) * E / L), Y(Y1 + (Y2 - Y1) * E / L));
-      P := P + 10;
-    end;
-  end;
-
-  {----------------------------------------------------------------------------
-    DashWire
-  ----------------------------------------------------------------------------
-    Gestrichelte Leitung (nicht Bauteilkörper): zeichnen und für die
-    Verbindungstests melden (uSchemNetz).
-  ----------------------------------------------------------------------------}
-  procedure DashWire(X1, Y1, X2, Y2: Double);
-  begin
-    DashLine(X1, Y1, X2, Y2);
-    NetzLeitung(X1, Y1, X2, Y2);
-  end;
 
   {----------------------------------------------------------------------------
     DrawLed
   ----------------------------------------------------------------------------
     Ein LED-Symbol: Dreieck mit Spitze nach unten, Querstrich (Kathode) und
     zwei Lichtpfeile.
-    Parameter: CX      - Mitte waagrecht (Vorlagen-Koordinate)
-               Top     - Oberkante des Dreiecks
-               Sc      - Grösse (1 = 40 Punkte hoch wie in 2.0)
-               Outline - nur Umriss, ohne Füllung und Lichtpfeile
-                         (für den angedeuteten zweiten Strang)
+    Parameter: CX  - Mitte waagrecht (Vorlagen-Koordinate)
+               Top - Oberkante des Dreiecks
+               Sc  - Grösse (1 = 40 Punkte hoch wie in 2.0)
   ----------------------------------------------------------------------------}
-  procedure DrawLed(CX, Top, Sc: Double; Outline: Boolean);
+  procedure DrawLed(CX, Top, Sc: Double);
   var
     T: array[0..2] of TPoint;                            // Ecken des Dreiecks
   begin
     NetzBauteil('LED', ['A', 'K'], [CX, Top, CX, Top + 40 * Sc]);  // Anode oben, Kathode unten
-    if Outline then
-    begin
-      Canvas.Pen.Width := PW(1.5);
-      Canvas.Brush.Style := bsClear;
-    end
-    else
-    begin
-      Canvas.Pen.Width := PW(2);
-      Canvas.Brush.Style := bsSolid;
-      Canvas.Brush.Color := V.LedColor;
-    end;
+    Canvas.Pen.Width := PW(2);
+    Canvas.Brush.Style := bsSolid;
+    Canvas.Brush.Color := V.LedColor;
     T[0] := Point(X(CX - 18 * Sc), Y(Top));
     T[1] := Point(X(CX + 18 * Sc), Y(Top));
     T[2] := Point(X(CX), Y(Top + 38 * Sc));
     Canvas.Polygon(T);
     Canvas.Brush.Style := bsClear;
-    if not Outline then Canvas.Pen.Width := PW(2.5);
+    Canvas.Pen.Width := PW(2.5);
     Canvas.Line(X(CX - 20 * Sc), Y(Top + 40 * Sc), X(CX + 20 * Sc), Y(Top + 40 * Sc));  // Kathode
-    if Outline then Exit;
     // Lichtpfeile schräg nach rechts oben, mit gefüllten Spitzen
     Canvas.Pen.Width := PW(2);
     Canvas.Line(X(CX + 22 * Sc), Y(Top + 12 * Sc), X(CX + 42 * Sc), Y(Top - 2 * Sc));
@@ -324,14 +289,43 @@ var
   end;
 
   {----------------------------------------------------------------------------
+    DrawResistorBox
+  ----------------------------------------------------------------------------
+    Waagrechter Widerstand mit Farbringen zwischen X1 und X2, Mitte auf
+    Höhe YM, Körper HH hoch. Kasten füllen, Ringe hinein, dann den Rand
+    nochmals darüber. Meldet ihn unter Name an uSchemNetz.
+  ----------------------------------------------------------------------------}
+  procedure DrawResistorBox(X1, X2, YM, HH: Double; const Name: string);
+  begin
+    Canvas.Pen.Color := LineColor;
+    Canvas.Pen.Width := PW(2);
+    Canvas.Brush.Style := bsSolid;
+    Canvas.Brush.Color := BodyColor;
+    SmoothRectangle(Canvas, X(X1), Y(YM - HH / 2), X(X2), Y(YM + HH / 2));
+    NetzName(Name);
+    NetzBauteil('R', ['1', '2'], [X1, YM, X2, YM]);      // Anschlüsse links und rechts
+    if Length(V.Bands) >= 3 then
+      DrawResistor(Canvas, Types.Rect(X(X1 + 2), Y(YM - HH / 2 + 2), X(X2 - 2), Y(YM + HH / 2 - 2)), V.Bands);
+    Canvas.Pen.Color := LineColor;
+    Canvas.Pen.Width := PW(2);
+    Canvas.Brush.Style := bsClear;
+    SmoothRectangle(Canvas, X(X1), Y(YM - HH / 2), X(X2), Y(YM + HH / 2));
+  end;
+
+  {----------------------------------------------------------------------------
     DrawLedColumn
   ----------------------------------------------------------------------------
-    Senkrechte LED-Säule bei x = 350 zwischen der oberen (y = 40) und der
+    Senkrechte LED-Säule zwischen der oberen Leitung (Höhe YTop) und der
     unteren Leitung (y = 205). 1 bis 3 LEDs werden einzeln gezeichnet, ab 4
-    LEDs zwei Symbole mit drei Punkten dazwischen (für die übrigen). Merkt
-    sich in LabelY, wo die Beschriftung unter der untersten LED hingehört.
+    LEDs zwei Symbole mit drei Punkten dazwischen (für die übrigen). Jeder
+    Strang hat gleich viele LEDs, darum zeichnet der zweite Strang genau
+    dieselbe Säule.
+    Parameter: CX     - Mitte waagrecht (Vorlagen-Koordinate)
+               YTop   - Höhe der Leitung, von der die Säule abgeht
+               Prefix - Vorsilbe der Namen für die Verbindungstests
+    Merkt sich in LabelY, wo die Beschriftung unter der untersten LED hingehört.
   ----------------------------------------------------------------------------}
-  procedure DrawLedColumn;
+  procedure DrawLedColumn(CX, YTop: Double; const Prefix: string);
   var
     N: Integer;                                          // LEDs in Reihe
     K: Integer;                                          // gezeichnete Plätze (LED oder Punkte)
@@ -346,12 +340,13 @@ var
     N := Max(1, V.LedCount);
     K := Min(N, 3);                                      // ab 4: LED, Punkte, LED
     if K = 1 then Sc := 1 else if K = 2 then Sc := 0.9 else Sc := 0.72;
+    if V.StringCount > 1 then Sc := Sc * 0.85;           // zwei Säulen nebeneinander: etwas kleiner
     H := 40 * Sc;
     Top := 120 - (K * H + (K - 1) * GAP) / 2;            // Säule um y = 120 mittig (eine LED wie bisher)
     Canvas.Pen.Color := LineColor;
     Canvas.Pen.Width := PW(2);
-    Canvas.Line(X(350), Y(40), X(350), Y(Top));          // von oben zur ersten LED
-    NetzLeitung(350, 40, 350, Top);
+    Canvas.Line(X(CX), Y(YTop), X(CX), Y(Top));          // von oben zur ersten LED
+    NetzLeitung(CX, YTop, CX, Top);
     YY := Top;
     for I := 1 to K do
     begin
@@ -361,65 +356,62 @@ var
         Canvas.Brush.Style := bsSolid;
         Canvas.Brush.Color := LineColor;
         Canvas.Pen.Width := 1;
-        Canvas.Ellipse(X(347.8), Y(YY + H * 0.2 - 2.2), X(352.2), Y(YY + H * 0.2 + 2.2));
-        Canvas.Ellipse(X(347.8), Y(YY + H * 0.5 - 2.2), X(352.2), Y(YY + H * 0.5 + 2.2));
-        Canvas.Ellipse(X(347.8), Y(YY + H * 0.8 - 2.2), X(352.2), Y(YY + H * 0.8 + 2.2));
+        Canvas.Ellipse(X(CX - 2.2), Y(YY + H * 0.2 - 2.2), X(CX + 2.2), Y(YY + H * 0.2 + 2.2));
+        Canvas.Ellipse(X(CX - 2.2), Y(YY + H * 0.5 - 2.2), X(CX + 2.2), Y(YY + H * 0.5 + 2.2));
+        Canvas.Ellipse(X(CX - 2.2), Y(YY + H * 0.8 - 2.2), X(CX + 2.2), Y(YY + H * 0.8 + 2.2));
         Canvas.Brush.Style := bsClear;
-        NetzName('PUNKTE');                              // steht für die ausgelassenen LEDs
-        NetzBauteil('LED', ['A', 'K'], [350, YY, 350, YY + H]);
+        NetzName(Prefix + 'PUNKTE');                     // steht für die ausgelassenen LEDs
+        NetzBauteil('LED', ['A', 'K'], [CX, YY, CX, YY + H]);
       end
       else
       begin
         // Namen für die Verbindungstests: LED1 ... LEDn, die letzte heisst wie ihre Nummer
-        if I = K then NetzName('LED' + IntToStr(N)) else NetzName('LED' + IntToStr(I));
-        DrawLed(350, YY, Sc, False);
+        if I = K then NetzName(Prefix + 'LED' + IntToStr(N)) else NetzName(Prefix + 'LED' + IntToStr(I));
+        DrawLed(CX, YY, Sc);
       end;
       Canvas.Pen.Color := LineColor;
       Canvas.Pen.Width := PW(2);
       if I < K then
       begin
-        Canvas.Line(X(350), Y(YY + H), X(350), Y(YY + H + GAP));  // Verbindung zum nächsten Platz
-        NetzLeitung(350, YY + H, 350, YY + H + GAP);
+        Canvas.Line(X(CX), Y(YY + H), X(CX), Y(YY + H + GAP));  // Verbindung zum nächsten Platz
+        NetzLeitung(CX, YY + H, CX, YY + H + GAP);
       end;
       YY := YY + H + GAP;
     end;
-    Canvas.Line(X(350), Y(YY - GAP), X(350), Y(205));   // von der untersten LED nach unten
-    NetzLeitung(350, YY - GAP, 350, 205);
+    Canvas.Line(X(CX), Y(YY - GAP), X(CX), Y(205));      // von der untersten LED nach unten
+    NetzLeitung(CX, YY - GAP, CX, 205);
     LabelY := YY - GAP + 10;
   end;
 
   {----------------------------------------------------------------------------
     DrawSecondString
   ----------------------------------------------------------------------------
-    Deutet rechts einen zweiten, gleichen Strang an: grau gestrichelt, mit
-    eigenem (senkrechtem) Widerstand und einer LED. Jeder Strang braucht
-    seinen eigenen Vorwiderstand und hängt direkt an der Quelle: oben zweigt
-    er VOR dem ersten Widerstand ab (Knoten links, Leitung über dem
-    Widerstand nach rechts), unten an der Rückleitung zum Minuspol.
+    Zeichnet rechts den zweiten Strang genau wie den ersten: eigener
+    Widerstand mit Farbringen und gleich viele LEDs. Jeder Strang hängt
+    direkt an der Quelle: oben zweigt er VOR dem ersten Widerstand ab
+    (Knoten links, Leitung über dem ersten Widerstand nach rechts, darin
+    der zweite Widerstand), unten an der Rückleitung zum Minuspol.
   ----------------------------------------------------------------------------}
   procedure DrawSecondString;
   begin
-    Canvas.Pen.Color := BranchColor;
-    Canvas.Pen.Width := PW(1.5);
+    Canvas.Pen.Color := LineColor;
+    Canvas.Pen.Width := PW(2);
     Canvas.Brush.Style := bsClear;
-    DashWire(110, 40, 110, 8);                           // Abzweig vor dem ersten Widerstand
-    DashWire(110, 8, 425, 8);                            // über dem Widerstand nach rechts
-    DashWire(425, 8, 425, 62);
-    DashLine(417, 62, 433, 62);                          // Widerstand senkrecht (Körper)
-    DashLine(433, 62, 433, 100);
-    DashLine(433, 100, 417, 100);
-    DashLine(417, 100, 417, 62);
-    NetzName('R2');
-    NetzBauteil('R', ['1', '2'], [425, 62, 425, 100]);
-    DashWire(425, 100, 425, 128);
-    NetzName('LED_S2');
-    DrawLed(425, 128, 0.6, True);
-    DashWire(425, 152, 425, 205);
-    DashWire(425, 205, 350, 205);
+    Canvas.PolyLine([Point(X(110), Y(40)), Point(X(110), Y(S2_Y)), Point(X(S2_R1), Y(S2_Y))]);
+    NetzLinienzug([110, 40, 110, S2_Y, S2_R1, S2_Y]);   // Abzweig vor dem ersten Widerstand
+    DrawResistorBox(S2_R1, S2_R2, S2_Y, 18, 'R2');       // zweiter Widerstand
+    Canvas.Pen.Color := LineColor;
+    Canvas.Pen.Width := PW(2);
+    Canvas.Line(X(S2_R2), Y(S2_Y), X(S2_X), Y(S2_Y));
+    NetzLeitung(S2_R2, S2_Y, S2_X, S2_Y);
+    DrawLedColumn(S2_X, S2_Y, 'S2_');                    // gleiche Säule wie der erste Strang
+    Canvas.Pen.Color := LineColor;
+    Canvas.Pen.Width := PW(2);
+    Canvas.Line(X(S2_X), Y(205), X(350), Y(205));        // unten zur gemeinsamen Rückleitung
+    NetzLeitung(S2_X, 205, 350, 205);
     // Knotenpunkte, wo sich die Stränge verzweigen
     Canvas.Brush.Style := bsSolid;
     Canvas.Brush.Color := LineColor;
-    Canvas.Pen.Color := LineColor;
     Canvas.Pen.Width := 1;
     Canvas.Ellipse(X(106.5), Y(36.5), X(113.5), Y(43.5));  // oben: vor dem Widerstand
     Canvas.Ellipse(X(346.5), Y(201.5), X(353.5), Y(208.5));  // unten: Rückleitung
@@ -436,11 +428,7 @@ begin
   Canvas.Font.Name := FONT_UI;
   Canvas.Font.Height := SmoothFontHeight(9, 12 * S);
   Canvas.Brush.Style := bsClear;
-  // Grau für den zweiten Strang: ein Drittel Linienfarbe, zwei Drittel Kastenfarbe
-  BranchColor := RGBToColor((Red(LineColor) + 2 * Red(BodyColor)) div 3,
-    (Green(LineColor) + 2 * Green(BodyColor)) div 3, (Blue(LineColor) + 2 * Blue(BodyColor)) div 3);
-
-  // ----- 2. Angedeuteter zweiter Strang (nur bei Strängen parallel) -----
+  // ----- 2. Zweiter Strang (nur bei Strängen parallel) -----
   if V.StringCount > 1 then DrawSecondString;
 
   // ----- 3. Leitungen -----
@@ -462,22 +450,10 @@ begin
   Canvas.Line(X(59), Y(128), X(81), Y(128));
 
   // ----- 5. Widerstand mit Farbringen -----
-  // Kasten füllen, Ringe hinein, dann den Rand nochmals darüber
-  Canvas.Pen.Width := PW(2);
-  Canvas.Brush.Style := bsSolid;
-  Canvas.Brush.Color := BodyColor;
-  SmoothRectangle(Canvas, X(160), Y(29), X(250), Y(51));
-  NetzName('R1');
-  NetzBauteil('R', ['1', '2'], [160, 40, 250, 40]);      // Anschlüsse links und rechts
-  if Length(V.Bands) >= 3 then
-    DrawResistor(Canvas, Types.Rect(X(162), Y(31), X(248), Y(49)), V.Bands);
-  Canvas.Pen.Color := LineColor;
-  Canvas.Pen.Width := PW(2);
-  Canvas.Brush.Style := bsClear;
-  SmoothRectangle(Canvas, X(160), Y(29), X(250), Y(51));
+  DrawResistorBox(160, 250, 40, 22, 'R1');
 
   // ----- 6. LED-Säule (eine oder mehrere LEDs in Reihe) -----
-  DrawLedColumn;
+  DrawLedColumn(350, 40, '');
 
   // ----- 7. Stromrichtung (unten, nach links) -----
   Canvas.Brush.Color := AccentColor;
@@ -498,7 +474,9 @@ begin
     // rechts ist der zweite Strang: LED-Text links neben die Säule
     Txt(326, 174, V.LedText, TextColor, 2, False);
     Txt(326, 190, V.UFText, TextColor, 2, False);
-    Txt(440, 86, '× ' + IntToStr(V.StringCount), AccentColor, 0, True);  // neben dem zweiten Widerstand
+    // Nummern unter den Säulen: gezeichnet sind der erste und der letzte Strang
+    Txt(350, 222, V.String1Text, TextColor, 1, False);    // unter der Rückleitung, mittig
+    Txt(S2_X, 222, V.StringLastText, TextColor, 1, False);
   end
   else
   begin
@@ -507,6 +485,7 @@ begin
   end;
   if V.StringsText <> '' then
     Txt(96, 150, V.StringsText, AccentColor, 0, True);
+  Txt(96, 168, V.IStringText, TextColor, 0, False);      // Strom je Strang unter «k Stränge parallel» (leer = nichts)
   Txt(210, 226, V.IText, AccentColor, 1, True);          // Strom unter der Leitung
 end;
 
