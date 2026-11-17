@@ -16,7 +16,8 @@
              rechts die LED-Säule (1 bis 3 LEDs einzeln, ab 4 zwei LEDs mit
              Punkten dazwischen), unten der Stromrichtungspfeil. Bei Strängen
              parallel steht rechts der zweite Strang, genau wie der erste
-             gezeichnet (eigener Widerstand, gleich viele LEDs), daneben «× k». Die Beschriftungen kommen fertig als Text in
+             gezeichnet (eigener Widerstand, gleich viele LEDs), darüber «Strang 1» und
+             «Strang 2» bzw. «… Strang k». Die Beschriftungen kommen fertig als Text in
              TSchematicValues (uMain baut sie, Tiefstellung mit «_»).
 
   Technik:   Nur LCL-Canvas. Geglättet wird über uSmooth (vergrössert
@@ -24,8 +25,9 @@
              darübergeschrieben.
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Strom je Strang unter «× k Stränge»; zweiter Strang
-                              genau wie der erste (gleich viele LEDs, Farbringe)
+  Versionen: 2.5.2 17.11.2026 Strom je Strang unter «k Stränge parallel»; zweiter
+                              Strang genau wie der erste (gleich viele LEDs,
+                              Farbringe), Säulen mit «Strang 1» / «… Strang k»
              2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab;
                               Leitungen und Bauteile an uSchemNetz melden
                               (Verbindungstests)
@@ -58,6 +60,8 @@ type
     IText: string;                                       // z. B. "I = 18,72 mA"; bei Strängen der Gesamtstrom (gemeinsame Rückleitung)
     StringsText: string;                                 // z. B. "× 3 Stränge parallel" (leer = ein Strang)
     IStringText: string;                                 // Strom je Strang bei Strängen parallel (leer = ein Strang)
+    String1Text: string;                                 // «Strang 1» über der ersten Säule (leer = ein Strang)
+    StringLastText: string;                              // «Strang 2» bzw. «… Strang k» über der zweiten Säule
     LedCount: Integer;                                   // LEDs in Reihe (0 oder 1 = eine)
     StringCount: Integer;                                // Stränge parallel (0 oder 1 = einer)
     LedColor: TColor;                                    // Füllfarbe des LED-Symbols
@@ -470,7 +474,9 @@ begin
     // rechts ist der zweite Strang: LED-Text links neben die Säule
     Txt(326, 174, V.LedText, TextColor, 2, False);
     Txt(326, 190, V.UFText, TextColor, 2, False);
-    Txt(S2_X + 12, 30, '× ' + IntToStr(V.StringCount), AccentColor, 0, True);  // rechts oben beim zweiten Strang
+    // Nummern über den Säulen: gezeichnet sind der erste und der letzte Strang
+    Txt(343, 31, V.String1Text, TextColor, 2, False);
+    Txt(408, 31, V.StringLastText, TextColor, 2, False);
   end
   else
   begin
@@ -479,7 +485,7 @@ begin
   end;
   if V.StringsText <> '' then
     Txt(96, 150, V.StringsText, AccentColor, 0, True);
-  Txt(96, 168, V.IStringText, TextColor, 0, False);      // Strom je Strang unter «× k Stränge» (leer = nichts)
+  Txt(96, 168, V.IStringText, TextColor, 0, False);      // Strom je Strang unter «k Stränge parallel» (leer = nichts)
   Txt(210, 226, V.IText, AccentColor, 1, True);          // Strom unter der Leitung
 end;
 

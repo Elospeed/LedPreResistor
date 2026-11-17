@@ -22,7 +22,9 @@
              (tests/TestCalc.pas).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Stränge parallel (Gesamtstrom, Gesamtleistung)
+  Versionen: 2.5.2 17.11.2026 RefW: Reicht ⅛ W, beziehen sich Auslastung und
+                              Erwärmung auf ⅛ W statt ¼ W
+             2.4  14.11.2026  Stränge parallel (Gesamtstrom, Gesamtleistung)
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit uCalc;
@@ -112,10 +114,11 @@ type
     PR: Double;                                          // Leistung in einem Widerstand in W
     PLed: Double;                                        // Leistung in allen LEDs zusammen in W (alle Stränge)
     PTotal: Double;                                      // Gesamtleistung aus der Quelle in W (alle Stränge)
-    Load: Double;                                        // Auslastung der gewählten Bauform (0.66 = 66 %)
+    RefW: Double;                                        // Bauform, auf die sich Auslastung und Erwärmung beziehen, in W
+    Load: Double;                                        // Auslastung der Bauform RefW (0.66 = 66 %)
     LoadLevel: TLoadLevel;                               // Bewertung dieser Auslastung
     RecommendedW: Double;                                // kleinste Bauform mit Auslastung <= 50 %, 0 = keine bis 1 W
-    TempRise: Double;                                    // geschätzte Erwärmung der gewählten Bauform in °C
+    TempRise: Double;                                    // geschätzte Erwärmung der Bauform RefW in °C
   end;
 
 {==============================================================================
@@ -252,11 +255,18 @@ begin
   Result.PTotal := Input.U * Result.ITotal;              // aus der Quelle
 
   // ----- 4. Belastung und Erwärmung -----
-  if Input.RatingW > 0 then
-    Result.Load := Result.PR / Input.RatingW;
-  Result.LoadLevel := LoadLevelOf(Result.Load);
+  // Bezug ist die gewählte Bauform (¼ W). Reicht eine kleinere (⅛ W), gilt
+  // alles für diese, damit Karte, Statuszeile und Rechenweg dieselbe Bauform
+  // nennen wie die Empfehlung. Braucht es eine grössere, bleibt der Bezug bei
+  // ¼ W: Dann zeigt die Anzeige, wie stark ¼ W überlastet wäre.
   Result.RecommendedW := RecommendRating(Result.PR);
-  Result.TempRise := EstimateTempRise(Result.PR, Input.RatingW);
+  Result.RefW := Input.RatingW;
+  if (Result.RecommendedW > 0) and (Result.RecommendedW < Result.RefW) then
+    Result.RefW := Result.RecommendedW;
+  if Result.RefW > 0 then
+    Result.Load := Result.PR / Result.RefW;
+  Result.LoadLevel := LoadLevelOf(Result.Load);
+  Result.TempRise := EstimateTempRise(Result.PR, Result.RefW);
 end;
 
 {------------------------------------------------------------------------------

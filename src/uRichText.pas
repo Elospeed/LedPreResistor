@@ -13,7 +13,8 @@
              für Zeichen abgelaufen (UTF-8, also auch Ω, µ, ×).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  RichPlain für den Knopf «Kopieren»
+  Versionen: 2.5.2 17.11.2026 Leerzeichen vor fetten Werten nie zu schmal
+             2.4  14.11.2026  RichPlain für den Knopf «Kopieren»
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 unit uRichText;
@@ -64,6 +65,7 @@ function RichPlain(const S: string): string;
 implementation
 
 uses
+  Math,                                                  // Max
   LazUTF8;                                               // UTF8CodepointSize
 
 {------------------------------------------------------------------------------
@@ -89,6 +91,7 @@ var
   StartX: Integer;                                       // Startposition für die Breitenberechnung
   Run: string;                                           // gesammelter Text gleichen Stils
   BaseH: Integer;                                        // Zeilenhöhe der Grundschrift
+  Trail: Integer;                                        // Leerzeichen am Ende des Abschnitts
 
   // Gibt den gesammelten Text (Run) im aktuellen Stil aus und rückt X weiter
   procedure Flush;
@@ -105,9 +108,21 @@ var
       Canvas.Font.Style := BaseStyle;
       Canvas.Font.Color := Color;
     end;
-    if Paint then
+    // Leerzeichen am Ende eines Abschnitts selbst weiterrücken: Manche
+    // Schriften (z. B. unter Wine bei 100 %) messen sie sehr schmal, dann
+    // klebt der folgende fette Wert am Wort davor («gesamt33,94 mA»).
+    Trail := 0;
+    while (Run <> '') and (Run[Length(Run)] = ' ') do
+    begin
+      Inc(Trail);
+      Delete(Run, Length(Run), 1);
+    end;
+    if Paint and (Run <> '') then
       Canvas.TextOut(X, Y, Run);
-    Inc(X, Canvas.TextWidth(Run));
+    if Run <> '' then
+      Inc(X, Canvas.TextWidth(Run));
+    if Trail > 0 then
+      Inc(X, Trail * Max(Canvas.TextWidth(' '), (BaseH + 3) div 4));  // mindestens ¼ Zeilenhöhe
     Run := '';
   end;
 

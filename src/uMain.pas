@@ -31,7 +31,8 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «× k Stränge»
+  Versionen: 2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
+                              Auslastung bezieht sich auf ⅛ W, wenn ⅛ W reicht
              2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
                               Rechenweg Schritt 6: Aufteilung der Leistung LEDs/Widerstand
              2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
@@ -217,7 +218,7 @@ type
     FTabX: array[0..3] of Integer;                       // Grenzen der Reiter (für Mausklicks)
     FKInput: TKsqInput;                                  // Eingaben der Konstantstromquelle
     FKRes: TKsqResult;                                   // Resultat der Konstantstromquelle
-    FKBands: TBandArray;                                 // Farbringe des Fühlerwiderstands
+    FKBands: TBandArray;                                 // Farbringe des Messwiderstands
     FKBandsB: TBandArray;                                // Farbringe von R_B (zwei Transistoren)
     FIco: array[0..4] of TRect;                          // Symbole oben rechts: zurücksetzen, DE, EN, LED-Info, Info
     FIcoHover: Integer;                                  // Symbol unter der Maus (-1 = keins)
@@ -362,7 +363,8 @@ resourcestring
   rsSchemUFN = 'U_F = %d × %s';
   rsCardStd = 'Normwert (%s)';
   rsCardCurrent = 'Tatsächlicher Strom';
-  rsCardCurrentSub = 'berechnet %s → %s';
+  rsCardCurrentSub = 'mit %s statt ideal %s (Soll %s)';
+  rsCardCurrentSubExact = 'Normwert passt genau (Soll %s)';
   rsCardPower = 'Verlustleistung';
   rsCardPowerSub = 'am Widerstand';
   rsCardRating = 'Empfohlene Bauform';
@@ -383,8 +385,8 @@ resourcestring
   rsLegendRN = 'U_B Speisespannung · n LEDs in Reihe · U_F Durchlassspannung einer LED · U_R Spannung am Widerstand · R Vorwiderstand · I LED-Strom · P Leistung im Widerstand · R_t_h Wärmewiderstand';
   rsLegend555 = 'U_B Speisespannung · t_H Zeit Ausgang High · t_L Zeit Ausgang Low · f Frequenz · C Zeitkondensator · U_O_U_T Spannung am Ausgang · U_F Durchlassspannung · R Vorwiderstand · I LED-Strom';
   rsLegendMulti = 'U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 und 2 · k Zeitfaktor · R_B_1, R_B_2 Basiswiderstände · C Kondensator · I_B Basisstrom · I_C Kollektorstrom · β Stromverstärkung';
-  rsLegendLM = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Fühlerwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung';
-  rsLegendKT = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Fühlerwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung';
+  rsLegendLM = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Messwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung';
+  rsLegendKT = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Messwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung';
   rsHintDatasheet = 'Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
@@ -405,6 +407,9 @@ resourcestring
   rsErrI = 'Bitte einen LED-Strom grösser als 0 eingeben.';
   rsErrN = 'Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl).';
   rsErrUTooLow = 'Die Speisespannung (%s) muss grösser sein als %d × %s = %s.';
+  rsErrUTooLowMaxN = ' Abhilfe: höchstens %d LEDs in Reihe (dafür mehr Stränge) oder mehr Spannung.';
+  rsErrUTooLowMax1 = ' Abhilfe: nur 1 LED in Reihe (dafür mehr Stränge) oder mehr Spannung.';
+  rsErrUTooLowNoLed = ' Abhilfe: mehr Spannung oder eine LED mit kleinerer Durchlassspannung.';
   rsErrNoStd = 'Kein Normwert gefunden.';
   rsCopyTitle = 'LedPreResistor %s – Vorwiderstand';
   rsCopyInput = 'Speisespannung %s, %d × LED %s mit U_F = %s, Sollstrom %s';
@@ -416,7 +421,10 @@ resourcestring
   { Stränge parallel (Reiter Vorwiderstand) }
   rsLabelStrings = 'Stränge parallel';
   rsErrStrings = 'Bitte 1 bis %d Stränge angeben (ganze Zahl).';
-  rsSchemStrings = '× %d Stränge, je eigener R';
+  rsSchemStrings = '%d Stränge parallel, je eigener R';
+  rsSchemString1 = 'Strang 1';
+  rsSchemString2 = 'Strang 2';
+  rsSchemStringN = '… Strang %d';
   rsSchemIString = 'I = %s je Strang';
   rsSchemITotal = 'I = %s gesamt (%d × %s)';
   rsCardCurrentSubStrings = 'je Strang; %d Stränge: gesamt %s';
@@ -494,16 +502,18 @@ resourcestring
   rsErrBDuty = 'Bitte für «LED an» einen Wert zwischen 0 und 100 % eingeben.';
   rsErrBDiode = 'Ohne Diode ist der Ausgang immer mehr als die Hälfte der Zeit High: Diode über R2 einschalten oder mehr als 50 % wählen.';
   rsErrBUTooLow = 'Die Speisespannung reicht nicht: am Ausgang bleibt %s, die LED braucht %s.';
-  rsChipSupply = 'NE555: 4,5–16 V';
-  rsWarnSupply = 'Speisespannung %s liegt ausserhalb 4,5–16 V: die CMOS-Version (TLC555, ICM7555) nehmen';
+  rsChipSupply = 'NE555: unter 4,5 V';
+  rsWarnSupply = 'Speisespannung %s liegt unter 4,5 V: die CMOS-Version (TLC555, ICM7555) nehmen';
   rsChipBase = 'Basis −%s';
   rsWarnBase = 'Basis wird mit ca. −%s gesperrt, der BC547 verträgt 6 V: Diode 1N4148 vor jede Basis oder Ub senken';
   rsChipSat = 'Basisstrom knapp';
   rsWarnSat = 'Der Transistor schaltet nicht sicher durch: RB kleiner und dafür C grösser wählen';
   rsChipR1 = 'R1 unter 1 kΩ';
   rsWarnR1 = 'R1 sollte mindestens 1 kΩ haben, sonst wird der Entladetransistor (Pin 7) überlastet';
-  rsChipOut = 'Ausgang über 200 mA';
-  rsWarnOut = 'Mehr als 200 mA ist zu viel für den Ausgang des NE555: Transistor nachschalten';
+  rsErrBSupply555 = 'Der NE555 verträgt höchstens 16 V: Speisespannung bis 16 V wählen.';
+  rsErrBCurrent555 = 'Der Ausgang des NE555 liefert höchstens 200 mA: LED-Strom bis 200 mA wählen.';
+  rsErrBMultiU = 'Der BC547 verträgt höchstens 45 V: Speisespannung bis 45 V wählen.';
+  rsErrBMultiI = 'Der BC547 schaltet höchstens 100 mA: LED-Strom bis 100 mA wählen.';
   rsChipRHigh = 'R über 1 MΩ';
   rsWarnRHigh = 'Ein Zeitwiderstand über 1 MΩ: der Leckstrom des Elkos verfälscht die Zeit, lieber C grösser wählen';
   rsChipFast = 'über 50 Hz';
@@ -540,7 +550,7 @@ resourcestring
   rsBCardDuty1 = 'Tastgrad (LED 1 an)';
   rsBStepFreq1 = 'Frequenz: f = 1 / (t_H + t_L) = 1 / %s = **%s** · LED 1 an: **%s**';
   rsBStepFreqRev1 = 'Mit den Normwerten: t_H = %s, t_L = %s → f = **%s** · LED 1 an: **%s**';
-  rsBCardRvSub2 = '%s / %s · bis %s → %s';
+  rsBCardRvSub2 = 'LED 1 %s / LED 2 %s · bis %s → %s';
   { Konstantstrom }
   rsTabKsq = 'Konstantstrom';
   rsHeadSupply = 'SPEISESPANNUNG';
@@ -548,12 +558,12 @@ resourcestring
   rsLabelTo = 'bis';
   rsKsqLM317 = 'LM317 (Regler, bis 1,5 A)';
   rsKsqTrans = '2 Transistoren (T1 nach Strom)';
-  rsKCardR = 'Fühlerwiderstand (%s)';
+  rsKCardR = 'Messwiderstand (%s)';
   rsKCardRSub = '%s · %s (%s)';
   rsKCardI = 'LED-Strom';
-  rsKCardISubL = 'berechnet %s → %s; bleibt von %s bis %s gleich';
-  rsKCardISubLFix = 'berechnet %s → %s; bleibt auch bei schwankender Spannung gleich';
-  rsKCardISubT = 'berechnet %s → %s; pro 10 °C wärmer ca. %s weniger';
+  rsKCardISubL = '%s; bleibt von %s bis %s gleich';
+  rsKCardISubLFix = '%s; bleibt auch bei schwankender Spannung gleich';
+  rsKCardISubT = '%s; pro 10 °C wärmer ca. %s weniger';
   rsKCardLossL = 'Verlust im Regler';
   rsKCardLossT = 'Verlust in T1';
   rsKCardLossSubT = '%s; RB = %s';
@@ -591,15 +601,14 @@ resourcestring
   rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
   rsKChipMinLoad = 'unter 10 mA';
   rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
-  rsKChipVolt = 'Spannung zu hoch';
-  rsKWarnVoltL = 'Mehr als 40 V zwischen IN und OUT verträgt der LM317 nicht: Spannung senken oder mehr LEDs in Reihe';
-  rsKWarnVoltT = 'Mehr als 45 V an T1 verträgt der Transistor nicht: Spannung senken oder mehr LEDs in Reihe';
+  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V zwischen IN und OUT, und beim Einschalten liegt fast die ganze Speisespannung dort: höchstens 40 V wählen oder einen LM317HV (bis 60 V) nehmen.';
+  rsErrKVoltT = 'T1 verträgt höchstens 45 V, und wenn die LEDs kurzschliessen, liegt die ganze Speisespannung an T1: höchstens 45 V wählen.';
   rsKChipBase = 'RB wird warm';
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
-  rsKChipRPower = 'Fühler-R über 1 W';
-  rsKWarnRPower = 'Der Fühlerwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen';
+  rsKChipRPower = 'Mess-R über 1 W';
+  rsKWarnRPower = 'Der Messwiderstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen';
   rsKCopyTitle = 'LedPreResistor %s – Konstantstrom (%s)';
-  rsKCopyR = 'Fühlerwiderstand: %s (%s, %s), berechnet %s';
+  rsKCopyR = 'Messwiderstand: %s (%s, %s), berechnet %s';
   rsKCopyLoss = 'Verlust: %s → %s';
   rsKCopyNeed = 'Mindestspannung: %s';
   rsKCopyRB = 'Basiswiderstand RB: %s (%s)';
@@ -614,6 +623,47 @@ uses
   uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic, uSmooth{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
+
+{------------------------------------------------------------------------------
+  ElkoVoltText
+------------------------------------------------------------------------------
+  Spannungsfestigkeit für einen Elko (ab 1 µF): nächste übliche Nennspannung
+  mit mindestens 20 % Reserve über U_B, z. B. bei 12 V « / ≥ 16 V». Unter
+  1 µF (Keramik/Folie, meist 50 V und mehr) und ohne gültige Spannung leer.
+  Parameter: C - Kapazität in F
+             U - Speisespannung in V
+------------------------------------------------------------------------------}
+function ElkoVoltText(C, U: Double): string;
+const
+  ELKO_VOLTS: array[0..8] of Double = (6.3, 10, 16, 25, 35, 50, 63, 80, 100);  // übliche Nennspannungen
+var
+  I: Integer;                                            // Index in ELKO_VOLTS
+begin
+  Result := '';
+  if (C < 1e-6 * 0.999) or not (U > 0) then Exit;
+  for I := Low(ELKO_VOLTS) to High(ELKO_VOLTS) do
+    if ELKO_VOLTS[I] >= U * 1.2 then
+      Exit(' / ≥ ' + FormatNum(ELKO_VOLTS[I], 0, 1) + ' V');
+end;
+
+{------------------------------------------------------------------------------
+  CurrentSubText
+------------------------------------------------------------------------------
+  Zweite Zeile der Karte «Tatsächlicher Strom» bzw. «LED-Strom»: welcher
+  Normwert statt des idealen Werts eingesetzt ist und welcher Strom gewollt
+  war, z. B. «mit 100 Ω statt ideal 90 Ω (Soll 20,0 mA)». So liest niemand
+  den Sollstrom als tatsächlichen Strom.
+  Parameter: R     - eingesetzter Normwert in Ω
+             RCalc - idealer (berechneter) Wert in Ω
+             I     - Sollstrom in A
+------------------------------------------------------------------------------}
+function CurrentSubText(R, RCalc, I: Double): string;
+begin
+  if FormatOhm(R) = FormatOhm(RCalc) then
+    Result := Format(_(rsCardCurrentSubExact), [FormatMilliAmp(I)])
+  else
+    Result := Format(_(rsCardCurrentSub), [FormatOhm(R), FormatOhm(RCalc), FormatMilliAmp(I)]);
+end;
 
 {==============================================================================
   HILFSFUNKTIONEN UND EINSTELLUNGEN
@@ -1187,14 +1237,28 @@ end;
   Fehlertext zum Status der Rechnung
 ------------------------------------------------------------------------------}
 function TFormMain.StatusText(S: TCalcStatus): string;
+var
+  MaxN: Integer;                                         // LEDs in Reihe, die die Spannung noch schafft
 begin
   case S of
     csInvalidU: Result := Format(_(rsErrU), [FormatVolt(MAX_U)]);
     csInvalidUd: Result := _(rsErrUd);
     csInvalidI: Result := _(rsErrI);
     csInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
-    csUTooLow: Result := Format(_(rsErrUTooLow), [FormatVolt(FInput.U), FInput.N,
-      FormatVolt(FInput.Ud), FormatVolt(FInput.N * FInput.Ud)]);
+    csUTooLow:
+      begin
+        Result := Format(_(rsErrUTooLow), [FormatVolt(FInput.U), FInput.N,
+          FormatVolt(FInput.Ud), FormatVolt(FInput.N * FInput.Ud)]);
+        // Lösungshinweis: wie viele LEDs in Reihe die Spannung noch schafft
+        // (U muss echt grösser sein als n × U_F, darum Ceil − 1)
+        MaxN := Ceil(FInput.U / FInput.Ud - 1e-9) - 1;
+        if MaxN > 1 then
+          Result := Result + Format(_(rsErrUTooLowMaxN), [MaxN])
+        else if MaxN = 1 then
+          Result := Result + _(rsErrUTooLowMax1)
+        else
+          Result := Result + _(rsErrUTooLowNoLed);
+      end;
     csNoStdValue: Result := _(rsErrNoStd);
     csInvalidStrings: Result := Format(_(rsErrStrings), [MAX_STRINGS]);
   else
@@ -1663,6 +1727,15 @@ begin
     V.LedText := Format(_(rsSchemLed), [LedName]);
     V.UFText := Format(_(rsSchemUF), [FormatVolt(FInput.Ud)]);
   end;
+  if FInput.Strings > 1 then
+  begin
+    // Gezeichnet sind der erste und der letzte Strang (ab 3 mit «…» davor)
+    V.String1Text := _(rsSchemString1);
+    if FInput.Strings = 2 then
+      V.StringLastText := _(rsSchemString2)
+    else
+      V.StringLastText := Format(_(rsSchemStringN), [FInput.Strings]);
+  end;
   if FRes.Status = csOk then
   begin
     V.RText := 'R = ' + FormatOhm(FRes.R);
@@ -1672,7 +1745,7 @@ begin
     if FRes.Strings > 1 then
     begin
       // Der Pfeil unten liegt auf der gemeinsamen Rückleitung: dort fliesst
-      // der Strom aller Stränge. Der Strom je Strang steht bei «× k Stränge».
+      // der Strom aller Stränge. Der Strom je Strang steht bei «k Stränge parallel».
       V.StringsText := Format(_(rsSchemStrings), [FRes.Strings]);
       V.IStringText := Format(_(rsSchemIString), [FormatMilliAmp(FRes.IAct)]);
       V.IText := Format(_(rsSchemITotal), [FormatMilliAmp(FRes.ITotal), FRes.Strings,
@@ -1848,7 +1921,7 @@ begin
             Format(_(rsCardCurrentSubStrings), [FRes.Strings, FormatMilliAmp(FRes.ITotal)]), clrTextBright)
         else if Ok then
           Card(_(rsCardCurrent), FormatMilliAmp(FRes.IAct),
-            Format(_(rsCardCurrentSub), [FormatOhm(FRes.RCalc), FormatMilliAmp(FInput.I)]), clrTextBright)
+            CurrentSubText(FRes.R, FRes.RCalc, FInput.I), clrTextBright)
         else
           Card(_(rsCardCurrent), '–', '', clrTextBright);
       2:
@@ -1874,12 +1947,12 @@ begin
             end;
             if Lvl = llOk then
               Card(_(rsCardRating), FormatRating(FRes.RecommendedW),
-                Format(_(rsCardRatingSubOk), [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor)
+                Format(_(rsCardRatingSubOk), [FormatRating(FRes.RefW), FormatPercent(FRes.Load)]), ValueColor)
             else
               Card(_(rsCardRating), FormatRating(FRes.RecommendedW),
-                Format(_(rsCardRatingSub), [FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load)]), ValueColor);
+                Format(_(rsCardRatingSub), [FormatRating(FRes.RefW), FormatPercent(FRes.Load)]), ValueColor);
           end;
-          // Balken: Auslastung der ¼-W-Bauform, Markierung bei 50 %
+          // Balken: Auslastung der Bezugs-Bauform (RefW), Markierung bei 50 %
           BarR := Types.Rect(R.Left + Pad, R.Bottom - Pad - Px(6), R.Right - Pad, R.Bottom - Pad);
           C.Brush.Style := bsSolid;
           C.Brush.Color := clrDeep;
@@ -1955,9 +2028,9 @@ begin
     Result[3] := Format(_(Step4None), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR)])
   else
     Result[3] := Format(_(Step4), [FormatVolt(FRes.UR), FormatMilliAmp(FRes.IAct), FormatPower(FRes.PR),
-      FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
-  Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT),
-    Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
+      FormatRating(FRes.RefW), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
+  Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT * 0.25 / Max(FRes.RefW, 0.001)),  // R_th der Bezugs-Bauform
+    Round(FRes.TempRise), FormatRating(FRes.RefW)]);
   // Aufteilung: was in den LEDs ankommt und was die Widerstände verheizen.
   // Der Widerstand bekommt den Rest auf 100 %, damit die Summe immer stimmt.
   if FRes.PTotal > 0 then PLedPct := Round(FRes.PLed / FRes.PTotal * 100) else PLedPct := 0;
@@ -2356,11 +2429,11 @@ begin
     end;
     ChipText := Format(_(rsStatusLoad), [FormatPercent(FRes.Load)]);
     if FRes.RecommendedW = 0 then
-      Txt := Format(_(rsStatusNone), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
+      Txt := Format(_(rsStatusNone), [FormatRating(FRes.RefW), Round(FRes.TempRise)])
     else if Lvl = llOk then
-      Txt := Format(_(rsStatusOk), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise)])
+      Txt := Format(_(rsStatusOk), [FormatRating(FRes.RefW), Round(FRes.TempRise)])
     else
-      Txt := Format(_(rsStatusWarn), [FormatRating(RATING_REFERENCE), Round(FRes.TempRise),
+      Txt := Format(_(rsStatusWarn), [FormatRating(FRes.RefW), Round(FRes.TempRise),
         FormatRating(FRes.RecommendedW)]);
     Txt := Txt + '   ·   ' + Format(_(rsStatusTotal), [FormatPower(FRes.PTotal)]);
     if FRes.Strings > 1 then
@@ -2491,7 +2564,7 @@ begin
       SL.Add(Format(_(rsCopyPower), [FormatPower(FRes.PR), FormatPower(FRes.PLed), FormatPower(FRes.PTotal)]));
     end;
     if FRes.RecommendedW > 0 then
-      SL.Add(Format(_(rsCopyRating), [FormatRating(FRes.RecommendedW), FormatRating(RATING_REFERENCE),
+      SL.Add(Format(_(rsCopyRating), [FormatRating(FRes.RecommendedW), FormatRating(FRes.RefW),
         FormatPercent(FRes.Load)]));
     Result := TrimRight(SL.Text);
   finally
@@ -2737,6 +2810,16 @@ var
   ----------------------------------------------------------------------------}
   procedure Put(C: TControl; X, Top, W: Integer);
   begin
+    // Feldbeschriftungen der zwei Spalten bekommen die ganze Spalte (bis
+    // kurz vor die zweite Spalte bei 140 bzw. bis zum rechten Rand bei 253).
+    // Sonst bleibt die Breite aus dem Formular, und Wörter wie
+    // «Durchlassspannung» werden bei 100 % abgeschnitten.
+    if (W = 0) and ((C = LabelU) or (C = LabelU2) or (C = LabelUd) or (C = LabelI) or
+      (C = LabelSeries) or (C = LabelN) or (C = LabelColor) or (C = LabelStrings)) then
+    begin
+      TLabel(C).AutoSize := False;
+      if X < 140 then W := 140 - X - 4 else W := 253 - X;
+    end;
     if W > 0 then
       C.SetBounds(Px(X), Px(Top), Px(W), C.Height)
     else
@@ -3626,6 +3709,10 @@ begin
       else if S = bsInvalidF then Result := _(rsErrBF)
       else Result := _(rsErrBDuty);
     bsDutyNeedsDiode: Result := _(rsErrBDiode);
+    bsSupply555: Result := _(rsErrBSupply555);
+    bsCurrent555: Result := _(rsErrBCurrent555);
+    bsMultiVoltage: Result := _(rsErrBMultiU);
+    bsMultiCurrent: Result := _(rsErrBMultiI);
     bsUTooLow:
       begin
         if FBInput.Circuit = bcMulti then
@@ -3731,8 +3818,8 @@ begin
     V.R2Text := 'R_B_2 = ' + OhmOr(R2);
     if FBInput.C > 0 then
     begin
-      V.CText := 'C1 = ' + FormatCap(FBInput.C);
-      V.C2Text := 'C2 = ' + FormatCap(FBInput.C);
+      V.CText := 'C1 = ' + FormatCap(FBInput.C) + ElkoVoltText(FBInput.C, FBInput.U);
+      V.C2Text := 'C2 = ' + FormatCap(FBInput.C) + ElkoVoltText(FBInput.C, FBInput.U);
     end
     else
     begin
@@ -3748,7 +3835,8 @@ begin
   begin
     V.R1Text := 'R1 = ' + OhmOr(R1);
     V.R2Text := 'R2 = ' + OhmOr(R2);
-    if FBInput.C > 0 then V.CText := 'C = ' + FormatCap(FBInput.C) else V.CText := 'C = ' + Dash;
+    if FBInput.C > 0 then V.CText := 'C = ' + FormatCap(FBInput.C) + ElkoVoltText(FBInput.C, FBInput.U)
+    else V.CText := 'C = ' + Dash;
     if FBInput.Conn = cnBoth then
     begin
       V.Led1Text := _(rsLed1);
@@ -3795,6 +3883,8 @@ begin
     V.Led2Lit := True;
   end;
   V.Diode := FBInput.Diode;
+  // Multivibrator: bei der Warnung «Basis gesperrt» die empfohlenen Dioden grau zeigen
+  V.BaseDiodes := (FBInput.Circuit = bcMulti) and (bwBaseReverse in FBRes.Warnings);
   V.Conn := FBInput.Conn;
   V.Elko := FBInput.C >= 1e-6 * 0.999;
 
@@ -3975,7 +4065,12 @@ begin
         begin
           if Ok then
           begin
-            if bwNotSaturated in FBRes.Warnings then VC := clrWarn else VC := clrOk;
+            // gelb, wenn der Transistor nicht sicher durchschaltet oder die Basis
+            // zu stark gesperrt wird (Warnung «Diode 1N4148 vor jede Basis»)
+            if (bwNotSaturated in FBRes.Warnings) or (bwBaseReverse in FBRes.Warnings) then
+              VC := clrWarn
+            else
+              VC := clrOk;
             Card(_(rsBCardBase), FormatMilliAmp(FBRes.IB),
               Format(_(rsBCardBaseSub), [FormatNum(FBRes.Overdrive, 1, 1), Round(BJT_BETA)]), VC);
           end
@@ -4011,7 +4106,7 @@ begin
             if Rating > 0 then RatingText := FormatRating(Rating) else RatingText := _(rsCardRatingNone);
             if FBRes.Led2.Used and not SameValue(FBRes.Led1.R, FBRes.Led2.R) then
               // zwei verschiedene Widerstände: beide Ströme, Bauform nach dem stärker belasteten
-              Sub := Format(_(rsBCardRvSub2), [FormatNum(FBRes.Led1.IAct * 1000, 2, 1),
+              Sub := Format(_(rsBCardRvSub2), [FormatMilliAmp(FBRes.Led1.IAct),
                 FormatMilliAmp(FBRes.Led2.IAct), FormatPower(P), RatingText])
             else
               Sub := Format(_(rsBCardRvSub), [FormatMilliAmp(FBRes.Led1.IAct), FormatPower(FBRes.Led1.P),
@@ -4161,8 +4256,6 @@ begin
     Add(_(rsChipSat), _(rsWarnSat));
   if bwR1Small in FBRes.Warnings then
     Add(_(rsChipR1), _(rsWarnR1));
-  if bwOutCurrent in FBRes.Warnings then
-    Add(_(rsChipOut), _(rsWarnOut));
   if bwRHigh in FBRes.Warnings then
     Add(_(rsChipRHigh), _(rsWarnRHigh));
   if bwTooFast in FBRes.Warnings then
@@ -4366,6 +4459,8 @@ begin
     ksInvalidI: Result := _(rsErrI);
     ksInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     ksTooMuchCurrent: Result := _(rsErrKCurrent);
+    ksOverVoltage:
+      if FKInput.Circuit = kcLM317 then Result := _(rsErrKVoltL) else Result := _(rsErrKVoltT);
     ksUTooLow: Result := Format(_(rsErrKUTooLow), [FormatVolt(FKRes.UMin), FormatVolt(FKRes.UNeed)]);
     ksNoStdValue: Result := _(rsErrNoStd);
   else
@@ -4431,7 +4526,7 @@ function TFormMain.KsqRechenwegLines: TStringArray;
 var
   Res: TKsqResult;                                       // Abkürzung
   Ser: string;                                           // Name der Normreihe
-  RatingT: string;                                       // Bauform des Fühlerwiderstands
+  RatingT: string;                                       // Bauform des Messwiderstands
   Drift: Double;                                         // Stromänderung pro 10 °C (T2)
   PartShort: string;                                     // empfohlenes Bauteil, kurz
 begin
@@ -4532,7 +4627,7 @@ begin
     V.LedText := Format(_(rsSchemLed), [LedName]);
     V.UFText := Format(_(rsSchemUF), [FormatVolt(FKInput.Ud)]);
   end;
-  V.TwoLeds := FKInput.N > 1;
+  V.LedCount := FKInput.N;                               // ab 4: LED, Punkte, LED
   V.LedColor := LedGlowColor(CurrentLed);
 
   Col.Line := clrLine;
@@ -4677,13 +4772,13 @@ begin
         if Ok then
         begin
           if not LM then
-            Sub := Format(_(rsKCardISubT), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I),
+            Sub := Format(_(rsKCardISubT), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I),
               FormatPercent(-KSQ_UBE_TC * 10 / KSQ_UBE_SENSE)])
           else if FKRes.UMax > FKRes.UMin then
-            Sub := Format(_(rsKCardISubL), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I),
+            Sub := Format(_(rsKCardISubL), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I),
               FormatVolt(FKRes.UMin), FormatVolt(FKRes.UMax)])
           else
-            Sub := Format(_(rsKCardISubLFix), [FormatOhm(FKRes.RCalc), FormatMilliAmp(FKInput.I)]);
+            Sub := Format(_(rsKCardISubLFix), [CurrentSubText(FKRes.R, FKRes.RCalc, FKInput.I)]);
           Card(_(rsKCardI), FormatMilliAmp(FKRes.IAct), Sub, clrTextBright);
         end
         else
@@ -4731,7 +4826,7 @@ end;
   wichtigste Hinweis gewinnt).
   Ablauf:
     1. Fehler: rotes Kästchen mit dem Grund
-    2. Hinweise sammeln (Verlust, Kühlkörper, Spannung, Mindeststrom, Basisstrom, Fühler-R); der erste bestimmt Kästchen und Text
+    2. Hinweise sammeln (Verlust, Kühlkörper, Spannung, Mindeststrom, Basisstrom, Mess-R); der erste bestimmt Kästchen und Text
     3. Sonst OK (grün) mit Spannungsbereich
 ------------------------------------------------------------------------------}
 procedure TFormMain.KsqStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
@@ -4773,11 +4868,6 @@ begin
     Add(_(rsKChipHeat), Format(_(rsKWarnHeat), [KsqPartName(FKRes.Part), FormatPower(FKRes.PLossMax),
       IntToStr(Floor(FKRes.HeatsinkRth)), Tab]));
   end;
-  if kwOverVoltage in FKRes.Warnings then
-    if FKInput.Circuit = kcLM317 then
-      Add(_(rsKChipVolt), _(rsKWarnVoltL))
-    else
-      Add(_(rsKChipVolt), _(rsKWarnVoltT));
   if kwMinLoad in FKRes.Warnings then
     Add(_(rsKChipMinLoad), _(rsKWarnMinLoad));
   if kwBaseHigh in FKRes.Warnings then

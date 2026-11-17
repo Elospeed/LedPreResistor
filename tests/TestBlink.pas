@@ -43,6 +43,7 @@ type
     procedure MultivibratorFaktorLehrbuch;
     procedure NaechsterNormwert;
     procedure Fehler;
+    procedure Grenzwerte;
   end;
 
 implementation
@@ -247,7 +248,7 @@ begin
   I.C := 1e-6;
   R := CalculateBlink(I);
   AssertTrue('Status', R.Status = bsOk);
-  AssertTrue('Speisespannung', bwSupply555 in R.Warnings);
+  AssertTrue('Speisespannung unter 4,5 V', bwSupply555 in R.Warnings);
   AssertTrue('R1 klein', bwR1Small in R.Warnings);
   AssertTrue('R gross', bwRHigh in R.Warnings);
   // schnell: 1 kΩ, 10 kΩ, 1 µF -> 68,7 Hz
@@ -387,6 +388,34 @@ begin
   I.Duty := 1;
   I.C := 10e-6;
   AssertTrue('Tastgrad 100 %', CalculateBlink(I).Status = bsInvalidDuty);
+end;
+
+{------------------------------------------------------------------------------
+  Grenzwerte
+------------------------------------------------------------------------------
+  Bauteil-Grenzen genau an der Grenze (noch erlaubt) und knapp darüber
+  (Fehler, kein Resultat): NE555 16 V und 200 mA, BC547 45 V und 100 mA.
+------------------------------------------------------------------------------}
+procedure TTestBlink.Grenzwerte;
+var
+  I: TBlinkInput;                                        // Eingabe
+begin
+  I := Basis(bcNE555);
+  I.R1 := 1000; I.R2 := 68000; I.C := 10e-6;
+  I.U := 16;    AssertTrue('NE555 16 V', CalculateBlink(I).Status = bsOk);
+  I.U := 16.1;  AssertTrue('NE555 16,1 V', CalculateBlink(I).Status = bsSupply555);
+  I.U := 12;
+  I.I := 0.2;   AssertTrue('NE555 200 mA', CalculateBlink(I).Status = bsOk);
+  I.I := 0.201; AssertTrue('NE555 201 mA', CalculateBlink(I).Status = bsCurrent555);
+  I.I := 0.02;
+  I.U := 4;     AssertTrue('NE555 4 V: Hinweis CMOS', bwSupply555 in CalculateBlink(I).Warnings);
+  I := Basis(bcMulti);
+  I.R1 := 33000; I.R2 := 33000; I.C := 22e-6;
+  I.U := 45;    AssertTrue('BC547 45 V', CalculateBlink(I).Status = bsOk);
+  I.U := 45.1;  AssertTrue('BC547 45,1 V', CalculateBlink(I).Status = bsMultiVoltage);
+  I.U := 12;
+  I.I := 0.1;   AssertTrue('BC547 100 mA', CalculateBlink(I).Status = bsOk);
+  I.I := 0.101; AssertTrue('BC547 101 mA', CalculateBlink(I).Status = bsMultiCurrent);
 end;
 
 initialization

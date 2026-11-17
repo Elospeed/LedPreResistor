@@ -61,6 +61,8 @@ const
   BJT_UBE = 0.6;                                         // V, Basis-Emitter-Spannung, wenn er leitet
   BJT_BETA = 100.0;                                      // Stromverstärkung (eher niedrig angenommen)
   BJT_UEB_MAX = 6.0;                                     // V, höchste Sperrspannung der Basis
+  BJT_UCE_MAX = 45.0;                                    // V, BC547: höchste Kollektor-Emitter-Spannung
+  BJT_IC_MAX = 0.1;                                      // A, BC547: höchster Kollektorstrom
   BJT_OVERDRIVE_MIN = 1.0;                               // Basisstrom mindestens I_C / β (Übersteuerung 1)
 
   // Grenzen für Hinweise
@@ -113,14 +115,17 @@ type
     bsInvalidDuty,                                       // Tastgrad nicht zwischen 0 und 100 %
     bsDutyNeedsDiode,                                    // NE555 ohne Diode: High-Anteil muss über 50 % sein
     bsUTooLow,                                           // es bleibt keine Spannung für den Vorwiderstand
+    bsSupply555,                                         // NE555: mehr als 16 V
+    bsCurrent555,                                        // NE555: mehr als 200 mA am Ausgang
+    bsMultiVoltage,                                      // Multivibrator: mehr als 45 V für den BC547
+    bsMultiCurrent,                                      // Multivibrator: mehr als 100 mA für den BC547
     bsNoStdValue                                         // kein Normwert gefunden (sollte nicht vorkommen)
   );
 
   // Hinweise zu einem gültigen Resultat (gerechnet wird trotzdem)
   TBlinkWarning = (
-    bwSupply555,                                         // NE555 ausserhalb 4,5–16 V
+    bwSupply555,                                         // NE555 unter 4,5 V (CMOS-Version nehmen)
     bwR1Small,                                           // NE555: R1 unter 1 kΩ
-    bwOutCurrent,                                        // NE555: Ausgangsstrom über 200 mA
     bwBaseReverse,                                       // Multivibrator: Basis wird mit mehr als 6 V gesperrt
     bwNotSaturated,                                      // Multivibrator: Basisstrom reicht nicht sicher
     bwRHigh,                                             // Zeitwiderstand über 1 MΩ (Leckstrom des Elkos)
@@ -416,12 +421,10 @@ begin
   end;
 
   // ----- 4. Hinweise -----
-  if (Inp.U < NE555_U_MIN) or (Inp.U > NE555_U_MAX) then
-    Include(Res.Warnings, bwSupply555);
+  if Inp.U < NE555_U_MIN then
+    Include(Res.Warnings, bwSupply555);                  // darunter: CMOS-Version (TLC555)
   if Res.R1 < NE555_R1_MIN then
     Include(Res.Warnings, bwR1Small);
-  if Max(Res.Led1.IAct, Res.Led2.IAct) > NE555_I_MAX then
-    Include(Res.Warnings, bwOutCurrent);
   if Max(Res.R1, Res.R2) > R_TIMING_MAX then
     Include(Res.Warnings, bwRHigh);
 end;
@@ -530,7 +533,16 @@ begin
   else if Input.Reverse and not ((Input.Duty > 0) and (Input.Duty < 1)) then
     Result.Status := bsInvalidDuty
   else if not (Input.C > 0) then
-    Result.Status := bsInvalidC;
+    Result.Status := bsInvalidC
+  // Grenzwerte der Bauteile: darüber gibt es kein Resultat, nur die Grenze
+  else if (Input.Circuit = bcNE555) and (Input.U > NE555_U_MAX + 1e-9) then
+    Result.Status := bsSupply555
+  else if (Input.Circuit = bcNE555) and (Input.I > NE555_I_MAX + 1e-9) then
+    Result.Status := bsCurrent555
+  else if (Input.Circuit = bcMulti) and (Input.U > BJT_UCE_MAX + 1e-9) then
+    Result.Status := bsMultiVoltage
+  else if (Input.Circuit = bcMulti) and (Input.I > BJT_IC_MAX + 1e-9) then
+    Result.Status := bsMultiCurrent;
   if Result.Status <> bsOk then
     Exit;
 

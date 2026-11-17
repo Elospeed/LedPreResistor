@@ -3,7 +3,7 @@
 ==============================================================================
   Zweck:     Rechnet die beiden Konstantstromquellen des Reiters
              «Konstantstrom» aus:
-               1. LM317 als Stromquelle (Regler + ein Fühlerwiderstand R)
+               1. LM317 als Stromquelle (Regler + ein Messwiderstand R)
                2. zwei Transistoren (T2 = BC547 als Fühler, T1 je nach
                   Strom BC547, BC337 oder BD139, dazu R_S und R_B)
 
@@ -54,7 +54,7 @@ const
   // ----- LM317 -----
 
   // Referenzspannung zwischen OUT und ADJ: Der LM317 regelt so, dass am
-  // Fühlerwiderstand immer genau diese Spannung liegt.
+  // Messwiderstand immer genau diese Spannung liegt.
   LM317_UREF = 1.25;                                     // V
 
   // Spannung, die der Regler selbst mindestens braucht (Dropout). Datenblatt:
@@ -65,7 +65,7 @@ const
   // 3,5 mA, höchstens 10 mA. Darunter gibt es den Hinweis kwMinLoad.
   LM317_I_MIN = 0.010;                                   // A
 
-  // Höchste Spannung zwischen IN und OUT (sonst Hinweis kwOverVoltage).
+  // Höchste Spannung zwischen IN und OUT (sonst Fehler ksOverVoltage).
   LM317_UDIFF_MAX = 40.0;                                // V
 
   // Höchster Strom für beide Schaltungen (LM317 im TO-220 und BD139).
@@ -147,6 +147,7 @@ type
     ksInvalidN,                                          // Anzahl LEDs < 1
     ksTooMuchCurrent,                                    // mehr als 1,5 A
     ksUTooLow,                                           // Speisespannung (von) unter der Mindestspannung
+    ksOverVoltage,                                       // Speisespannung (bis) über 40 V (LM317) bzw. 45 V (T1)
     ksNoStdValue                                         // kein Normwert gefunden (sollte nicht vorkommen)
   );
 
@@ -155,9 +156,8 @@ type
     kwHeatsink,                                          // Regler bzw. T1 braucht einen Kühlkörper
     kwTooHot,                                            // selbst mit grossem Kühlkörper zu viel Verlust
     kwMinLoad,                                           // LM317: unter ca. 10 mA, regelt nicht sicher
-    kwOverVoltage,                                       // mehr als 40 V am LM317 bzw. 45 V an T1
     kwBaseHigh,                                          // zwei Transistoren: R_B wird warm
-    kwRPower                                             // Fühlerwiderstand braucht mehr als 1 W
+    kwRPower                                             // Messwiderstand braucht mehr als 1 W
   );
   TKsqWarnings = set of TKsqWarning;                     // mehrere Hinweise gleichzeitig möglich
 
@@ -167,13 +167,13 @@ type
     Warnings: TKsqWarnings;                              // Hinweise, siehe TKsqWarning
     UMin, UMax: Double;                                  // Speisespannung geordnet (UMax >= UMin)
     ULeds: Double;                                       // Spannung an allen LEDs zusammen (V)
-    URef: Double;                                        // Spannung am Fühlerwiderstand (1,25 / 0,6 V)
-    RCalc: Double;                                       // berechneter Fühlerwiderstand (Ω)
+    URef: Double;                                        // Spannung am Messwiderstand (1,25 / 0,6 V)
+    RCalc: Double;                                       // berechneter Messwiderstand (Ω)
     Std: TStdValue;                                      // Normwert (nächsthöher: Strom eher kleiner)
     R: Double;                                           // Normwert (Ω)
     IAct: Double;                                        // tatsächlicher Strom mit dem Normwert (A)
-    PR: Double;                                          // Leistung im Fühlerwiderstand (W)
-    RRating: Double;                                     // Bauform des Fühlerwiderstands (W, 0 = über 1 W)
+    PR: Double;                                          // Leistung im Messwiderstand (W)
+    RRating: Double;                                     // Bauform des Messwiderstands (W, 0 = über 1 W)
     Headroom: Double;                                    // Spannung, die Regler bzw. T1 mindestens braucht
     UNeed: Double;                                       // Mindestspannung = ULeds + URef + Headroom
     Reserve: Double;                                     // UMin - UNeed (V)
@@ -289,7 +289,7 @@ end;
   Ablauf:
     1. Speisespannung ordnen (von <= bis) und Eingaben prüfen
     2. Mindestspannung: LEDs + Fühler + was Regler/T1 selbst braucht
-    3. Fühlerwiderstand: nächster Normwert darüber, Strom und Leistung
+    3. Messwiderstand: nächster Normwert darüber, Strom und Leistung
     4. Verlust im Regler bzw. T1, Bauteil wählen, Kühlkörper rechnen
     5. Besonderheiten der Schaltung (LM317: Mindeststrom, Überspannung;
        zwei Transistoren: Basiswiderstand R_B, kleine Stromänderung)
@@ -322,7 +322,13 @@ begin
   else if Input.N < 1 then
     Result.Status := ksInvalidN
   else if Input.I > KSQ_I_MAX * (1 + 1e-9) then          // kleine Toleranz für Rundung (1,5 A erlaubt)
-    Result.Status := ksTooMuchCurrent;
+    Result.Status := ksTooMuchCurrent
+  // Beim Einschalten oder wenn die LEDs kurzschliessen liegt fast die ganze
+  // Speisespannung am Regler bzw. an T1: darum zählt U_B, nicht der Betrieb.
+  else if (Input.Circuit = kcLM317) and (U2 > LM317_UDIFF_MAX + 1e-9) then
+    Result.Status := ksOverVoltage
+  else if (Input.Circuit <> kcLM317) and (U2 > KSQ_UCE_MAX + 1e-9) then
+    Result.Status := ksOverVoltage;
   Result.UMin := U1;
   Result.UMax := U2;
   if Result.Status <> ksOk then
@@ -332,7 +338,7 @@ begin
   Result.ULeds := Input.N * Input.Ud;                    // alle LEDs in Reihe
   if Input.Circuit = kcLM317 then
   begin
-    Result.URef := LM317_UREF;                           // 1,25 V am Fühlerwiderstand
+    Result.URef := LM317_UREF;                           // 1,25 V am Messwiderstand
     Result.Headroom := LM317_DROPOUT;                    // ca. 2 V im Regler
   end
   else
@@ -348,7 +354,7 @@ begin
     Exit;
   end;
 
-  // ----- 3. Fühlerwiderstand -----
+  // ----- 3. Messwiderstand -----
   // Nächster Normwert DARÜBER: Der Strom wird dadurch eher etwas kleiner,
   // das schont die LED.
   Result.RCalc := Result.URef / Input.I;                 // z. B. 1,25 V / 20 mA = 62,5 Ω
@@ -388,17 +394,12 @@ begin
   begin
     if Result.IAct < LM317_I_MIN then
       Include(Result.Warnings, kwMinLoad);               // unter 10 mA regelt der LM317 unsicher
-    if U2 - Result.ULeds - Result.URef > LM317_UDIFF_MAX then
-      Include(Result.Warnings, kwOverVoltage);           // mehr als 40 V zwischen IN und OUT
     // Netz- und Lastregelung des LM317 sind so gut, dass der Strom
     // praktisch gleich bleibt.
     Result.KsqRise := 0;
   end
   else
   begin
-    if U2 - Result.ULeds - Result.URef > KSQ_UCE_MAX then
-      Include(Result.Warnings, kwOverVoltage);           // mehr als 45 V an T1
-
     // Basiswiderstand R_B: liefert den Basisstrom von T1 mit Reserve
     // (Faktor 2), mindestens aber 2 mA, damit T2 sauber regeln kann.
     Result.Beta1 := PartBeta(Result.Part);

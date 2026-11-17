@@ -23,7 +23,9 @@
              Emitter schräg, Pfeil am Emitter zeigt nach aussen (NPN).
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026 Leitungen und Bauteile an uSchemNetz melden
+  Versionen: 2.5.2 17.11.2026 Multivibrator: Brücken an Kreuzungen ohne Verbindung,
+                              bei der Warnung 1N4148 vor jeder Basis grau
+             2.5.1 17.11.2026 Leitungen und Bauteile an uSchemNetz melden
                               (Verbindungstests)
              2.4  14.11.2026  geglättet, Transistorsymbole, U_OUT beim
                               Wechselblinker unten, Kommentare
@@ -63,6 +65,7 @@ type
     Bands1: TBandArray;                                  // Farbringe Vorwiderstand 1 (leer = ohne)
     Bands2: TBandArray;                                  // Farbringe Vorwiderstand 2
     Diode: Boolean;                                      // NE555: Diode über R2 eingezeichnet
+    BaseDiodes: Boolean;                                 // Multivibrator: 1N4148 vor jeder Basis grau einzeichnen
     Conn: TLedConn;                                      // NE555: Anschluss der LED(s)
     Elko: Boolean;                                       // Zeitkondensator ist ein Elko (Plus-Zeichen)
   end;
@@ -699,6 +702,67 @@ begin
 end;
 
 {------------------------------------------------------------------------------
+  DiodeH
+------------------------------------------------------------------------------
+  Waagrechte Diode zwischen Anode XA und Kathode XK auf Höhe Y, in der Farbe
+  Color (grau für empfohlene Ergänzungen). Das Dreieck zeigt zur Kathode,
+  dort steht der Querstrich. Meldet sie an uSchemNetz (Name vorher mit
+  NetzName setzen).
+------------------------------------------------------------------------------}
+procedure DiodeH(C: TCanvas; const M: TMap; XA, XK, Y: Double; Color: TColor);
+var
+  Dir: Double;                                           // +1 = Kathode rechts, −1 = links
+  XT: Double;                                            // Spitze des Dreiecks
+begin
+  NetzBauteil('D', ['A', 'K'], [XA, Y, XK, Y]);
+  if XK >= XA then Dir := 1 else Dir := -1;
+  XT := XK - Dir * 6;                                    // Spitze kurz vor dem Kathodenanschluss
+  C.Pen.Color := Color;
+  C.Pen.Width := MW(M, 1.6);
+  C.Line(MX(M, XA), MY(M, Y), MX(M, XA + Dir * 6), MY(M, Y));  // Anschluss Anode
+  C.Line(MX(M, XT), MY(M, Y), MX(M, XK), MY(M, Y));      // Anschluss Kathode
+  C.Brush.Style := bsSolid;
+  C.Brush.Color := Color;
+  C.Polygon([MP(M, XA + Dir * 6, Y - 9), MP(M, XA + Dir * 6, Y + 9), MP(M, XT, Y)]);
+  C.Brush.Style := bsClear;
+  C.Pen.Width := MW(M, 2.2);
+  C.Line(MX(M, XT), MY(M, Y - 9), MX(M, XT), MY(M, Y + 9));  // Querstrich (Kathode)
+  C.Pen.Width := MW(M, 1.6);
+end;
+
+{------------------------------------------------------------------------------
+  WireHop
+------------------------------------------------------------------------------
+  Waagrechte Leitung von X1 nach X2 auf Höhe Y, die bei HopX eine senkrechte
+  Leitung OHNE Verbindung kreuzt: an der Kreuzung ein kleiner Bogen
+  (Brücke), damit man sie nicht für einen Knoten hält. Für die
+  Verbindungstests zählt sie als eine gerade Leitung (eine Kreuzung in der
+  Mitte verbindet dort ohnehin nicht).
+------------------------------------------------------------------------------}
+procedure WireHop(C: TCanvas; const M: TMap; X1, Y, X2, HopX: Double);
+const
+  HR = 6;                                                // Radius des Bogens
+  STEPS = 10;                                            // Stützpunkte des Bogens
+var
+  Pts: array of TPoint;                                  // Linienzug in Pixeln
+  I: Integer;                                            // Zähler
+  A: Double;                                             // Winkel des Stützpunkts
+  Dir: Double;                                           // +1 = von links nach rechts
+begin
+  if X2 >= X1 then Dir := 1 else Dir := -1;
+  SetLength(Pts, STEPS + 3);
+  Pts[0] := MP(M, X1, Y);
+  for I := 0 to STEPS do
+  begin
+    A := Pi * I / STEPS;                                 // 0 ... 180°, Bogen nach oben
+    Pts[I + 1] := MP(M, HopX - Dir * HR * Cos(A), Y - HR * Sin(A));
+  end;
+  Pts[STEPS + 2] := MP(M, X2, Y);
+  C.PolyLine(Pts);
+  NetzLeitung(X1, Y, X2, Y);
+end;
+
+{------------------------------------------------------------------------------
   DrawSchematicMulti - siehe Interface
 ------------------------------------------------------------------------------
   Ablauf:
@@ -742,14 +806,27 @@ begin
   Wire(C, M, [480, 252, 480, 285]);
   // Basiswiderstände
   Wire(C, M, [240, 25, 240, 45]);
-  Wire(C, M, [240, 95, 240, 230, 146, 230]);
+  if V.BaseDiodes then
+  begin
+    // Platz für die empfohlenen Dioden vor den Basen (siehe Abschnitt 3)
+    Wire(C, M, [240, 95, 240, 230, 205, 230]);
+    Wire(C, M, [175, 230, 146, 230]);
+  end
+  else
+    Wire(C, M, [240, 95, 240, 230, 146, 230]);
   Wire(C, M, [360, 25, 360, 45]);
-  Wire(C, M, [360, 95, 360, 230, 454, 230]);
+  if V.BaseDiodes then
+  begin
+    Wire(C, M, [360, 95, 360, 230, 395, 230]);
+    Wire(C, M, [425, 230, 454, 230]);
+  end
+  else
+    Wire(C, M, [360, 95, 360, 230, 454, 230]);
   // C1: Kollektor T1 -> Basis T2; C2: Kollektor T2 -> Basis T1
   Wire(C, M, [120, 150, 180, 150]);
-  Wire(C, M, [188, 150, 360, 150]);
+  WireHop(C, M, 188, 150, 360, 240);                    // Brücke über die Leitung von R_B1
   Wire(C, M, [480, 180, 420, 180]);
-  Wire(C, M, [412, 180, 240, 180]);
+  WireHop(C, M, 412, 180, 240, 360);                    // Brücke über die Leitung von R_B2
   // ----- 3. Bauteile -----
   // Pluspol jeweils auf der Seite des Kollektors (dort ist die Spannung höher)
   // NetzName: Namen für die Verbindungstests (uSchemNetz)
@@ -769,6 +846,18 @@ begin
   ResV(C, M, 240, 45, 95, Col);
   NetzName('R2');
   ResV(C, M, 360, 45, 95, Col);
+  if V.BaseDiodes then
+  begin
+    // Empfohlene Ergänzung bei der Warnung «Basis gesperrt»: je eine 1N4148
+    // in Reihe vor der Basis, grau. Anode zum Knoten aus R_B und C, Kathode
+    // zur Basis: Der Basisstrom fliesst durch, der negative Sprung vom
+    // Kondensator sperrt die Diode statt der Basis-Emitter-Strecke.
+    NetzName('D1');
+    DiodeH(C, M, 205, 175, 230, Col.Dim);                // zeigt nach links zur Basis von T1
+    NetzName('D2');
+    DiodeH(C, M, 395, 425, 230, Col.Dim);                // zeigt nach rechts zur Basis von T2
+    C.Pen.Color := Col.Line;
+  end;
   NetzName('T1');
   Npn(C, M, 132, 230, 120, False, Col);                  // T1, Basis von rechts
   NetzName('T2');
@@ -795,6 +884,11 @@ begin
   Txt(C, M, 416, 206, V.C2Text, Col.Accent, 1, True);
   Txt(C, M, 98, 268, V.T1Text, Col.Text, 2, False);
   Txt(C, M, 502, 268, V.T2Text, Col.Text, 0, False);
+  if V.BaseDiodes then
+  begin
+    Txt(C, M, 190, 252, '1N4148', Col.Dim, 1, False);   // unter den grauen Dioden
+    Txt(C, M, 410, 252, '1N4148', Col.Dim, 1, False);
+  end;
 end;
 
 end.
