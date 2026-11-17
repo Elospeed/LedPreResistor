@@ -182,32 +182,32 @@ msgid "Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **K
 msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → more than 0.5 W: **constant current source or larger rating**"
 
 #: uMain.pas rsStep5
-msgid "Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d °C/W ≈ **+%d °C** (bei %s)"
-msgstr "Temperature rise (estimate): ΔT ≈ P × R_t_h = %s × %d °C/W ≈ **+%d °C** (at %s)"
+msgid "Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d K/W ≈ **+%d K über Umgebung** (bei %s)"
+msgstr "Temperature rise (estimate): ΔT ≈ P × R_t_h = %s × %d K/W ≈ **+%d K above ambient** (at %s)"
 
 #: uMain.pas rsStatusLoad
 msgid "Auslastung %s"
 msgstr "Load %s"
 
 #: uMain.pas rsStatusWarn
-msgid "%s würde ca. +%d °C warm – %s empfohlen"
-msgstr "%s would heat up by about +%d °C – %s recommended"
+msgid "%s: ca. +%d K über Umgebung – %s empfohlen"
+msgstr "%s: about +%d K above ambient – %s recommended"
 
 #: uMain.pas rsStatusOk
-msgid "%s wird ca. +%d °C warm – reicht"
-msgstr "%s heats up by about +%d °C – fine"
+msgid "%s: ca. +%d K über Umgebung – reicht"
+msgstr "%s: about +%d K above ambient – fine"
 
 #: uMain.pas rsStatusNone
-msgid "%s würde ca. +%d °C warm – Leistung zu gross für einen Vorwiderstand"
-msgstr "%s would heat up by about +%d °C – too much power for a series resistor"
+msgid "%s: ca. +%d K über Umgebung – Leistung zu gross für einen Vorwiderstand"
+msgstr "%s: about +%d K above ambient – too much power for a series resistor"
 
 #: uMain.pas rsStatusTotal
 msgid "Gesamtleistung %s"
 msgstr "Total power %s"
 
 #: uMain.pas rsErrU
-msgid "Bitte eine Speisespannung grösser als 0 eingeben."
-msgstr "Please enter a supply voltage greater than 0."
+msgid "Bitte eine Speisespannung über 0 bis %s eingeben (Kleinspannung)."
+msgstr "Please enter a supply voltage above 0 up to %s (extra-low voltage)."
 
 #: uMain.pas rsErrUd
 msgid "Bitte eine Durchlassspannung grösser als 0 eingeben."
@@ -218,8 +218,8 @@ msgid "Bitte einen LED-Strom grösser als 0 eingeben."
 msgstr "Please enter an LED current greater than 0."
 
 #: uMain.pas rsErrN
-msgid "Bitte mindestens 1 LED angeben (ganze Zahl)."
-msgstr "Please enter at least 1 LED (whole number)."
+msgid "Bitte 1 bis %d LEDs in Reihe angeben (ganze Zahl)."
+msgstr "Please enter 1 to %d LEDs in series (whole number)."
 
 #: uMain.pas rsErrUTooLow
 msgid "Die Speisespannung (%s) muss grösser sein als %d × %s = %s."
@@ -672,8 +672,8 @@ msgid "Stränge parallel"
 msgstr "Parallel strings"
 
 #: uMain.pas rsErrStrings
-msgid "Bitte mindestens 1 Strang angeben (ganze Zahl)."
-msgstr "Please enter at least 1 string (whole number)."
+msgid "Bitte 1 bis %d Stränge angeben (ganze Zahl)."
+msgstr "Please enter 1 to %d strings (whole number)."
 
 #: uMain.pas rsSchemStrings
 msgid "× %d Stränge, je eigener R"
@@ -686,6 +686,14 @@ msgstr "per string; %d strings: total %s"
 #: uMain.pas rsCardPowerSubStrings
 msgid "je Widerstand (%d Stück)"
 msgstr "per resistor (%d pieces)"
+
+#: uMain.pas rsStep4Strings
+msgid "Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**"
+msgstr "Power dissipation per resistor: P = U_R × I = %s × %s = **%s** → %s loaded to %s%s → **%s**"
+
+#: uMain.pas rsStep4NoneStrings
+msgid "Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**"
+msgstr "Power dissipation per resistor: P = U_R × I = %s × %s = **%s** → more than 0.5 W: **constant current source or larger rating**"
 
 #: uMain.pas rsStep3Strings
 msgid "Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**"

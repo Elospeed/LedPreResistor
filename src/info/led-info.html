@@ -351,7 +351,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     </div>
     <div>
       <h3>Wie viel Watt?</h3>
-      <p>Ein Widerstand sollte dauerhaft höchstens mit der Hälfte seiner Nennleistung belastet werden. LedPreResistor warnt darum ab 50 % Belastung. Als Richtwert erwärmt sich ein ¼-W-Widerstand um etwa 200–250 °C pro Watt über die Umgebung. LedPreResistor rechnet mit 225 °C/W, grössere Bauformen entsprechend weniger (½ W etwa die Hälfte).</p>
+      <p>Ein Widerstand sollte dauerhaft höchstens mit der Hälfte seiner Nennleistung belastet werden. LedPreResistor warnt darum ab 50 % Belastung. Als Richtwert erwärmt sich ein ¼-W-Widerstand um etwa 200–250 K pro Watt über die Umgebung. LedPreResistor rechnet mit 225 K/W, grössere Bauformen entsprechend weniger (½ W etwa die Hälfte). Angezeigt wird darum immer die Erwärmung, nicht die Temperatur selbst: «+37 K über Umgebung» heisst bei 20 °C Raumtemperatur etwa 57 °C am Widerstand (1 K entspricht 1 °C Unterschied).</p>
     </div>
   </div>
 </section>
@@ -363,7 +363,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <div class="calc">
     <form class="inputs" id="calcForm" autocomplete="off">
       <label for="inU">Versorgungsspannung U
-        <span class="unitrow"><input id="inU" type="number" step="0.1" min="0" value="12"><span>V</span></span>
+        <span class="unitrow"><input id="inU" type="number" step="0.1" min="0" max="60" value="12"><span>V</span></span>
       </label>
       <label for="inType">LED-Typ
         <select id="inType">
@@ -385,7 +385,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
         <span class="unitrow"><input id="inI" type="number" step="1" min="0" value="20"><span>mA</span></span>
       </label>
       <label for="inN">LEDs in Reihe n
-        <span class="unitrow"><input id="inN" type="number" step="1" min="1" value="1"><span>Stk</span></span>
+        <span class="unitrow"><input id="inN" type="number" step="1" min="1" max="30" value="1"><span>Stk</span></span>
       </label>
     </form>
     <div class="result" aria-live="polite">
@@ -582,6 +582,11 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
       return;
     }
+    if (U > 60 || n > 30) {                    // Grenzen wie im Programm: Kleinspannung, höchstens 30 LEDs
+      st.className = "status bad"; st.textContent = "Bitte eine Versorgung bis 60 V (Kleinspannung) und 1 bis 30 LEDs eingeben.";
+      ["oR", "oI", "oP", "oW"].forEach(function (k) { $(k).textContent = "–"; });
+      return;
+    }
     var I = ImA / 1000, Uled = n * Uf, Ur = U - Uled;
     step("Spannung, die die LED" + (n > 1 ? "s" : "") + " brauchen",
       "n · U<sub>F</sub> = " + n + " × " + fmt(Uf, 2) + " V = <b>" + fmt(Uled, 2) + " V</b>");
@@ -603,7 +608,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     step("Tatsächlicher Strom", "I = U<sub>R</sub> / R = " + fmt(Ur, 2) + " V / " + ohm(R) + " = <b>" + fmt(Ireal * 1000, 2) + " mA</b>");
     step("Leistung am Widerstand", "P<sub>R</sub> = U<sub>R</sub> · I = " + fmt(Ur, 2) + " V × " + fmt(Ireal * 1000, 2) + " mA = <b>" + fmt(P * 1000, 1) + " mW</b>");
     step("Belastung prüfen (Grenze 50 %)", "¼ W: " + fmt(quarter * 100, 0) + " % → empfohlen <b>" + pick[1] + "</b> (" + fmt(P / pick[0] * 100, 0) + " % belastet)");
-    step("Erwärmung (Richtwert 225 °C/W bei ¼ W, umgekehrt zur Nennleistung skaliert)", "¼ W: " + fmt(P, 4) + " W × 225 °C/W ≈ " + fmt(dT4, 0) + " °C; " + pick[1] + ": " + fmt(225 * 0.25 / pick[0], 1) + " °C/W ≈ <b>" + fmt(dTpick, 0) + " °C</b> über Umgebung");
+    step("Erwärmung (Richtwert 225 K/W bei ¼ W, umgekehrt zur Nennleistung skaliert)", "¼ W: " + fmt(P, 4) + " W × 225 K/W ≈ +" + fmt(dT4, 0) + " K; " + pick[1] + ": " + fmt(225 * 0.25 / pick[0], 1) + " K/W ≈ <b>+" + fmt(dTpick, 0) + " K</b> über Umgebung");
     step("Gesamtleistung und Wirkungsgrad", "P<sub>ges</sub> = U · I = <b>" + fmt(Pges * 1000, 1) + " mW</b>, η = " + fmt(Uled, 2) + " V / " + fmt(U, 2) + " V = <b>" + fmt(eta * 100, 0) + " %</b>");
 
     $("oR").textContent = ohm(R);
@@ -612,10 +617,10 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     $("oW").textContent = pick[1];
     if (quarter <= 0.5) {
       st.className = "status ok";
-      st.textContent = "¼ W ist zu " + fmt(quarter * 100, 0) + " % belastet. Passt, Erwärmung ca. " + fmt(dT4, 0) + " °C.";
+      st.textContent = "¼ W ist zu " + fmt(quarter * 100, 0) + " % belastet. Passt, ca. +" + fmt(dT4, 0) + " K über Umgebung.";
     } else {
       st.className = "status warn";
-      st.textContent = "¼ W wäre zu " + fmt(quarter * 100, 0) + " % belastet (ca. " + fmt(dT4, 0) + " °C). " + pick[1] + " empfohlen (ca. " + fmt(dTpick, 0) + " °C).";
+      st.textContent = "¼ W wäre zu " + fmt(quarter * 100, 0) + " % belastet (ca. +" + fmt(dT4, 0) + " K über Umgebung). " + pick[1] + " empfohlen (ca. +" + fmt(dTpick, 0) + " K).";
     }
     if (Ur < 1) {
       st.className = "status warn";
