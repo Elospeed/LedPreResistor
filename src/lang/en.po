@@ -699,6 +699,14 @@ msgstr "Power dissipation per resistor: P = U_R × I = %s × %s = **%s** → mor
 msgid "Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**"
 msgstr "Actual current: I = %s / %s = **%s** per string · %d strings: total **%s**"
 
+#: uMain.pas rsStep6
+msgid "Aufteilung der Leistung: LEDs **%s (%s)** · Widerstand %s (%s) · gesamt aus der Quelle %s"
+msgstr "Power split: LEDs **%s (%s)** · resistor %s (%s) · total from the supply %s"
+
+#: uMain.pas rsStep6Strings
+msgid "Aufteilung der Leistung (alle Stränge): LEDs **%s (%s)** · Widerstände %s (%s) · gesamt %s"
+msgstr "Power split (all strings): LEDs **%s (%s)** · resistors %s (%s) · total %s"
+
 #: uMain.pas rsStatusStrings
 msgid "(%d Stränge)"
 msgstr "(%d strings)"
