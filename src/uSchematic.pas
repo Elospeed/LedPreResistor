@@ -24,7 +24,8 @@
              darübergeschrieben.
 
   Autor:     Elospeed
-  Versionen: 2.5  17.11.2026  mehrere LEDs in Reihe als Säule, zweiter Strang
+  Versionen: 2.5.1 17.11.2026 zweiter Strang zweigt vor dem ersten Widerstand ab
+             2.5  17.11.2026  mehrere LEDs in Reihe als Säule, zweiter Strang
                               rechts angedeutet (Stränge parallel)
              2.4  14.11.2026  geglättet (uSmooth), Stränge parallel, Kommentare
              2.0  29.10.2026  erste Fassung
@@ -365,17 +366,19 @@ var
     DrawSecondString
   ----------------------------------------------------------------------------
     Deutet rechts einen zweiten, gleichen Strang an: grau gestrichelt, mit
-    eigenem (senkrechtem) Widerstand und einer LED, dazu Knotenpunkte an
-    der oberen und unteren Leitung. Jeder Strang braucht seinen eigenen
-    Vorwiderstand, darum steht der Widerstand auch im zweiten Zweig.
+    eigenem (senkrechtem) Widerstand und einer LED. Jeder Strang braucht
+    seinen eigenen Vorwiderstand und hängt direkt an der Quelle: oben zweigt
+    er VOR dem ersten Widerstand ab (Knoten links, Leitung über dem
+    Widerstand nach rechts), unten an der Rückleitung zum Minuspol.
   ----------------------------------------------------------------------------}
   procedure DrawSecondString;
   begin
     Canvas.Pen.Color := BranchColor;
     Canvas.Pen.Width := PW(1.5);
     Canvas.Brush.Style := bsClear;
-    DashLine(350, 40, 425, 40);
-    DashLine(425, 40, 425, 62);
+    DashLine(110, 40, 110, 8);                           // Abzweig vor dem ersten Widerstand
+    DashLine(110, 8, 425, 8);                            // über dem Widerstand nach rechts
+    DashLine(425, 8, 425, 62);
     DashLine(417, 62, 433, 62);                          // Widerstand senkrecht
     DashLine(433, 62, 433, 100);
     DashLine(433, 100, 417, 100);
@@ -389,8 +392,8 @@ var
     Canvas.Brush.Color := LineColor;
     Canvas.Pen.Color := LineColor;
     Canvas.Pen.Width := 1;
-    Canvas.Ellipse(X(346.5), Y(36.5), X(353.5), Y(43.5));
-    Canvas.Ellipse(X(346.5), Y(201.5), X(353.5), Y(208.5));
+    Canvas.Ellipse(X(106.5), Y(36.5), X(113.5), Y(43.5));  // oben: vor dem Widerstand
+    Canvas.Ellipse(X(346.5), Y(201.5), X(353.5), Y(208.5));  // unten: Rückleitung
     Canvas.Brush.Style := bsClear;
   end;
 

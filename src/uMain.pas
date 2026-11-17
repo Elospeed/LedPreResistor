@@ -31,7 +31,9 @@
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
 
   Autor:     Elospeed
-  Versionen: 2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
+  Versionen: 2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
+                              Rechenweg Schritt 6: Aufteilung der Leistung LEDs/Widerstand
+             2.5  17.11.2026  Schaltplan: LEDs in Reihe und Stränge parallel gezeichnet,
                               Erwärmung als «+X K über Umgebung», Rechenweg je Widerstand
                               Grenzen: höchstens 60 V, 30 LEDs in Reihe, 20 Stränge
              2.4  14.11.2026  Konstantstrom, ohne Menüleiste, Kopieren, Kommentare,
@@ -55,7 +57,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.5';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.5.1';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
@@ -419,6 +421,8 @@ resourcestring
   rsStep4Strings = 'Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
   rsStep4NoneStrings = 'Verlustleistung je Widerstand: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**';
   rsStep3Strings = 'Tatsächlicher Strom: I = %s / %s = **%s** je Strang · %d Stränge: gesamt **%s**';
+  rsStep6 = 'Aufteilung der Leistung: LEDs **%s (%s)** · Widerstand %s (%s) · gesamt aus der Quelle %s';
+  rsStep6Strings = 'Aufteilung der Leistung (alle Stränge): LEDs **%s (%s)** · Widerstände %s (%s) · gesamt %s';
   rsStatusStrings = '(%d Stränge)';
   rsCopyStrings = 'Stränge parallel: %d, jeder mit eigenem Vorwiderstand; Strom gesamt %s';
   { Beschriftungen, die im Formular (uMain.lfm) deutsch stehen; sie werden
@@ -1895,6 +1899,8 @@ var
   Over: string;                                          // Zusatz "(> 50 %)"
   Step4: string;                                         // Vorlage Schritt 4 (ein Strang / je Widerstand)
   Step4None: string;                                     // ... wenn keine Bauform reicht
+  Step6: string;                                         // Vorlage Schritt 6 (ein Strang / alle Stränge)
+  PLedPct: Integer;                                      // Anteil der LEDs an der Gesamtleistung in ganzen %
 begin
   Result := nil;
   if FRes.Status <> csOk then
@@ -1903,7 +1909,7 @@ begin
     Result[0] := StatusText(FRes.Status);
     Exit;
   end;
-  SetLength(Result, 5);
+  SetLength(Result, 6);
   if FInput.N > 1 then
     Result[0] := Format(_(rsStep1N), [FormatVolt(FInput.U), FInput.N, FormatVolt(FInput.Ud), FormatVolt(FRes.UR)])
   else
@@ -1934,6 +1940,12 @@ begin
       FormatRating(RATING_REFERENCE), FormatPercent(FRes.Load), Over, FormatRating(FRes.RecommendedW)]);
   Result[4] := Format(_(rsStep5), [FormatPower(FRes.PR), Round(RTH_QUARTER_WATT),
     Round(FRes.TempRise), FormatRating(RATING_REFERENCE)]);
+  // Aufteilung: was in den LEDs ankommt und was die Widerstände verheizen.
+  // Der Widerstand bekommt den Rest auf 100 %, damit die Summe immer stimmt.
+  if FRes.PTotal > 0 then PLedPct := Round(FRes.PLed / FRes.PTotal * 100) else PLedPct := 0;
+  if FRes.Strings > 1 then Step6 := rsStep6Strings else Step6 := rsStep6;
+  Result[5] := Format(_(Step6), [FormatPower(FRes.PLed), FormatPercent(PLedPct / 100),
+    FormatPower(FRes.PTotal - FRes.PLed), FormatPercent((100 - PLedPct) / 100), FormatPower(FRes.PTotal)]);
 end;
 
 {------------------------------------------------------------------------------
@@ -2021,7 +2033,9 @@ procedure TFormMain.UpdateRechenwegHeight;
 var
   NeuH, Mehr: Integer;                                   // neue Höhe, zusätzlicher Platzbedarf
 begin
-  if FRechenwegOpen then
+  if FRechenwegOpen and (FMode = 0) then
+    NeuH := Px(223)                                      // sechs Schritte (mit Aufteilung der Leistung) und Zeichen-Erklärung
+  else if FRechenwegOpen then
     NeuH := Px(200)                                      // fünf Schritte und die Zeichen-Erklärung (zwei Zeilen)
   else
     NeuH := Px(30);
@@ -2659,6 +2673,7 @@ begin
     PaintLed.BorderSpacing.Bottom := 0;
   ModeCaptions;
   LayoutLeft;
+  UpdateRechenwegHeight;                                 // Vorwiderstand hat einen Schritt mehr
   UpdateBlink;
   FLedDirty := True;
   PaintTabs.Invalidate;
