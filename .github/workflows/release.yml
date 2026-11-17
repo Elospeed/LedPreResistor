@@ -66,7 +66,9 @@ jobs:
           grep -q "<title>The LED</title>" bin/LedPreResistor || { echo "::error::Englische LED-Info fehlt"; exit 1; }
           grep -q 'msgstr "Supply voltage"' bin/LedPreResistor || { echo "::error::Englische Übersetzung fehlt"; exit 1; }
           lazbuild -B tests/LedPreResistorTests.lpi
-          ./bin/LedPreResistorTests
+          # Schaltplan-Tests zeichnen mit GTK2: virtuelle Anzeige
+          sudo apt-get install -y -q xvfb > /dev/null
+          xvfb-run -a ./bin/LedPreResistorTests
           strip bin/LedPreResistor
           linux/pakete-bauen.sh "$VERSION" ausgabe-linux
 

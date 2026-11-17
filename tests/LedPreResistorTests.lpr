@@ -10,7 +10,9 @@
              ../bin/LedPreResistorTests (auch im Build-Workflow)
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  Kommentare ausführlicher
+  Versionen: 2.5.1 17.11.2026  Verbindungstests der Schaltpläne (TestSchaltplan);
+                              dafür mit LCL (Interfaces), unter Linux mit Anzeige
+             2.4  14.11.2026  Kommentare ausführlicher
              2.0  29.10.2026  erste Fassung
 ==============================================================================}
 program LedPreResistorTests;
@@ -18,8 +20,10 @@ program LedPreResistorTests;
 {$mode objfpc}{$H+}
 
 uses
+  Interfaces,                                            // LCL: zum Zeichnen der Schaltpläne
   Classes, SysUtils, fpcunit, testregistry,
-  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink, TestKsq;
+  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink, TestKsq,
+  TestSchaltplan;
 
 {==============================================================================
   TESTKLASSE

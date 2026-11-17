@@ -19,7 +19,8 @@
              Die LEDs leuchten hier dauernd (kein Blinken).
 
   Autor:     Elospeed
-  Versionen: 2.4  14.11.2026  neu: Schaltpläne LM317 und zwei Transistoren
+  Versionen: 2.5.1 17.11.2026 Bauteile für die Verbindungstests benannt
+             2.4  14.11.2026  neu: Schaltpläne LM317 und zwei Transistoren
 ==============================================================================}
 unit uKsqSchematic;
 
@@ -85,7 +86,7 @@ procedure DrawSchematicKsqT(Canvas: TCanvas; const Rect: TRect;
 implementation
 
 uses
-  Math, uTheme, uSmooth;
+  Math, uTheme, uSmooth, uSchemNetz;
 
 {------------------------------------------------------------------------------
   Leds
@@ -106,11 +107,13 @@ var
 begin
   BV := Default(TBlinkSchemValues);
   BV.LedColor := V.LedColor;
+  NetzName('LED1');                                      // Namen für die Verbindungstests
   LedDown(C, M, X, Top, True, BV, Col);
   Result := Top + 24;                                    // eine LED ist 24 Punkte hoch
   if V.TwoLeds then
   begin
     Wire(C, M, [X, Result, X, Result + 8]);              // 8 Punkte Leitung dazwischen
+    NetzName('LED2');
     LedDown(C, M, X, Result + 8, True, BV, Col);
     Result := Result + 32;
   end;
@@ -146,9 +149,13 @@ begin
   // ----- 2. Leitungen: +U_B an IN, OUT über R zum Knoten mit ADJ -----
   Wire(C, M, [60, 60, 190, 60]);                         // +U_B -> IN
   Wire(C, M, [60, 280, 520, 280]);                       // Masse (GND)
+  NetzName('UB');                                        // Speisung für die Verbindungstests
+  NetzBauteil('UB', ['+', '-'], [60, 60, 60, 280]);
+  NetzFreiesEnde(520, 280);                              // Masse läuft rechts aus
   Wire(C, M, [310, 60, 420, 60, 420, 72]);               // OUT -> R oben
   Wire(C, M, [420, 120, 420, 150]);                      // R unten -> Knoten
   Wire(C, M, [250, 100, 250, 150, 420, 150]);            // ADJ -> Knoten
+  NetzName('R');
   ResBands(C, M, 420, 72, 120, V.Bands, Col);            // R senkrecht mit Ringen
   // ----- 3. LEDs vom Knoten nach Masse -----
   if V.TwoLeds then Top := 168 else Top := 186;          // zwei LEDs: höher beginnen
@@ -163,6 +170,8 @@ begin
   C.Brush.Color := Col.Body;
   C.Pen.Width := MW(M, 1.6);
   SmoothRectangle(C, MX(M, 190), MY(M, 30), MX(M, 310), MY(M, 100));
+  NetzName('LM317');                                     // Anschlüsse am Rand des Gehäuses
+  NetzBauteil('LM317', ['IN', 'OUT', 'ADJ'], [190, 60, 310, 60, 250, 100]);
 
   // ----- 5. Beschriftung -----
   Txt(C, M, 22, 64, '+Ub', Col.Text, 0, False);
@@ -221,6 +230,10 @@ begin
   // ----- 2. Speiseleitungen, R_B zur Basis von T1, Kollektor von T2 -----
   Wire(C, M, [60, 30, 540, 30]);                         // +U_B oben
   Wire(C, M, [60, 280, 540, 280]);                       // Masse unten
+  NetzName('UB');                                        // Speisung für die Verbindungstests
+  NetzBauteil('UB', ['+', '-'], [60, 30, 60, 280]);
+  NetzFreiesEnde(540, 30);                               // Speiseleitungen laufen rechts aus
+  NetzFreiesEnde(540, 280);
   Wire(C, M, [200, 30, 200, 48]);
   Wire(C, M, [200, 96, 200, 150, 394, 150]);
   Wire(C, M, [270, 150, 270, 208]);                      // Kollektor T2 an Basisleitung
@@ -235,9 +248,13 @@ begin
   Wire(C, M, [420, 244, 420, 280]);                      // R_S -> Masse
   Wire(C, M, [296, 230, 350, 230, 350, 186, 420, 186]);  // Basis T2 <- oberes Ende R_S
   // ----- 5. Bauteile und Verbindungspunkte -----
+  NetzName('RB');
   ResBands(C, M, 200, 48, 96, V.BandsB, Col);
+  NetzName('RS');
   ResBands(C, M, 420, 196, 244, V.Bands, Col);
+  NetzName('T1');
   Npn(C, M, 408, 150, 420, True, Col);                   // T1, Basis links
+  NetzName('T2');
   Npn(C, M, 282, 230, 270, False, Col);                  // T2, Basis rechts (gespiegelt)
   Dot(C, M, 200, 30, Col.Line);
   Dot(C, M, 420, 30, Col.Line);
