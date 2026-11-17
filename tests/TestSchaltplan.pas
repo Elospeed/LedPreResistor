@@ -249,8 +249,8 @@ begin
   T.Verbunden('NE555', 'R1.2', 'R2.1');
   T.Verbunden('NE555', 'R2.2', 'IC.6');
   T.Verbunden('NE555', 'IC.6', 'IC.2');
-  T.Verbunden('NE555', 'IC.6', 'C.1');
-  T.Verbunden('NE555', 'C.2', 'UB.-');
+  T.Verbunden('NE555', 'IC.6', 'C.+');                   // Elko: Plus am Zeitglied, Minus an Masse
+  T.Verbunden('NE555', 'C.-', 'UB.-');
   T.Verbunden('NE555', 'IC.8', 'UB.+');                  // Speisung, Reset, Masse
   T.Verbunden('NE555', 'IC.4', 'UB.+');
   T.Verbunden('NE555', 'IC.1', 'UB.-');
@@ -346,13 +346,14 @@ begin
     Verbunden(Plan, 'R1.2', B1);
     Verbunden(Plan, 'UB.+', 'R2.1');
     Verbunden(Plan, 'R2.2', B2);
-    Verbunden(Plan, 'C1.1', 'T1.C');                     // C1: Kollektor T1 -> Basis T2
-    Verbunden(Plan, 'C1.2', B2);
-    Verbunden(Plan, 'C2.2', 'T2.C');                     // C2: Kollektor T2 -> Basis T1
-    Verbunden(Plan, 'C2.1', B1);
+    // Elkos: Plus am Kollektor (dort ist die Spannung höher), Minus zur Basis
+    Verbunden(Plan, 'C1.+', 'T1.C');                     // C1: Kollektor T1 -> Basis T2
+    Verbunden(Plan, 'C1.-', B2);
+    Verbunden(Plan, 'C2.+', 'T2.C');                     // C2: Kollektor T2 -> Basis T1
+    Verbunden(Plan, 'C2.-', B1);
     Getrennt(Plan, 'T1.B', 'T2.B');                      // die Leitungen kreuzen sich nur
-    Getrennt(Plan, 'R1.2', 'C1.2');                      // Brücke über R_B1: keine Verbindung
-    Getrennt(Plan, 'R2.2', 'C2.1');                      // Brücke über R_B2: keine Verbindung
+    Getrennt(Plan, 'R1.2', 'C1.-');                      // Brücke über R_B1: keine Verbindung
+    Getrennt(Plan, 'R2.2', 'C2.-');                      // Brücke über R_B2: keine Verbindung
   end;
 end;
 

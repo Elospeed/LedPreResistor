@@ -11,6 +11,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ### Schaltplan
 - NE555: Die Diode über R2 war seit 2.3 verkehrt herum gezeichnet. Richtig ist Anode am Knoten R1/R2 (Pin 7), Kathode am Kondensator (Pin 6/2): Beim Laden leitet sie, beim Entladen sperrt sie. Der Verbindungstest prüft jetzt auch die Richtung.
+- Gepolte Bauteile durchgesehen: LEDs (Anode zum Plus), Dioden, Elkos (Plus am NE555-Zeitglied bzw. am Kollektor), Transistoren (C/B/E, Emitterpfeil), LM317 (IN/OUT/ADJ), NE555-Pins. Elkos melden dem Test jetzt «+» und «−», ein verkehrt gepoltes Bauteil fällt im automatischen Build auf.
 - Stränge parallel: Der zweite Strang ist genau wie der erste gezeichnet: eigener Widerstand mit Farbringen und gleich viele LEDs (ab 4 LEDs mit Punkten dazwischen). Über den Säulen steht «Strang 1» und «Strang 2» bzw. «… Strang k». Vorher war er nur grau mit einer LED angedeutet, und «× k» daneben liess sich als zusätzliche Stränge lesen.
 - Stränge parallel: Der Strompfeil unten liegt auf der gemeinsamen Rückleitung und zeigt den Gesamtstrom aller Stränge («I = 35,12 mA gesamt (2 × 17,56 mA)»); der Strom je Strang steht unter «k Stränge parallel».
 - Konstantstrom: bis 3 LEDs einzeln, ab 4 LEDs mit Punkten dazwischen (wie beim Vorwiderstand). Vorher waren es ab 2 LEDs immer zwei Symbole.

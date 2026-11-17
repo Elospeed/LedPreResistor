@@ -457,7 +457,12 @@ end;
 ------------------------------------------------------------------------------}
 procedure CapV(C: TCanvas; const M: TMap; X, Y: Double; Elko: Boolean; const Col: TBlinkSchemColors);
 begin
-  NetzBauteil('C', ['1', '2'], [X, Y, X, Y + 8]);        // obere und untere Platte
+  // Elko: Anschlüsse «+» (obere Platte, dort steht das Plus) und «-», damit
+  // der Verbindungstest die Polung prüft; sonst ungepolt «1» und «2»
+  if Elko then
+    NetzBauteil('C', ['+', '-'], [X, Y, X, Y + 8])
+  else
+    NetzBauteil('C', ['1', '2'], [X, Y, X, Y + 8]);      // obere und untere Platte
   C.Pen.Width := MW(M, 2.4);
   C.Line(MX(M, X - 14), MY(M, Y), MX(M, X + 14), MY(M, Y));
   C.Line(MX(M, X - 14), MY(M, Y + 8), MX(M, X + 14), MY(M, Y + 8));
@@ -477,7 +482,13 @@ end;
 procedure CapH(C: TCanvas; const M: TMap; X, Y: Double; Elko, PlusRight: Boolean;
   const Col: TBlinkSchemColors);
 begin
-  NetzBauteil('C', ['1', '2'], [X, Y, X + 8, Y]);        // linke und rechte Platte
+  // Elko: «+» an der Platte mit dem Plus-Zeichen, «-» an der anderen
+  if Elko and PlusRight then
+    NetzBauteil('C', ['-', '+'], [X, Y, X + 8, Y])
+  else if Elko then
+    NetzBauteil('C', ['+', '-'], [X, Y, X + 8, Y])
+  else
+    NetzBauteil('C', ['1', '2'], [X, Y, X + 8, Y]);      // linke und rechte Platte
   C.Pen.Width := MW(M, 2.4);
   C.Line(MX(M, X), MY(M, Y - 12), MX(M, X), MY(M, Y + 12));
   C.Line(MX(M, X + 8), MY(M, Y - 12), MX(M, X + 8), MY(M, Y + 12));
