@@ -536,18 +536,21 @@ begin
   Wire(C, M, [170, 185, 220, 185]);                      // Knoten -> Pin 6/2
   Wire(C, M, [250, 170, 220, 170, 220, 200, 250, 200]);  // Pin 6 und Pin 2 verbunden
   Wire(C, M, [170, 244, 170, 295]);                      // C -> Masse
-  // Diode über R2 (Anode unten an Pin 6/2, Kathode oben an Pin 7)
+  // Diode über R2: Anode oben am Knoten R1/R2 (Pin 7), Kathode unten am
+  // Kondensator (Pin 6/2). Beim Laden fliesst der Strom von R1 durch die
+  // Diode an R2 vorbei in C; beim Entladen über Pin 7 sperrt sie, C entlädt
+  // sich nur über R2. (Bis 2.5.1 war sie verkehrt herum gezeichnet.)
   if V.Diode then
   begin
     Wire(C, M, [170, 124, 136, 124, 136, 140]);
     Wire(C, M, [136, 166, 136, 181, 170, 181]);
     NetzName('D');
-    NetzBauteil('D', ['A', 'K'], [136, 166, 136, 140]);  // Anode unten, Kathode oben
+    NetzBauteil('D', ['A', 'K'], [136, 140, 136, 166]);  // Anode oben, Kathode unten
     C.Brush.Style := bsSolid;
     C.Brush.Color := Col.Line;
-    C.Polygon([MP(M, 126, 166), MP(M, 146, 166), MP(M, 136, 146)]);  // Dreieck, Spitze oben
+    C.Polygon([MP(M, 126, 140), MP(M, 146, 140), MP(M, 136, 160)]);  // Dreieck, Spitze unten
     C.Pen.Width := MW(M, 2.2);
-    C.Line(MX(M, 126), MY(M, 145), MX(M, 146), MY(M, 145));
+    C.Line(MX(M, 126), MY(M, 161), MX(M, 146), MY(M, 161));          // Kathodenstrich unten
     C.Pen.Width := MW(M, 1.6);
     Dot(C, M, 170, 124, Col.Line);
     Dot(C, M, 170, 181, Col.Line);

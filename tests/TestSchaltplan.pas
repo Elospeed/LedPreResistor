@@ -289,8 +289,11 @@ end;
 procedure TTestSchaltplan.Ne555MitDiode;
 begin
   Zeichne555(Self, cnGnd, True);
-  Verbunden('NE555', 'D.K', 'IC.7');                     // Diode parallel zu R2
-  Verbunden('NE555', 'D.A', 'IC.6');
+  // Diode parallel zu R2, Anode am Knoten R1/R2 (Pin 7), Kathode am
+  // Kondensator (Pin 6): leitet beim Laden, sperrt beim Entladen
+  Verbunden('NE555', 'D.A', 'IC.7');
+  Verbunden('NE555', 'D.K', 'IC.6');
+  Getrennt('NE555', 'D.K', 'IC.7');
 end;
 
 procedure TTestSchaltplan.Multivibrator;

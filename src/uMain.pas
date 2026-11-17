@@ -481,7 +481,6 @@ resourcestring
   rsBlinkInfoMulti = '%s · LED 1: %s, LED 2: %s';
   rsBlinkInfoFast = '%s: zu schnell fürs Auge, wirkt wie Dauerlicht (%s hell)';
   rsBlinkInfoInvalid = 'blinkt, sobald die Werte stimmen';
-  rsBlinkInfoSmooth = '%s · Vorschau gedimmt, zu schnell zum Anzeigen';
   rsBCardFreq = 'Blinkfrequenz';
   rsBCardFreqSub = 'Periode %s';
   rsBCardFreqSubAlt = 'Wechselblinker, Periode %s';
@@ -716,7 +715,7 @@ const
     auf; bei kürzeren Phasen stockt das Blinken sichtbar (unter Windows
     ab etwa 12 Hz beobachtet). Kürzere Zeiten zeigt die Vorschau als
     gedimmtes Dauerlicht mit der Helligkeit des Tastgrads. }
-  BLINK_ANIM_MIN_PHASE = 0.05;
+  BLINK_ANIM_MIN_PHASE = 0.05;                            // s, kürzeste angezeigte Phase der Vorschau (kurzes Aufblitzen)
 
 {------------------------------------------------------------------------------
   BlinkClockMs
@@ -1618,7 +1617,7 @@ end;
 ------------------------------------------------------------------------------
   Blink-Timer je nach Häkchen und Frequenz einstellen
   Ablauf:
-    1. Reiter Blinkschaltung: Helligkeit und Takt aus der Rechnung; zu schnell fürs Auge oder zu kurze Phasen = gedimmtes Dauerlicht, sonst Timer starten
+    1. Reiter Blinkschaltung: Helligkeit und Takt aus der Rechnung; zu schnell fürs Auge = gedimmtes Dauerlicht, sehr kurze Phasen als kurzes Aufblitzen, sonst Timer starten
     2. Andere Reiter: Dauerlicht, Timer aus
 ------------------------------------------------------------------------------}
 procedure TFormMain.UpdateBlink;
@@ -1641,13 +1640,6 @@ begin
       // Dauerlicht mit der mittleren Helligkeit
       Level := Max(0.15, FBRes.Duty1);
       LabelBlinkInfo.Caption := Format(_(rsBlinkInfoFast), [FormatFreq(FBRes.F), FormatPercent(FBRes.Duty1)]);
-    end
-    else if Min(FBRes.TOn1, FBRes.TOff1) < BLINK_ANIM_MIN_PHASE then
-    begin
-      // sichtbar blinkend, aber zu schnell für eine ruhige Anzeige
-      TimerBlink.Enabled := False;
-      Level := Max(0.15, FBRes.Duty1);
-      LabelBlinkInfo.Caption := Format(_(rsBlinkInfoSmooth), [FormatFreq(FBRes.F)]);
     end
     else
     begin
@@ -1724,8 +1716,12 @@ begin
     SetFineTimer(False);
     Exit;
   end;
-  OnMs := Max(1, Round(FBRes.TOn1 * 1000));
-  PeriodMs := OnMs + Max(1, Round(FBRes.TOff1 * 1000));
+  // Sehr kurze Phasen (z. B. 7 ms Aufblitzen beim NE555 mit Diode) werden
+  // auf BLINK_ANIM_MIN_PHASE verlängert, damit sie auf dem Bildschirm als
+  // kurzes Aufblitzen sichtbar sind. Ob die Schaltung zu schnell fürs Auge
+  // ist, entscheidet die Frequenz (bwTooFast), nicht die kürzeste Phase.
+  OnMs := Max(Round(BLINK_ANIM_MIN_PHASE * 1000), Round(FBRes.TOn1 * 1000));
+  PeriodMs := OnMs + Max(Round(BLINK_ANIM_MIN_PHASE * 1000), Round(FBRes.TOff1 * 1000));
   Lit := QWord(LongWord(BlinkClockMs - FBlinkStart)) mod PeriodMs < OnMs;
   if Lit = FLedLit then Exit;                            // nur beim Umschalten neu zeichnen
   FLedLit := Lit;
