@@ -10,9 +10,10 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ## Unveröffentlicht
 
 ### Projektseite
+- Seite auf 2.5: neue Bilder (Hauptfenster mit drei LEDs und zwei Strängen, Warnung mit «+X K über Umgebung»), Downloads und Texte.
 - Anonyme Besucherzählung mit GoatCounter (ohne Cookies, ohne persönliche Daten), mit Hinweis im Seitenfuss.
 
-## 2.5 – unveröffentlicht
+## 2.5 – 17. November 2026
 
 ### Schaltplan
 - Mehrere LEDs in Reihe sind jetzt gezeichnet: 1 bis 3 LEDs einzeln, ab 4 LEDs zwei Symbole mit drei Punkten dazwischen. Die Beschriftung «n × LED …» bleibt.
