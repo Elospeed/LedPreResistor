@@ -181,6 +181,9 @@ msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → %s loaded to %s%
 msgid " (> 50 %)"
 msgstr " (> 50%)"
 
+msgid " (> 50 %%; %s: %s)"
+msgstr " (> 50%%; %s: %s)"
+
 #: uMain.pas rsStep4None
 msgid "Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**"
 msgstr "Power dissipation: P = U_R × I = %s × %s = **%s** → more than 0.5 W: **constant current source or larger rating**"
@@ -967,8 +970,8 @@ msgid "Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber 
 msgstr "Below approx. 10 mA the LM317 does not regulate reliably (minimum load current): better use the 2-transistor circuit"
 
 #: uMain.pas rsErrKVoltL
-msgid "Am LM317 dürfen höchstens 40 V zwischen IN und OUT liegen (bei Kurzschluss der LEDs fast alles): bis 40 V wählen oder LM317HV nehmen."
-msgstr "The LM317 allows at most 40 V between IN and OUT (almost all of it if the LEDs short): choose up to 40 V or use an LM317HV."
+msgid "Der LM317 verträgt höchstens 40 V zwischen IN und OUT: bis 40 V wählen oder LM317HV nehmen."
+msgstr "The LM317 takes at most 40 V between IN and OUT: choose up to 40 V or use an LM317HV."
 
 #: uMain.pas rsErrKVoltT
 msgid "T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen."

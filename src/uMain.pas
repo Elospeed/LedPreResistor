@@ -397,6 +397,7 @@ resourcestring
   rsStep3 = 'Tatsächlicher Strom: I = %s / %s = **%s**';
   rsStep4 = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → %s zu %s ausgelastet%s → **%s**';
   rsStep4Over50 = ' (> 50 %)';
+  rsStep4Over50Next = ' (> 50 %%; %s: %s)';
   rsStep4None = 'Verlustleistung: P = U_R × I = %s × %s = **%s** → mehr als 0,5 W: **Konstantstromquelle oder grössere Bauform**';
   rsStep5 = 'Erwärmung (Schätzung): ΔT ≈ P × R_t_h = %s × %d K/W ≈ **+%d K über Umgebung** (bei %s)';
   rsStatusLoad = 'Auslastung %s';
@@ -605,7 +606,7 @@ resourcestring
   rsKWarnTooHot = 'Bis %s Verlust ist zu viel: weniger Spannung, mehr LEDs in Reihe oder kleinerer Strom';
   rsKChipMinLoad = 'unter 10 mA';
   rsKWarnMinLoad = 'Unter ca. 10 mA regelt der LM317 nicht sicher (Mindestlaststrom): lieber die Schaltung mit 2 Transistoren';
-  rsErrKVoltL = 'Am LM317 dürfen höchstens 40 V zwischen IN und OUT liegen (bei Kurzschluss der LEDs fast alles): bis 40 V wählen oder LM317HV nehmen.';
+  rsErrKVoltL = 'Der LM317 verträgt höchstens 40 V zwischen IN und OUT: bis 40 V wählen oder LM317HV nehmen.';
   rsErrKVoltT = 'T1 verträgt höchstens 45 V (bei Kurzschluss der LEDs liegt alles an T1): bis 45 V wählen.';
   rsKChipBase = 'RB wird warm';
   rsKWarnBase = 'T1 braucht viel Basisstrom: RB (%s) verheizt bis %s, %s nehmen – bei grossem Strom ist der LM317 einfacher';
@@ -2092,6 +2093,11 @@ begin
     StepLoad := FRes.Load;
   end;
   if StepLoad > LOAD_WARN then Over := _(rsStep4Over50) else Over := '';
+  // Liegt die Empfehlung zwei Stufen über ¼ W (z. B. 1 W), auch die Stufe
+  // dazwischen begründen: «¼ W zu 144 % (> 50 %; ½ W: 72 %) → 1 W»
+  if (FRes.RecommendedW > 2 * FInput.RatingW + 1e-9) and (FRes.PR > 0) then
+    Over := Format(_(rsStep4Over50Next), [FormatRating(FRes.RecommendedW / 2),
+      FormatPercent(FRes.PR / (FRes.RecommendedW / 2))]);
   // bei Strängen parallel gilt die Leistung je Widerstand (jeder Strang hat seinen eigenen)
   if FRes.Strings > 1 then
   begin
