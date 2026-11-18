@@ -6,7 +6,7 @@
 
 **Webseite:** [elospeed.github.io/LedPreResistor/de](https://elospeed.github.io/LedPreResistor/de/) · **Download:** [neuestes Release](https://github.com/Elospeed/LedPreResistor/releases/latest)
 
-![Hauptfenster von LedPreResistor: 12 V, drei weisse LEDs in Reihe, zwei Stränge parallel, 20 mA → 120 Ω](site/img/ledpreresistor-main.png)
+![Hauptfenster von LedPreResistor: 12 V, drei weisse LEDs in Reihe, zwei Stränge parallel, jeder mit eigenem 120-Ω-Widerstand](site/img/ledpreresistor-main.png)
 
 LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist die Neuauflage der Freeware *LED Pre-Resistor* (Delphi 7, 2004), komplett neu gebaut in Lazarus: eine einzelne 64-Bit-Windows-EXE, ohne Installation, ohne Zusatzpakete. Seit 2.2 gibt es auch eine eigene **Linux**-Version.
 

@@ -6,7 +6,7 @@
 
 **Website:** [elospeed.github.io/LedPreResistor](https://elospeed.github.io/LedPreResistor/) · **Download:** [latest release](https://github.com/Elospeed/LedPreResistor/releases/latest)
 
-![LedPreResistor main window: 12 V, three white LEDs in series, two strings in parallel, 20 mA → 120 Ω](site/img/ledpreresistor-main-en.png)
+![LedPreResistor main window: 12 V, three white LEDs in series, two strings in parallel, each with its own 120 Ω resistor](site/img/ledpreresistor-main-en.png)
 
 LedPreResistor calculates the series resistor for one or more LEDs. It is the new edition of the freeware tool *LED Pre-Resistor* (Delphi 7, 2004), rebuilt from scratch in Lazarus: a single 64-bit Windows exe, no installer, no extra packages. Since 2.2 there is also a native **Linux** version.
 
