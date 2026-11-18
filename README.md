@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.5
+# Elospeed LedPreResistor 2.5.2
 
 **by Elospeed**
 
@@ -15,14 +15,14 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - **Live calculation** while you type: supply voltage, forward voltage, LED current and number of LEDs in series.
 - **Nearest standard value** from the E12, E24 or E96 series (always the next higher value, so the LED never gets more current than planned).
 - **Real current and power** in the resistor, in the LEDs and in total, plus a recommended resistor rating (⅛ / ¼ / ½ / 1 W) with a warning above 50 % load and an estimated temperature rise, shown as "about +X K above ambient".
-- **Colour bands** of the resistor (4 bands, 5 bands for E96) and a **schematic** with all values at the components; LEDs in series are drawn (from 4 LEDs with dots), parallel strings as a dashed second branch with "× k".
+- **Colour bands** of the resistor (4 bands, 5 bands for E96) and a **schematic** with all values at the components; LEDs in series are drawn (from 4 LEDs with dots), parallel strings in full, each with its own resistor.
 - **"How it is calculated"** panel that walks through the calculation step by step with your own numbers.
 - Presets for red, yellow, green, blue, white and infrared LEDs, or your own forward voltage from the datasheet.
 - **LED preview**: a 5 mm LED in the chosen colour with anode, cathode and flat side labelled.
 - **Blink circuit** tab (since 2.3): NE555 astable (optionally with a diode across R2) or a two-transistor multivibrator (BC547). Calculates frequency, on/off times and the LED series resistor from the parts, or the timing resistors from a desired frequency and duty cycle (NE555) or the on times of both LEDs (multivibrator, 1:1 by default). The preview blinks at the calculated rate, with schematic, "How it is calculated" and checks (supply range, output current, transistor saturation, base reverse voltage).
 - **Constant current** tab (since 2.4): LM317 as a current source or a two-transistor current source. Enter the supply as a range (e.g. 12 … 14.4 V in a car) and see how little the LED current changes compared with a plain series resistor. Calculates the sense resistor, minimum supply voltage, power loss with heatsink hint, and suggests the part (LM317L/LM317, T1 as BC547, BC337 or BD139).
 - **Parallel strings** (since 2.4): several identical LED strings, each with its own resistor, with total current and power.
-- **Sensible limits** (since 2.5): supply up to 60 V (extra-low voltage), up to 30 LEDs in series and 20 parallel strings.
+- **Sensible limits** (since 2.5): supply up to 60 V (extra-low voltage), up to 30 LEDs in series and 20 parallel strings. Since 2.5.2 the circuits also respect component limits (NE555 up to 16 V, BC547 up to 45 V and 100 mA, LM317 up to 40 V between IN and OUT) and give a clear message instead of a result.
 - **LED info** "The LED" built in (F1, opens in your browser, also offline).
 - **Copy** button in the "Calculation steps" header (or Ctrl+Shift+C): copies the result, all calculation steps and the symbol legend as plain text. Comma and dot both work as decimal separator.
 - **English and German**: starts in German on a German Windows and in English everywhere else; the DE/EN switch at the top right changes it at any time (saved in `LedPreResistor.ini` next to the exe, on Linux in `~/.config/LedPreResistor/`).
