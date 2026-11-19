@@ -118,8 +118,8 @@ select.series { width: 113px; }
 .card .cv { color: var(--bright); font-size: 20px; font-weight: 700; white-space: nowrap; margin-top: 2px; line-height: 1.3; }
 .card .cs { color: var(--soft); font-size: 10.7px; line-height: 1.3; margin-top: 1px; overflow: hidden;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.card .res { position: absolute; left: 10px; top: 54px; height: 15px; }
-.card .res svg { display: block; height: 100%; }
+.card .res { position: absolute; left: 10px; top: 54px; height: 15px; max-width: calc(100% - 20px); }
+.card .res svg { display: block; height: 100%; max-width: 100%; }
 .card .rings { position: absolute; left: 10px; right: 10px; bottom: 10px; color: var(--soft); font-size: 10.7px; line-height: 1.3; }
 .card .bar { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 6px; background: var(--deep); }
 .card .bar i { position: absolute; left: 0; top: 0; bottom: 0; }
@@ -163,7 +163,7 @@ sub { font-size: 75%; line-height: 0; vertical-align: -0.25em; }
 /* ===== Info-Fenster und Tooltip ===== */
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; z-index: 10; padding: 16px; }
 .modal[hidden] { display: none; }
-.dialog { background: var(--panel); border: 1px solid var(--border); width: 460px; max-width: 100%; color: var(--text); box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+.dialog { background: var(--panel); border: 1px solid var(--border); width: min(460px, calc(100vw - 32px)); max-width: 100%; color: var(--text); box-shadow: 0 10px 40px rgba(0,0,0,.5); }
 .dlg-title { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text); }
 .dlg-body { display: flex; gap: 20px; padding: 20px 20px 8px; }
 .dlg-text { white-space: pre-line; color: var(--bright); font-size: 13px; line-height: 1.4; }
@@ -216,4 +216,15 @@ sub { font-size: 75%; line-height: 0; vertical-align: -0.25em; }
 @media (max-width: 380px) {
   .tab { padding: 0 7px; font-size: 11.5px; }
   .tabs { padding-left: 4px; }
+}
+
+/* Touch-Geräte (Tablet, Handy): kein Tooltip, darum Statuszeile und Hinweis
+   umbrechen statt mit «…» kürzen; Sprachknöpfe gross genug zum Tippen */
+@media (hover: none) {
+  .status { height: auto; flex-basis: auto; padding: 4px 0; }
+  .status-text { white-space: normal; }
+  .rw-head { height: auto; min-height: 28px; flex-wrap: wrap; }
+  .rw-hint { white-space: normal; overflow: visible; }
+  .lang { height: auto; }
+  .lang button { min-height: 28px; padding: 0 10px; font-size: 12px; }
 }
