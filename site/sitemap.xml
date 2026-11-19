@@ -13,4 +13,8 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://elospeed.github.io/LedPreResistor/"/>
     <xhtml:link rel="alternate" hreflang="de" href="https://elospeed.github.io/LedPreResistor/de/"/>
   </url>
+  <url>
+    <loc>https://elospeed.github.io/LedPreResistor/app/</loc>
+    <lastmod>2026-11-19</lastmod>
+  </url>
 </urlset>
