@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>LedPreResistor · Elospeed 2.5.2</title>
+<meta name="description" content="Vorwiderstand, Blinkschaltung und Konstantstromquelle für LEDs berechnen – mit Schaltplan, Farbringen und Rechenweg.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="img/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ===== Reiterzeile mit Symbolen oben rechts ===== -->
+  <header class="tabs" role="tablist">
+    <div class="tab-list">
+      <button class="tab" role="tab" data-mode="0" id="tab0"></button>
+      <button class="tab" role="tab" data-mode="1" id="tab1"></button>
+      <button class="tab" role="tab" data-mode="2" id="tab2"></button>
+    </div>
+    <div class="tab-icons">
+      <button class="ico" id="btnReset" aria-label="">
+        <svg viewBox="0 0 16 16"><path d="M5.2 2.6 A5.4 5.4 0 1 0 13.1 6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M14.6 4.1 L13.2 8.3 L10.6 5.0 Z" fill="currentColor"/></svg>
+      </button>
+      <div class="lang" role="group">
+        <button id="btnDe" data-lang="de">DE</button><button id="btnEn" data-lang="en">EN</button>
+      </div>
+      <button class="ico" id="btnLedInfo" aria-label="">
+        <svg viewBox="0 0 16 16"><path d="M4.5 3.5 A3.5 3.5 0 0 1 11.5 3.5 V9 H4.5 Z" fill="#E5484D" stroke="currentColor" stroke-width="1.2"/><rect x="3.4" y="9" width="9.2" height="1.6" fill="currentColor"/><path d="M6.3 10.6 V15.5 M9.7 10.6 V13.8" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="ico" id="btnAbout" aria-label="">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="7.2" y="7" width="1.6" height="4.8" fill="currentColor"/><circle cx="8" cy="4.9" r="1" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- ===== Linke Spalte: Eingaben und LED-Vorschau ===== -->
+    <aside class="left" id="left">
+      <div id="leftRows"></div>
+      <div class="head" id="headPreview"></div>
+      <div class="preview" id="preview">
+        <canvas id="ledCanvas"></canvas>
+        <div class="blinkfreq" id="blinkFreq"><div class="t" id="blinkFreqTitle"></div><div class="v" id="blinkFreqValue"></div></div>
+      </div>
+      <div class="blinkinfo" id="blinkInfo"></div>
+
+      <!-- Vorrat an Bedienelementen; layoutLeft() ordnet sie je Reiter an -->
+      <div id="pool" hidden>
+        <div class="head" id="headInputs"></div>
+        <div class="head" id="headSupply"></div>
+        <div class="head" id="headTiming"></div>
+        <div class="head" id="headLed"></div>
+        <div class="field wide" id="fKsq"><div class="in"><select id="comboKsq"></select></div></div>
+        <div class="field wide" id="fCircuit"><div class="in"><select id="comboCircuit"></select></div></div>
+        <div class="field wide" id="fConn"><div class="in"><select id="comboConn"></select></div></div>
+        <div class="field" id="fU"><label for="editU" id="labelU"></label>
+          <div class="in"><input id="editU" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">V</span></div></div>
+        <div class="field" id="fU2"><label for="editU2" id="labelU2"></label>
+          <div class="in"><input id="editU2" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">V</span></div></div>
+        <div class="field" id="fSeries"><label for="comboSeries" id="labelSeries"></label>
+          <div class="in"><select id="comboSeries" class="series"></select></div></div>
+        <div class="field wide" id="fColor"><label for="comboColor" id="labelColor"></label>
+          <div class="in color"><span class="dot" id="colorDot"></span><select id="comboColor"></select></div></div>
+        <div class="field" id="fUd"><label for="editUd" id="labelUd"></label>
+          <div class="in"><input id="editUd" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">V</span></div></div>
+        <div class="field" id="fI"><label for="editI" id="labelI"></label>
+          <div class="in"><input id="editI" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">mA</span></div></div>
+        <div class="field" id="fN"><label for="editN" id="labelN"></label>
+          <div class="in"><input id="editN" class="num" inputmode="numeric" autocomplete="off" spellcheck="false"><span class="unit" id="unitN"></span></div></div>
+        <div class="field" id="fStrings"><label for="editStrings" id="labelStrings"></label>
+          <div class="in"><input id="editStrings" class="num" inputmode="numeric" autocomplete="off" spellcheck="false"><span class="unit" id="unitStrings"></span></div></div>
+        <div class="field wide" id="fMode"><div class="mode" id="paintMode" role="group"><button id="modeParts"></button><button id="modeRev"></button></div></div>
+        <div class="field t" id="fT1"><label for="editT1" id="labelT1"></label>
+          <div class="in"><input id="editT1" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit" id="unitT1"></span></div></div>
+        <div class="field t" id="fT2"><label for="editT2" id="labelT2"></label>
+          <div class="in"><input id="editT2" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit" id="unitT2"></span></div></div>
+        <div class="field t" id="fT3"><label for="editT3" id="labelT3"></label>
+          <div class="in"><input id="editT3" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit" id="unitT3"></span></div></div>
+        <div class="field wide" id="fDiode"><label class="check"><input type="checkbox" id="checkDiode"><span class="box"></span><span id="labelDiode"></span></label></div>
+        <div class="field wide" id="fSym"><label class="check"><input type="checkbox" id="checkSym" checked><span class="box"></span><span id="labelSym"></span></label></div>
+      </div>
+    </aside>
+
+    <!-- ===== Rechts: Schaltplan und Resultatkarten ===== -->
+    <section class="right">
+      <div class="schem" id="schem"></div>
+      <div class="cards" id="cards"></div>
+    </section>
+  </div>
+
+  <!-- ===== Statuszeile mit Ko-fi-Knopf ===== -->
+  <footer class="status">
+    <div class="status-main">
+      <span class="chip" id="chip"><span class="chip-ico" id="chipIco"></span><span id="chipText"></span></span>
+      <span class="status-text" id="statusText"></span>
+    </div>
+    <a class="kofi" id="kofi" href="https://ko-fi.com/elospeed" target="_blank" rel="noopener">
+      <svg class="kofi-led" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 3.5 A3.5 3.5 0 0 1 11.5 3.5 V9 H4.5 Z" fill="#FFD000" stroke="#C9A300" stroke-width="0.8"/><rect x="3.4" y="9" width="9.2" height="1.6" fill="#C9D1DA"/><path d="M6.3 10.6 V15.5 M9.7 10.6 V13.8" stroke="#C9D1DA" stroke-width="1.2"/></svg>
+      <svg class="kofi-heart" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.2 C2.6 10.4 1 8.2 1 5.6 A3.4 3.4 0 0 1 8 4.2 A3.4 3.4 0 0 1 15 5.6 C15 8.2 13.4 10.4 8 14.2 Z" fill="#FF4D5E"/></svg>
+      <span id="kofiText"></span>
+    </a>
+  </footer>
+
+  <!-- ===== Rechenweg (aufklappbar) ===== -->
+  <section class="rechenweg open" id="rechenweg">
+    <div class="rw-head">
+      <button class="rw-toggle" id="rwToggle"><span class="tri"></span><span id="rwTitle"></span></button>
+      <span class="rw-hint" id="rwHint"></span>
+      <button class="rw-copy" id="btnCopy"></button>
+    </div>
+    <div class="rw-body" id="rwBody"></div>
+  </section>
+</div>
+
+<!-- ===== Info-Fenster ===== -->
+<div class="modal" id="about" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="dlg-title" id="aboutTitle"></div>
+    <div class="dlg-body">
+      <img src="img/icon.svg" alt="" width="48" height="48">
+      <div class="dlg-text" id="aboutText"></div>
+    </div>
+    <div class="dlg-foot"><button id="aboutOk">OK</button></div>
+  </div>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="js/calc.js"></script>
+<script src="js/texts.js"></script>
+<script src="js/schematic.js"></script>
+<script src="js/ledview.js"></script>
+<script src="js/app.js"></script>
+<script data-goatcounter="https://elospeed.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>
