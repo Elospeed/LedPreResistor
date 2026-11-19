@@ -84,7 +84,7 @@
     <div class="cta webapp">
       <a class="btn primary" href="app/" data-goatcounter-click="html-version-en">▶ HTML version in your browser</a>
     </div>
-    <p class="applink">Link for your website: <code id="appUrl">https://elospeed.github.io/LedPreResistor/app/</code> <button type="button" class="copybtn" data-ok="Copied" onclick="copyAppUrl(this)">Copy</button></p>
+    <p class="applink">Link for your website: <code id="appUrl">https://<wbr>elospeed.github.io/<wbr>LedPreResistor/<wbr>app/</code> <button type="button" class="copybtn" data-ok="Copied" onclick="copyAppUrl(this)">Copy</button></p>
     <ul class="facts">
       <li>Free &amp; MIT licensed</li>
       <li>Windows 10 / 11 and Linux</li>
@@ -110,7 +110,7 @@
     <div class="grid">
       <div class="card"><h3><span class="dot" style="background:var(--red)"></span>Standard value and colour bands</h3><p>Always the next higher value from the E12, E24 or E96 series, so the LED never gets more current than planned. The resistor is drawn with its colour bands: four bands for E12/E24, five for E96.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span>Power and the right size</h3><p>Real current, power in the resistor and in the LEDs. LedPreResistor recommends ⅛, ¼, ½ or 1 W and warns from 50 % load, with an estimated temperature rise of the resistor.</p></div>
-      <div class="card"><h3><span class="dot" style="background:var(--green)"></span>The calculation, step by step</h3><p>A fold-out panel walks through the five steps with your values: voltage across the resistor, ideal value, standard value, real current, power and warming. Ideal for learning and for checking.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--green)"></span>The calculation, step by step</h3><p>A fold-out panel walks through every step with your values: voltage across the resistor, ideal value, standard value, real current, power and warming. Ideal for learning and for checking.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED preview</h3><p>A realistic 5 mm LED in the selected colour, with anode, cathode and the flat side labelled, so you solder it the right way round. In the blink circuit tab it blinks with the calculated times.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schematic with all values</h3><p>Supply, resistor and LED in a clear circuit diagram, with voltage, current and resistance at every part. LEDs in series and parallel strings are drawn in full, each string with its own resistor, with current per string and in total. Polarised parts are checked automatically for their direction.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--accent)"></span>LED info built in</h3><p>Press F1 for “The LED”: how an LED works, colours and forward voltages, polarity, series resistor, constant current and practical tips. Opens in your browser, also offline.</p></div>
@@ -167,7 +167,7 @@
       <p class="sub" style="margin-bottom:0">Since version 2.4: the “Constant current” tab keeps the LED current steady, even when the supply voltage changes, for example 12 to 14.4 V in a car.</p>
       <ul class="ticks">
         <li><strong>LM317 as current source:</strong> sense resistor R = 1.25 V / I from the E series, its power, the minimum supply voltage and the loss in the regulator; LM317L or LM317 suggested, with a heatsink hint where needed</li>
-        <li><strong>Two transistors:</strong> sense resistor R_S = 0.6 V / I and base resistor R_B; T1 is suggested by current and power (BC547, BC337 or BD139)</li>
+        <li><strong>Two transistors:</strong> sense resistor R<sub>S</sub> = 0.6 V / I and base resistor R<sub>B</sub>; T1 is suggested by current and power (BC547, BC337 or BD139)</li>
         <li><strong>Supply as a range “from … to”:</strong> shows how little the current changes, compared with a simple series resistor</li>
         <li>Schematic with every value, calculation steps, symbol legend and warnings, like the other tabs</li>
         <li>The LED info explains constant current, heat and heatsinks in its own chapter</li>

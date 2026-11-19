@@ -85,7 +85,7 @@
     <div class="cta webapp">
       <a class="btn primary" href="../app/" data-goatcounter-click="html-version-de">▶ HTML-Version im Browser</a>
     </div>
-    <p class="applink">Link zum Verlinken: <code id="appUrl">https://elospeed.github.io/LedPreResistor/app/</code> <button type="button" class="copybtn" data-ok="Kopiert" onclick="copyAppUrl(this)">Kopieren</button></p>
+    <p class="applink">Link zum Verlinken: <code id="appUrl">https://<wbr>elospeed.github.io/<wbr>LedPreResistor/<wbr>app/</code> <button type="button" class="copybtn" data-ok="Kopiert" onclick="copyAppUrl(this)">Kopieren</button></p>
     <ul class="facts">
       <li>Kostenlos &amp; MIT-Lizenz</li>
       <li>Windows 10 / 11 und Linux</li>
@@ -110,7 +110,7 @@
     <div class="grid">
       <div class="card"><h3><span class="dot" style="background:var(--red)"></span>Normwert und Farbringe</h3><p>Immer der nächsthöhere Wert aus der Reihe E12, E24 oder E96, damit die LED nie mehr Strom bekommt als geplant. Der Widerstand wird mit seinen Farbringen gezeichnet: vier Ringe bei E12/E24, fünf bei E96.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span>Leistung und Bauform</h3><p>Tatsächlicher Strom, Leistung im Widerstand und in den LEDs. LedPreResistor empfiehlt ⅛, ¼, ½ oder 1 W und warnt ab 50 % Auslastung, mit geschätzter Erwärmung des Widerstands.</p></div>
-      <div class="card"><h3><span class="dot" style="background:var(--green)"></span>Rechenweg Schritt für Schritt</h3><p>Ein aufklappbarer Bereich zeigt die fünf Schritte mit deinen Werten: Spannung am Widerstand, idealer Wert, Normwert, tatsächlicher Strom, Leistung und Erwärmung. Zum Lernen und zum Nachprüfen.</p></div>
+      <div class="card"><h3><span class="dot" style="background:var(--green)"></span>Rechenweg Schritt für Schritt</h3><p>Ein aufklappbarer Bereich zeigt jeden Schritt mit deinen Werten: Spannung am Widerstand, idealer Wert, Normwert, tatsächlicher Strom, Leistung und Erwärmung. Zum Lernen und zum Nachprüfen.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--blue)"></span>LED-Vorschau</h3><p>Eine realistische 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet, damit sie richtig herum eingelötet wird. Im Reiter «Blinkschaltung» blinkt sie mit den berechneten Zeiten.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--white)"></span>Schaltplan mit allen Werten</h3><p>Spannungsquelle, Widerstand und LED in einem übersichtlichen Schaltplan, mit Spannung, Strom und Widerstand an jedem Bauteil. Mehrere LEDs in Reihe und Stränge parallel werden vollständig gezeichnet, jeder Strang mit eigenem Vorwiderstand, Strom je Strang und gesamt beschriftet. Gepolte Bauteile sind automatisch auf ihre Richtung geprüft.</p></div>
       <div class="card"><h3><span class="dot" style="background:var(--accent)"></span>LED-Info eingebaut</h3><p>Mit F1 öffnet sich «Die Leuchtdiode»: wie eine LED funktioniert, Farben und Durchlassspannungen, Polarität, Vorwiderstand, Konstantstrom und Praxistipps. Im Browser, auch offline.</p></div>
@@ -167,7 +167,7 @@
       <p class="sub" style="margin-bottom:0">Seit Version 2.4: Der Reiter «Konstantstrom» hält den LED-Strom fest, auch wenn die Speisespannung schwankt, zum Beispiel 12 bis 14,4 V im Auto.</p>
       <ul class="ticks">
         <li><strong>LM317 als Stromquelle:</strong> Messwiderstand R = 1,25 V / I aus der E-Reihe, seine Leistung, die nötige Mindestspannung und der Verlust im Regler; Vorschlag LM317L oder LM317, bei Bedarf mit Hinweis auf einen Kühlkörper</li>
-        <li><strong>Zwei Transistoren:</strong> Messwiderstand R_S = 0,6 V / I und Basiswiderstand R_B; T1 wird nach Strom und Leistung vorgeschlagen (BC547, BC337 oder BD139)</li>
+        <li><strong>Zwei Transistoren:</strong> Messwiderstand R<sub>S</sub> = 0,6 V / I und Basiswiderstand R<sub>B</sub>; T1 wird nach Strom und Leistung vorgeschlagen (BC547, BC337 oder BD139)</li>
         <li><strong>Speisespannung als Bereich «von … bis»:</strong> zeigt, wie wenig sich der Strom ändert, im Vergleich zu einem einfachen Vorwiderstand</li>
         <li>Schaltplan mit allen Werten, Rechenweg, Zeichen-Erklärung und Warnungen wie in den anderen Reitern</li>
         <li>Die LED-Info erklärt Konstantstrom, Wärme und Kühlkörper in einem eigenen Kapitel</li>
