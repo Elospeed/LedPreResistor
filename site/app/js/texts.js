@@ -268,6 +268,18 @@ window.LPR_TEXTS = {
 "Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**",
 "Voltage across the resistor: U_R = U_B − n × U_F = %s − %d × %s = **%s**"
 ],
+"rsKofiSatz": [
+"Hat dir der Rechner geholfen? Ein Kaffee hilft, dass es weitergeht ☕",
+"Did the calculator help you? A coffee helps keep it going ☕"
+],
+"rsDankHint": [
+"Wenn LedPreResistor dir Zeit spart, hilft ein Kaffee, dass es weitergeht. ☕",
+"If LedPreResistor saves you time, a coffee helps keep it going. ☕"
+],
+"rsClose": [
+"Schliessen",
+"Close"
+],
 "rsKofi": [
 "Kaffee spendieren",
 "Buy me a coffee"

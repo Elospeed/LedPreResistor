@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.5.2
+# Elospeed LedPreResistor 2.6
 
 **von Elospeed**
 

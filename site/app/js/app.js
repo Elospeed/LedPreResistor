@@ -21,7 +21,7 @@
   /* ===========================================================================
      KONSTANTEN
      =========================================================================== */
-  var APP_VER = '2.5.2';
+  var APP_VER = '2.6';
   var MAX_U = 60.0, MAX_LEDS = 30, MAX_STRINGS = 20;
   var LED_GLOW = ['#FF2B2B', '#FFD000', '#25E35D', '#2F7DFF', '#FFFFFF', '#9A2A6A'];
   var C = { ok: '#3DDC84', okBack: '#10301E', warn: '#FFCC33', warnBack: '#3A3110', error: '#FF5C5C',
@@ -94,6 +94,7 @@
         var prev = i > 0 ? c[i - 1] : '', next = i < c.length - 1 ? c[i + 1] : '';
         if (next === '→' || prev === '→' || next === '=' || prev === '=') { out += ' '; continue; }
         if (/[0-9¼½¾⅛]/.test(prev) && next && !/[0-9 ]/.test(next)) { out += ' '; continue; }
+        if ((prev === '>' || prev === '<' || prev === '≈') && /[0-9]/.test(next)) { out += '\u00a0'; continue; }
       }
       out += ch;
     }
@@ -846,7 +847,7 @@
     $('rechenweg').classList.toggle('open', rwOpen);
     $('rwToggle').setAttribute('aria-expanded', rwOpen ? 'true' : 'false');
     var c = currentLines(), h = '';
-    if (c.ok) c.lines.forEach(function (l, i) { h += '<div class="rw-line"><span class="n">' + (i + 1) + '</span><span class="f">' + rich(l) + '</span></div>'; });
+    if (c.ok) c.lines.forEach(function (l, i) { h += '<div class="rw-line"><span class="n">' + (i + 1) + '</span><span class="f">' + rich(keepUnits(l)) + '</span></div>'; });
     else c.lines.forEach(function (l) { h += '<div class="rw-err">' + rich(l) + '</div>'; });
     var leg = rechenwegLegend();
     if (leg) h += '<div class="rw-legend"><span class="lt">' + esc(_('rsCopyLegend')) + '</span><span>' +
@@ -910,6 +911,27 @@
     var leg = rechenwegLegend();
     if (leg) out.push('', _('rsCopyLegend') + ' ' + richPlain(leg));
     return out.join('\n') + '\n';
+  }
+  /* ---------------------------------------------------------------------------
+     Zeile unter dem Rechner: Satz mit Ko-fi-Knopf, dazu einmal pro neuer Haupt-
+     oder Unterversion (2.6 = 206; bei 2.7 auf 207 erhöhen, bei 2.6.1 nicht) ein
+     kleiner, schliessbarer Hinweis, nachdem der Benutzer ein paar Mal (DANK_NACH)
+     erfolgreich gerechnet hat. Kein Pop-up, nichts unterbricht die Arbeit.
+     --------------------------------------------------------------------------- */
+  var THANKS_VERSION = 206;
+  var DANK_NACH = 3;                // so viele eigene, gültige Berechnungen
+  var dankZaehler = 0, dankTimer = null;
+  function dankAnstossen() {
+    if (dankTimer) clearTimeout(dankTimer);
+    dankTimer = setTimeout(function () {
+      dankTimer = null;
+      if (!currentLines().ok) return;
+      dankZaehler++;
+      if (dankZaehler >= DANK_NACH && (parseInt(readSetting('thanks', '0'), 10) || 0) < THANKS_VERSION) {
+        writeSetting('thanks', THANKS_VERSION);
+        $('dankHint').hidden = false;
+      }
+    }, 1500);                       // erst wenn 1,5 s nichts mehr getippt wurde
   }
   function copyClick() {
     var text = copyText();
@@ -1044,7 +1066,8 @@
     fillCombos();
     var labels = { labelU: null, labelU2: 'rsLabelTo', labelSeries: 'rsLabelSeries', labelColor: 'rsLabelColor', labelUd: 'rsLabelUd',
       labelI: 'rsLabelI', labelN: 'rsLabelN', labelStrings: 'rsLabelStrings', headSupply: 'rsHeadSupply', headTiming: 'rsHeadTiming',
-      headPreview: 'rsHeadPreview', labelDiode: 'rsDiode', labelSym: 'rsSym', kofiText: 'rsKofi' };
+      headPreview: 'rsHeadPreview', labelDiode: 'rsDiode', labelSym: 'rsSym', kofiText: 'rsKofi',
+      kofiSatz: 'rsKofiSatz', kofiText2: 'rsKofi', dankHintText: 'rsDankHint', dankLink: 'rsKofi' };
     for (var id in labels) if (labels[id]) $(id).textContent = _(labels[id]);
     $('unitN').textContent = _('rsUnitN'); $('unitStrings').textContent = _('rsUnitN');
     $('btnReset').setAttribute('aria-label', _('rsTipReset')); $('btnReset').dataset.tip = _('rsTipReset');
@@ -1252,6 +1275,13 @@
     $('about').addEventListener('click', function (e) { if (e.target === $('about')) $('about').hidden = true; });
     $('rwToggle').addEventListener('click', function () { rwOpen = !rwOpen; paintRechenweg(); requestAnimationFrame(function () { ledCache.key = ''; paintLed(); }); });
     $('btnCopy').addEventListener('click', copyClick);
+    $('dankHint').addEventListener('click', function (e) {
+      if (e.target.classList.contains('dank-x') || e.target.classList.contains('dank-link'))
+        setTimeout(function () { $('dankHint').hidden = true; }, 0);
+    });
+    ['input', 'change'].forEach(function (ev) {
+      $('app').addEventListener(ev, function (e) { if (e.isTrusted) dankAnstossen(); });
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !$('about').hidden) { $('about').hidden = true; return; }
       if ((e.key === 'C' || e.key === 'c') && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); copyClick(); return; }

@@ -28,10 +28,13 @@
              steht in src/lang/en.po.
 
   Einstel-   Gewählter Reiter, Blinkschaltung und Konstantstromquelle stehen
-  lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
+  lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]), dazu die Version, für die
+             das Dankfenster schon kam (DankHinweis).
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
+  Versionen: 2.6  21.11.2026  Ergebniskarten mit Rand unten; kleines Dankfenster einmal pro
+                              Version nach der ersten eigenen Eingabe
+             2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
                               Auslastung bezieht sich auf ⅛ W, wenn ⅛ W reicht
              2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
                               Rechenweg Schritt 6: Aufteilung der Leistung LEDs/Widerstand
@@ -59,7 +62,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.5.2';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.6';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
@@ -205,6 +208,13 @@ type
     FCopyBtn: TRect;                                     // Knopf «Kopieren» in der Kopfzeile des Rechenwegs
     FCopied: Boolean;                                    // kurz «Kopiert» statt «Kopieren» anzeigen
     FCopyTimer: TTimer;                                  // stellt den Knopftext nach dem Kopieren zurück
+    FShown: Boolean;                                     // Fenster ist sichtbar (Rechnungen ab jetzt vom Benutzer)
+    FDankTimer: TTimer;                                  // wartet nach der ersten Berechnung kurz, bis Ruhe ist
+    FDankDone: Boolean;                                  // Dankfenster kam in dieser Sitzung schon (oder nicht nötig)
+    FDank: TForm;                                        // Dankfenster (nicht modal)
+    FDankBox: TPaintBox;                                 // Zeichenfläche des Dankfensters
+    FDankKofi, FDankClose: TRect;                        // Knöpfe im Dankfenster
+    FDankHover: Integer;                                 // Maus über: 0 = nichts, 1 = Ko-fi, 2 = Schliessen
     FMode: Integer;                                      // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
     FReverse: Boolean;                                   // Blinkschaltung: aus Frequenz und Tastgrad rechnen
     FCircuitShown: TBlinkCircuit;                        // Schaltung, deren Werte in den Feldern stehen
@@ -310,6 +320,16 @@ type
     function RechenwegLegend: string;
     { Resultat, kompletter Rechenweg und Zeichen-Erklärung als einfacher Text }
     function CopyText: string;
+    { Dankfenster: nach der ersten erfolgreichen Berechnung einmal pro neuer Version }
+    procedure DankAnstossen;
+    procedure DankTimerTimer(Sender: TObject);
+    function DankErgebnisOk: Boolean;
+    procedure DankZeigen;
+    procedure DankPaint(Sender: TObject);
+    procedure DankMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure DankMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure DankKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure DankClose(Sender: TObject; var CloseAction: TCloseAction);
     { Zusammenfassung für die Zwischenablage }
     function ResultSummary: string;
     { Rechnet einen Wert aus 96-dpi-Pixeln auf die aktuelle Bildschirmskalierung um }
@@ -387,6 +407,10 @@ resourcestring
   rsLegendMulti = 'U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 und 2 · k Zeitfaktor · R_B_1, R_B_2 Basiswiderstände · C Kondensator · I_B Basisstrom · I_C Kollektorstrom · β Stromverstärkung';
   rsLegendLM = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Messwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung';
   rsLegendKT = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Messwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung';
+  rsDankTitel = 'Danke!';
+  rsDankText = 'Wenn LedPreResistor dir Zeit spart, hilft ein Kaffee, dass es weitergeht.';
+  rsDankFuss = 'Freiwillig – das Programm bleibt kostenlos. Dieser Hinweis kommt erst mit der nächsten Version wieder.';
+  rsDankSchliessen = 'Schliessen';
   rsHintDatasheet = 'Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
@@ -741,6 +765,10 @@ const
   INI_KEY_TAB = 'Reiter';                                // zuletzt gewählter Reiter (0 ... 2)
   INI_KEY_CIRCUIT = 'Schaltung';                         // Blinkschaltung (0 = NE555, 1 = Multivibrator)
   INI_KEY_KSQ = 'Konstantstrom';                         // 0 = LM317, 1 = zwei Transistoren
+  INI_KEY_THANKS = 'DankHinweis';                        // Version, für die das Dankfenster schon kam
+  { Das Dankfenster erscheint einmal pro neuer Haupt- oder Unterversion
+    (2.6 = 206). Bei 2.7 auf 207 erhöhen, bei Fehlerbehebungen (2.6.1) nicht. }
+  THANKS_VERSION = 206;
 
 {------------------------------------------------------------------------------
   ReadViewSetting
@@ -943,6 +971,11 @@ begin
   FCopyTimer.Enabled := False;
   FCopyTimer.Interval := 1500;                           // «Kopiert ✓» 1,5 s lang
   FCopyTimer.OnTimer := @CopyTimerTimer;
+  FDankTimer := TTimer.Create(Self);
+  FDankTimer.Enabled := False;
+  FDankTimer.Interval := 3000;                           // 3 s Ruhe nach der Eingabe
+  FDankTimer.OnTimer := @DankTimerTimer;
+  FDankDone := ReadViewSetting(INI_KEY_THANKS, 0) >= THANKS_VERSION;
   FOnLevel := 1.0;
   FBTexts := BLINK_DEFAULTS;                             // Vorgaben der Zeitglied-Felder
   FCircuitShown := bcNE555;
@@ -1402,6 +1435,7 @@ end;
 procedure TFormMain.InputChange(Sender: TObject);
 begin
   Recalc;
+  if not FUpdating then DankAnstossen;                   // eigene Eingabe des Benutzers
 end;
 
 {------------------------------------------------------------------------------
@@ -1424,6 +1458,7 @@ begin
   PaintLed.Invalidate;
   ComboColor.Invalidate;
   Recalc;
+  DankAnstossen;                                         // eigene Eingabe des Benutzers
 end;
 
 {------------------------------------------------------------------------------
@@ -2256,6 +2291,7 @@ end;
 procedure TFormMain.FormShowPlatz(Sender: TObject);
 begin
   OnShow := nil;
+  FShown := True;                                        // ab jetzt rechnet der Benutzer
   { erst nach dem Anzeigen: dann ist das Fenster schon auf den Bildschirm
     begrenzt (uSkalierung) und die Höhen stimmen }
   Application.QueueAsyncCall(@RechenwegZuBeiPlatzmangel, 0);
@@ -2432,6 +2468,243 @@ begin
     if Zeile <> '' then
       DrawRich(C, LegX, LegY, Zeile, clrText, clrTextBright);
   end;
+end;
+
+{==============================================================================
+  DANKFENSTER
+==============================================================================
+  Einmal pro neuer Haupt- oder Unterversion (THANKS_VERSION) nach der ersten
+  erfolgreichen Berechnung des Benutzers, nie beim Start: kleines, nicht
+  modales Fenster oben rechts über dem Schaltplan mit Dank, Ko-fi-Knopf und
+  «Schliessen». Es erscheint erst nach 3 s ohne neue Eingabe, damit es niemanden
+  beim Tippen stört, und kommt in dieser Version nicht wieder.
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  DankErgebnisOk
+------------------------------------------------------------------------------
+  Liefert True, wenn der aktive Reiter ein gültiges Resultat zeigt.
+------------------------------------------------------------------------------}
+function TFormMain.DankErgebnisOk: Boolean;
+begin
+  case FMode of
+    1: Result := FBRes.Status = bsOk;
+    2: Result := FKRes.Status = ksOk;
+  else
+    Result := FRes.Status = csOk;
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  DankAnstossen
+------------------------------------------------------------------------------
+  Nach jeder eigenen Eingabe des Benutzers (nicht bei Sprachwechsel, Reiter
+  oder Zurücksetzen): Ist das Fenster schon sichtbar, das Dankfenster für
+  diese Version noch nicht gekommen und das Resultat gültig, den 3-s-Timer
+  neu starten (jede weitere Eingabe schiebt ihn hinaus).
+------------------------------------------------------------------------------}
+procedure TFormMain.DankAnstossen;
+begin
+  if FDankDone or not FShown or (FDankTimer = nil) then Exit;
+  FDankTimer.Enabled := False;
+  if DankErgebnisOk then
+    FDankTimer.Enabled := True;
+end;
+
+{------------------------------------------------------------------------------
+  DankTimerTimer
+------------------------------------------------------------------------------
+  3 s Ruhe: Dankfenster zeigen, wenn das Resultat noch gültig ist und das
+  Hauptfenster vorne ist; sonst bei der nächsten Berechnung erneut versuchen.
+------------------------------------------------------------------------------}
+procedure TFormMain.DankTimerTimer(Sender: TObject);
+begin
+  FDankTimer.Enabled := False;
+  if FDankDone or not DankErgebnisOk or not Active then Exit;
+  FDankDone := True;
+  WriteViewSetting(INI_KEY_THANKS, THANKS_VERSION);      // in dieser Version nicht wieder
+  DankZeigen;
+end;
+
+{------------------------------------------------------------------------------
+  DankZeigen
+------------------------------------------------------------------------------
+  Legt das Dankfenster an und zeigt es unten rechts im Hauptfenster.
+  Ablauf:
+    1. Fenster ohne Grössenänderung, dunkel wie das Programm
+    2. eine Zeichenfläche für Text und Knöpfe
+    3. Grösse nach der Schrift, Lage oben rechts im Schaltplan (dort ist meist
+       Platz; Statuszeile, «Kopieren» und Ko-fi-Knopf bleiben frei)
+------------------------------------------------------------------------------}
+procedure TFormMain.DankZeigen;
+var
+  W, H: Integer;                                         // Grösse des Fensters
+  P: TPoint;                                             // untere rechte Ecke des Rechenwegs auf dem Bildschirm
+  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
+  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
+begin
+  // ----- 1. Fenster -----
+  FDank := TForm.CreateNew(Self);
+  FDank.BorderStyle := bsDialog;
+  FDank.Caption := 'LedPreResistor';
+  FDank.Color := clrPanel;
+  FDank.KeyPreview := True;
+  FDank.OnKeyDown := @DankKeyDown;
+  FDank.OnClose := @DankClose;
+  FDank.PopupParent := Self;
+  FDank.PopupMode := pmExplicit;
+  // ----- 2. Zeichenfläche -----
+  FDankBox := TPaintBox.Create(FDank);
+  FDankBox.Parent := FDank;
+  FDankBox.Align := alClient;
+  FDankBox.OnPaint := @DankPaint;
+  FDankBox.OnMouseMove := @DankMouseMove;
+  FDankBox.OnMouseUp := @DankMouseUp;
+  FDankHover := 0;
+  // ----- 3. Grösse und Lage -----
+  W := Px(380);
+  H := Px(178);
+  FDank.ClientWidth := W;
+  FDank.ClientHeight := H;
+  FDank.Position := poDesigned;
+  // Unten rechts im Rechenweg: Eingaben, Schaltplan, Ergebniskarten und
+  // «Kopieren» bleiben frei; oben nie über die Kopfzeile des Rechenwegs.
+  // Px(40) = ungefähre Höhe der Titelleiste samt Rahmen.
+  P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
+  T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
+  FDank.Left := Max(Left, P.X - W - Px(24));
+  FDank.Top := Max(T, P.Y - H - Px(40) - Px(8));
+  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
+  if FDank.Top + H + Px(40) > WA.Bottom then
+    FDank.Top := Max(WA.Top, WA.Bottom - H - Px(40));
+  FDank.Show;
+end;
+
+{------------------------------------------------------------------------------
+  DankPaint
+------------------------------------------------------------------------------
+  Zeichnet das Dankfenster: Titel, Kernsatz (umbrochen), kleiner Fusstext,
+  unten rechts Ko-fi-Knopf (Elospeed-Standard) und «Schliessen».
+------------------------------------------------------------------------------}
+procedure TFormMain.DankPaint(Sender: TObject);
+var
+  C: TCanvas;                                            // Zeichenfläche
+  R, TR: TRect;                                          // ganzer Bereich, Textbereich
+  TS: TTextStyle;                                        // Umbruch für den Text
+  Y, BtnH, KW, SW: Integer;                              // Zeile, Knopfhöhe, Knopfbreiten
+begin
+  C := FDankBox.Canvas;
+  R := FDankBox.ClientRect;
+  C.Brush.Color := clrPanel;
+  C.FillRect(R);
+  // Titel
+  C.Brush.Style := bsClear;
+  C.Font.Name := FONT_UI;
+  C.Font.Size := 12;
+  C.Font.Style := [fsBold];
+  C.Font.Color := clrTextBright;
+  Y := Px(14);
+  C.TextOut(Px(18), Y, _(rsDankTitel));
+  Inc(Y, C.TextHeight('Ag') + Px(6));
+  // Kernsatz, bei Bedarf umbrochen
+  C.Font.Size := 10;
+  C.Font.Style := [];
+  C.Font.Color := clrText;
+  TS := C.TextStyle;
+  TS.Wordbreak := True;
+  TS.SingleLine := False;
+  TR := Rect(Px(18), Y, R.Right - Px(18), Y + 2 * C.TextHeight('Ag') + Px(2));
+  C.TextRect(TR, TR.Left, TR.Top, _(rsDankText), TS);
+  Y := TR.Bottom + Px(8);
+  // Knöpfe unten: rechts «Schliessen», links daneben Ko-fi
+  BtnH := Px(26);
+  C.Font.Size := 9;
+  C.Font.Style := [];
+  SW := C.TextWidth(_(rsDankSchliessen)) + Px(24);
+  FDankClose := Rect(R.Right - Px(14) - SW, R.Bottom - Px(14) - BtnH, R.Right - Px(14), R.Bottom - Px(14));
+  C.Brush.Style := bsSolid;
+  if FDankHover = 2 then C.Brush.Color := clrBorder else C.Brush.Color := clrBar;
+  C.Pen.Color := clrBorder;
+  C.RoundRect(FDankClose, Px(8), Px(8));
+  C.Brush.Style := bsClear;
+  C.Font.Color := clrText;
+  C.TextOut((FDankClose.Left + FDankClose.Right - C.TextWidth(_(rsDankSchliessen))) div 2,
+    (FDankClose.Top + FDankClose.Bottom - C.TextHeight('Ag')) div 2, _(rsDankSchliessen));
+  C.Font.Style := [fsBold];
+  KW := KofiButtonWidth(C, _(rsKofi), Screen.PixelsPerInch);
+  FDankKofi := Rect(FDankClose.Left - Px(10) - KW, FDankClose.Top, FDankClose.Left - Px(10), FDankClose.Bottom);
+  DrawKofiButton(C, FDankKofi, _(rsKofi), FDankHover = 1, clrPanel, Screen.PixelsPerInch, Application.Icon);
+  // Fusstext klein, zwischen Kernsatz und Knöpfen
+  C.Brush.Style := bsClear;
+  C.Font.Size := 8;
+  C.Font.Style := [];
+  C.Font.Color := clrTextDim;
+  TR := Rect(Px(18), Y, R.Right - Px(18), FDankClose.Top - Px(6));
+  C.TextRect(TR, TR.Left, TR.Top, _(rsDankFuss), TS);
+end;
+
+{------------------------------------------------------------------------------
+  DankMouseMove
+------------------------------------------------------------------------------
+  Hand-Zeiger und Hervorhebung über den beiden Knöpfen
+------------------------------------------------------------------------------}
+procedure TFormMain.DankMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+  H: Integer;                                            // neuer Zustand
+begin
+  if PtInRect(FDankKofi, Point(X, Y)) then H := 1
+  else if PtInRect(FDankClose, Point(X, Y)) then H := 2
+  else H := 0;
+  if H > 0 then FDankBox.Cursor := crHandPoint else FDankBox.Cursor := crDefault;
+  if H <> FDankHover then
+  begin
+    FDankHover := H;
+    FDankBox.Invalidate;
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  DankMouseUp
+------------------------------------------------------------------------------
+  Ko-fi: Seite im Browser öffnen und schliessen; «Schliessen»: schliessen
+------------------------------------------------------------------------------}
+procedure TFormMain.DankMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  if Button <> mbLeft then Exit;
+  if PtInRect(FDankKofi, Point(X, Y)) then
+  begin
+    OpenURL(KOFI_URL);
+    FDank.Close;
+  end
+  else if PtInRect(FDankClose, Point(X, Y)) then
+    FDank.Close;
+end;
+
+{------------------------------------------------------------------------------
+  DankKeyDown
+------------------------------------------------------------------------------
+  Esc oder Eingabe schliesst das Dankfenster
+------------------------------------------------------------------------------}
+procedure TFormMain.DankKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_ESCAPE) or (Key = VK_RETURN) then
+  begin
+    Key := 0;
+    FDank.Close;
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  DankClose
+------------------------------------------------------------------------------
+  Fenster freigeben und Fokus zurück ins Hauptfenster
+------------------------------------------------------------------------------}
+procedure TFormMain.DankClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  CloseAction := caFree;
+  FDank := nil;
+  FDankBox := nil;
+  Self.SetFocus;
 end;
 
 {------------------------------------------------------------------------------
@@ -3260,6 +3533,7 @@ begin
   if FUpdating then Exit;
   SyncSymmetric;
   Recalc;
+  DankAnstossen;                                         // eigene Eingabe des Benutzers
 end;
 
 {------------------------------------------------------------------------------
