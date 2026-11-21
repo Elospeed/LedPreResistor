@@ -2539,7 +2539,9 @@ end;
 procedure TFormMain.DankZeigen;
 var
   W, H: Integer;                                         // Grösse des Fensters
-  P: TPoint;                                             // obere rechte Ecke des Schaltplans auf dem Bildschirm
+  P: TPoint;                                             // untere rechte Ecke des Rechenwegs auf dem Bildschirm
+  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
+  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
 begin
   // ----- 1. Fenster -----
   FDank := TForm.CreateNew(Self);
@@ -2565,9 +2567,16 @@ begin
   FDank.ClientWidth := W;
   FDank.ClientHeight := H;
   FDank.Position := poDesigned;
-  P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
-  FDank.Left := Max(Left, P.X - W - Px(12));
-  FDank.Top := Max(Top, P.Y + Px(12));
+  // Unten rechts im Rechenweg: Eingaben, Schaltplan, Ergebniskarten und
+  // «Kopieren» bleiben frei; oben nie über die Kopfzeile des Rechenwegs.
+  // Px(40) = ungefähre Höhe der Titelleiste samt Rahmen.
+  P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
+  T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
+  FDank.Left := Max(Left, P.X - W - Px(24));
+  FDank.Top := Max(T, P.Y - H - Px(40) - Px(8));
+  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
+  if FDank.Top + H + Px(40) > WA.Bottom then
+    FDank.Top := Max(WA.Top, WA.Bottom - H - Px(40));
   FDank.Show;
 end;
 
