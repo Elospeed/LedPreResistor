@@ -29,11 +29,11 @@
 
   Einstel-   Gewählter Reiter, Blinkschaltung und Konstantstromquelle stehen
   lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]), dazu die Version, für die
-             der Hinweis nach dem ersten «Kopieren» schon kam.
+             das Dankfenster schon kam (DankHinweis).
 
   Autor:     Elospeed
-  Versionen: 2.6  21.11.2026  Ergebniskarten mit Rand unten; Hinweis in der Kopfzeile des
-                              Rechenwegs nach dem ersten «Kopieren» einer Version
+  Versionen: 2.6  21.11.2026  Ergebniskarten mit Rand unten; kleines Dankfenster einmal pro
+                              Version nach der ersten eigenen Eingabe
              2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
                               Auslastung bezieht sich auf ⅛ W, wenn ⅛ W reicht
              2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
@@ -2475,7 +2475,7 @@ end;
 ==============================================================================
   Einmal pro neuer Haupt- oder Unterversion (THANKS_VERSION) nach der ersten
   erfolgreichen Berechnung des Benutzers, nie beim Start: kleines, nicht
-  modales Fenster unten rechts im Hauptfenster mit Dank, Ko-fi-Knopf und
+  modales Fenster oben rechts über dem Schaltplan mit Dank, Ko-fi-Knopf und
   «Schliessen». Es erscheint erst nach 3 s ohne neue Eingabe, damit es niemanden
   beim Tippen stört, und kommt in dieser Version nicht wieder.
 ==============================================================================}
@@ -2533,11 +2533,13 @@ end;
   Ablauf:
     1. Fenster ohne Grössenänderung, dunkel wie das Programm
     2. eine Zeichenfläche für Text und Knöpfe
-    3. Grösse nach der Schrift, Lage unten rechts über der Statuszeile
+    3. Grösse nach der Schrift, Lage oben rechts im Schaltplan (dort ist meist
+       Platz; Statuszeile, «Kopieren» und Ko-fi-Knopf bleiben frei)
 ------------------------------------------------------------------------------}
 procedure TFormMain.DankZeigen;
 var
   W, H: Integer;                                         // Grösse des Fensters
+  P: TPoint;                                             // obere rechte Ecke des Schaltplans auf dem Bildschirm
 begin
   // ----- 1. Fenster -----
   FDank := TForm.CreateNew(Self);
@@ -2563,8 +2565,9 @@ begin
   FDank.ClientWidth := W;
   FDank.ClientHeight := H;
   FDank.Position := poDesigned;
-  FDank.Left := Max(Left, Left + Width - W - Px(40));
-  FDank.Top := Max(Top, Top + Height - H - Px(120));
+  P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
+  FDank.Left := Max(Left, P.X - W - Px(12));
+  FDank.Top := Max(Top, P.Y + Px(12));
   FDank.Show;
 end;
 
