@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Danke! – LedPreResistor</title>
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#15181c">
+<link rel="icon" type="image/svg+xml" href="../../img/icon.svg">
+<link rel="stylesheet" href="../../style.css">
+<style>
+.danke { text-align: center; padding: 56px 0 72px; }
+.danke .lead { margin-left: auto; margin-right: auto; }
+.danke .fall { color: var(--muted, #a0a4aa); font-size: .92em; margin-top: 10px; }
+.danke .kofi-box { margin: 36px auto 0; max-width: 560px; padding: 22px 20px; border: 1px solid var(--line); border-radius: 12px; }
+.danke .kofi-box p { margin: 0 0 16px; }
+.danke .back { display: inline-block; margin-top: 32px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="../"><img src="../../img/icon-192.png" alt="" width="30" height="30">Elospeed LedPreResistor</a>
+    <nav><a class="lang" href="../../danke/">English</a></nav>
+  </div>
+  <div class="stripes"><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<main>
+<section class="hero danke">
+  <div class="wrap">
+    <h1>Danke!</h1>
+    <p class="lead">Der Download startet gleich. LedPreResistor ist und bleibt kostenlos.</p>
+    <p class="fall">Startet der Download nicht? <a id="dl" href="#">Hier klicken</a> oder direkt wählen: <a id="dlwin" href="#">Windows (ZIP)</a> · <a id="dllin" href="#">Linux (tar.gz)</a></p>
+    <div class="kofi-box">
+      <p>Wenn LedPreResistor dir Zeit spart, hilft ein Kaffee, dass es weitergeht. Ganz freiwillig.</p>
+      <a class="btn primary" href="https://ko-fi.com/elospeed" target="_blank" rel="noopener" data-goatcounter-click="kofi-ledpreresistor-danke-de">☕ Kaffee spendieren</a>
+    </div>
+    <a class="back" href="../">← Zurück zur Projektseite</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Datenschutz: Besuche werden anonym mit <a href="https://www.goatcounter.com/help/privacy">GoatCounter</a> gezählt (keine Cookies, keine persönlichen Daten, kein seitenübergreifendes Tracking).</div>
+  </div>
+</footer>
+
+<script>
+/* Download sofort starten. Nur die zwei festen Dateien sind möglich (keine fremden Adressen).
+   Nach jedem Release die Adressen hier und auf der Projektseite nachführen. */
+var DL = {
+  win: "https://github.com/Elospeed/LedPreResistor/releases/download/v2.5.2/LedPreResistor-2.5.2.zip",
+  linux: "https://github.com/Elospeed/LedPreResistor/releases/download/v2.5.2/LedPreResistor-2.5.2-linux-x86_64.tar.gz"
+};
+(function () {
+  var f = new URLSearchParams(location.search).get("f");
+  var u = Object.prototype.hasOwnProperty.call(DL, f) ? DL[f] : null;
+  document.getElementById("dlwin").href = DL.win;
+  document.getElementById("dllin").href = DL.linux;
+  document.getElementById("dl").href = u || DL.win;
+  if (u) setTimeout(function () { location.href = u; }, 300);
+})();
+</script>
+<script data-goatcounter="https://elospeed.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+</body>
+</html>

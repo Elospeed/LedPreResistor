@@ -1099,10 +1099,18 @@ msgstr "next %s value above"
 msgid "genau ein %s-Wert"
 msgstr "exactly an %s value"
 
-#: uMain.pas rsThanks
-msgid "Danke fürs Benutzen! LedPreResistor ist ein Hobbyprojekt aus der Schweiz. Wenn es dir hilft:"
-msgstr "Thanks for using it! LedPreResistor is a hobby project from Switzerland. If it helps you:"
+#: uMain.pas rsDankTitel
+msgid "Danke!"
+msgstr "Thank you!"
 
-#: uMain.pas rsThanksShort
-msgid "Danke fürs Benutzen!"
-msgstr "Thanks for using it!"
+#: uMain.pas rsDankText
+msgid "Wenn LedPreResistor dir Zeit spart, hilft ein Kaffee, dass es weitergeht."
+msgstr "If LedPreResistor saves you time, a coffee helps keep it going."
+
+#: uMain.pas rsDankFuss
+msgid "Freiwillig – das Programm bleibt kostenlos. Dieser Hinweis kommt erst mit der nächsten Version wieder."
+msgstr "Entirely optional – the program stays free. This note won't appear again until the next version."
+
+#: uMain.pas rsDankSchliessen
+msgid "Schliessen"
+msgstr "Close"

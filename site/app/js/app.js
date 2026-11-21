@@ -839,16 +839,8 @@
   }
   function paintRechenweg() {
     $('rwTitle').textContent = _('rsRechenweg');
-    if (thanksOn) {
-      // Dank-Hinweis statt des Datenblatt-Hinweises (einmal pro neuer Version)
-      $('rwHint').innerHTML = '<span class="rw-thanks-t">' + esc(_('rsThanks')) + '</span> ' +
-        '<a class="rw-thanks" href="https://ko-fi.com/elospeed" target="_blank" rel="noopener" data-goatcounter-click="ko-fi-dank-app">' +
-        esc(_('rsKofi')) + '</a><button type="button" class="rw-x" aria-label="' + esc(_('rsClose')) + '">×</button>';
-      $('rwHint').title = '';
-    } else {
-      $('rwHint').textContent = _('rsHintDatasheet');
-      $('rwHint').title = _('rsHintDatasheet');
-    }
+    $('rwHint').textContent = _('rsHintDatasheet');
+    $('rwHint').title = _('rsHintDatasheet');
     $('btnCopy').textContent = copiedTimer ? _('rsCopiedBtn') : _('rsCopyBtn');
     $('btnCopy').classList.toggle('done', !!copiedTimer);
     $('rechenweg').classList.toggle('open', rwOpen);
@@ -919,17 +911,29 @@
     if (leg) out.push('', _('rsCopyLegend') + ' ' + richPlain(leg));
     return out.join('\n') + '\n';
   }
-  /* Dank-Hinweis: erscheint nach dem ersten erfolgreichen «Kopieren» einer neuen
-     Haupt- oder Unterversion (2.6 = 206; bei 2.7 auf 207 erhöhen, bei 2.6.1 nicht),
-     ersetzt so lange den Datenblatt-Hinweis und lässt sich schliessen */
+  /* ---------------------------------------------------------------------------
+     Zeile unter dem Rechner: Satz mit Ko-fi-Knopf, dazu einmal pro neuer Haupt-
+     oder Unterversion (2.6 = 206; bei 2.7 auf 207 erhöhen, bei 2.6.1 nicht) ein
+     kleiner, schliessbarer Hinweis, nachdem der Benutzer ein paar Mal (DANK_NACH)
+     erfolgreich gerechnet hat. Kein Pop-up, nichts unterbricht die Arbeit.
+     --------------------------------------------------------------------------- */
   var THANKS_VERSION = 206;
-  var thanksOn = false;
+  var DANK_NACH = 3;                // so viele eigene, gültige Berechnungen
+  var dankZaehler = 0, dankTimer = null;
+  function dankAnstossen() {
+    if (dankTimer) clearTimeout(dankTimer);
+    dankTimer = setTimeout(function () {
+      dankTimer = null;
+      if (!currentLines().ok) return;
+      dankZaehler++;
+      if (dankZaehler >= DANK_NACH && (parseInt(readSetting('thanks', '0'), 10) || 0) < THANKS_VERSION) {
+        writeSetting('thanks', THANKS_VERSION);
+        $('dankHint').hidden = false;
+      }
+    }, 1500);                       // erst wenn 1,5 s nichts mehr getippt wurde
+  }
   function copyClick() {
     var text = copyText();
-    if (currentLines().ok && (parseInt(readSetting('thanks', '0'), 10) || 0) < THANKS_VERSION) {
-      thanksOn = true;
-      writeSetting('thanks', THANKS_VERSION);
-    }
     function done() {
       if (copiedTimer) clearTimeout(copiedTimer);
       copiedTimer = setTimeout(function () { copiedTimer = null; paintRechenweg(); }, 1500);
@@ -1061,7 +1065,8 @@
     fillCombos();
     var labels = { labelU: null, labelU2: 'rsLabelTo', labelSeries: 'rsLabelSeries', labelColor: 'rsLabelColor', labelUd: 'rsLabelUd',
       labelI: 'rsLabelI', labelN: 'rsLabelN', labelStrings: 'rsLabelStrings', headSupply: 'rsHeadSupply', headTiming: 'rsHeadTiming',
-      headPreview: 'rsHeadPreview', labelDiode: 'rsDiode', labelSym: 'rsSym', kofiText: 'rsKofi' };
+      headPreview: 'rsHeadPreview', labelDiode: 'rsDiode', labelSym: 'rsSym', kofiText: 'rsKofi',
+      kofiSatz: 'rsKofiSatz', kofiText2: 'rsKofi', dankHintText: 'rsDankHint', dankLink: 'rsKofi' };
     for (var id in labels) if (labels[id]) $(id).textContent = _(labels[id]);
     $('unitN').textContent = _('rsUnitN'); $('unitStrings').textContent = _('rsUnitN');
     $('btnReset').setAttribute('aria-label', _('rsTipReset')); $('btnReset').dataset.tip = _('rsTipReset');
@@ -1269,12 +1274,12 @@
     $('about').addEventListener('click', function (e) { if (e.target === $('about')) $('about').hidden = true; });
     $('rwToggle').addEventListener('click', function () { rwOpen = !rwOpen; paintRechenweg(); requestAnimationFrame(function () { ledCache.key = ''; paintLed(); }); });
     $('btnCopy').addEventListener('click', copyClick);
-    $('rwHint').addEventListener('click', function (e) {
-      var t = e.target;
-      if (t.classList.contains('rw-x') || t.classList.contains('rw-thanks')) {
-        thanksOn = false;
-        setTimeout(paintRechenweg, 0);
-      }
+    $('dankHint').addEventListener('click', function (e) {
+      if (e.target.classList.contains('dank-x') || e.target.classList.contains('dank-link'))
+        setTimeout(function () { $('dankHint').hidden = true; }, 0);
+    });
+    ['input', 'change'].forEach(function (ev) {
+      $('app').addEventListener(ev, function (e) { if (e.isTrusted) dankAnstossen(); });
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !$('about').hidden) { $('about').hidden = true; return; }
