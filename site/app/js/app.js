@@ -94,6 +94,7 @@
         var prev = i > 0 ? c[i - 1] : '', next = i < c.length - 1 ? c[i + 1] : '';
         if (next === '→' || prev === '→' || next === '=' || prev === '=') { out += ' '; continue; }
         if (/[0-9¼½¾⅛]/.test(prev) && next && !/[0-9 ]/.test(next)) { out += ' '; continue; }
+        if ((prev === '>' || prev === '<' || prev === '≈') && /[0-9]/.test(next)) { out += '\u00a0'; continue; }
       }
       out += ch;
     }
