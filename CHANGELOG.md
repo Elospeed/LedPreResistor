@@ -10,7 +10,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 ## 2.6 – 21. November 2026
 
 ### Anzeige
-- Kleinere Design-Fehler behoben: Die Ergebniskarten haben unten wieder einen Rand und etwas Abstand zur Statuszeile.
+- Kleinere Bugs in der GUI behoben: Die Ergebniskarten haben unten wieder einen Rand und etwas Abstand zur Statuszeile.
 - HTML-Version: Im Rechenweg bleiben Zahl und Einheit (z. B. «164,8 mW») sowie die Pfeile beim Umbruch zusammen.
 
 ## 2.5.2 – 17. November 2026
