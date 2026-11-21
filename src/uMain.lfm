@@ -603,6 +603,7 @@ object FormMain: TFormMain
       BorderSpacing.Left = 16
       BorderSpacing.Right = 16
       BorderSpacing.Top = 10
+      BorderSpacing.Bottom = 10
       OnPaint = PaintCardsPaint
     end
     object PaintSchematic: TPaintBox

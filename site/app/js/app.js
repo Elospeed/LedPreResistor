@@ -839,8 +839,16 @@
   }
   function paintRechenweg() {
     $('rwTitle').textContent = _('rsRechenweg');
-    $('rwHint').textContent = _('rsHintDatasheet');
-    $('rwHint').title = _('rsHintDatasheet');
+    if (thanksOn) {
+      // Dank-Hinweis statt des Datenblatt-Hinweises (einmal pro neuer Version)
+      $('rwHint').innerHTML = '<span class="rw-thanks-t">' + esc(_('rsThanks')) + '</span> ' +
+        '<a class="rw-thanks" href="https://ko-fi.com/elospeed" target="_blank" rel="noopener" data-goatcounter-click="ko-fi-dank-app">' +
+        esc(_('rsKofi')) + '</a><button type="button" class="rw-x" aria-label="' + esc(_('rsClose')) + '">×</button>';
+      $('rwHint').title = '';
+    } else {
+      $('rwHint').textContent = _('rsHintDatasheet');
+      $('rwHint').title = _('rsHintDatasheet');
+    }
     $('btnCopy').textContent = copiedTimer ? _('rsCopiedBtn') : _('rsCopyBtn');
     $('btnCopy').classList.toggle('done', !!copiedTimer);
     $('rechenweg').classList.toggle('open', rwOpen);
@@ -911,8 +919,17 @@
     if (leg) out.push('', _('rsCopyLegend') + ' ' + richPlain(leg));
     return out.join('\n') + '\n';
   }
+  /* Dank-Hinweis: erscheint nach dem ersten erfolgreichen «Kopieren» einer neuen
+     Haupt- oder Unterversion (2.6 = 206; bei 2.7 auf 207 erhöhen, bei 2.6.1 nicht),
+     ersetzt so lange den Datenblatt-Hinweis und lässt sich schliessen */
+  var THANKS_VERSION = 206;
+  var thanksOn = false;
   function copyClick() {
     var text = copyText();
+    if (currentLines().ok && (parseInt(readSetting('thanks', '0'), 10) || 0) < THANKS_VERSION) {
+      thanksOn = true;
+      writeSetting('thanks', THANKS_VERSION);
+    }
     function done() {
       if (copiedTimer) clearTimeout(copiedTimer);
       copiedTimer = setTimeout(function () { copiedTimer = null; paintRechenweg(); }, 1500);
@@ -1252,6 +1269,13 @@
     $('about').addEventListener('click', function (e) { if (e.target === $('about')) $('about').hidden = true; });
     $('rwToggle').addEventListener('click', function () { rwOpen = !rwOpen; paintRechenweg(); requestAnimationFrame(function () { ledCache.key = ''; paintLed(); }); });
     $('btnCopy').addEventListener('click', copyClick);
+    $('rwHint').addEventListener('click', function (e) {
+      var t = e.target;
+      if (t.classList.contains('rw-x') || t.classList.contains('rw-thanks')) {
+        thanksOn = false;
+        setTimeout(paintRechenweg, 0);
+      }
+    });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !$('about').hidden) { $('about').hidden = true; return; }
       if ((e.key === 'C' || e.key === 'c') && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); copyClick(); return; }

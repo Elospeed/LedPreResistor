@@ -205,6 +205,9 @@ type
     FCopyBtn: TRect;                                     // Knopf «Kopieren» in der Kopfzeile des Rechenwegs
     FCopied: Boolean;                                    // kurz «Kopiert» statt «Kopieren» anzeigen
     FCopyTimer: TTimer;                                  // stellt den Knopftext nach dem Kopieren zurück
+    FThanksOn: Boolean;                                  // Dank-Hinweis in der Kopfzeile des Rechenwegs sichtbar
+    FThanksLink: TRect;                                  // Link «Kaffee spendieren» im Dank-Hinweis
+    FThanksClose: TRect;                                 // Schliessen-Kreuz des Dank-Hinweises
     FMode: Integer;                                      // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
     FReverse: Boolean;                                   // Blinkschaltung: aus Frequenz und Tastgrad rechnen
     FCircuitShown: TBlinkCircuit;                        // Schaltung, deren Werte in den Feldern stehen
@@ -310,6 +313,8 @@ type
     function RechenwegLegend: string;
     { Resultat, kompletter Rechenweg und Zeichen-Erklärung als einfacher Text }
     function CopyText: string;
+    { Dank-Hinweis in der Kopfzeile des Rechenwegs zeichnen (statt des Datenblatt-Hinweises) }
+    procedure PaintThanks(C: TCanvas; ALeft, ARight, ATop, AHeadH: Integer);
     { Zusammenfassung für die Zwischenablage }
     function ResultSummary: string;
     { Rechnet einen Wert aus 96-dpi-Pixeln auf die aktuelle Bildschirmskalierung um }
@@ -387,6 +392,8 @@ resourcestring
   rsLegendMulti = 'U_B Speisespannung · U_F Durchlassspannung · t_1, t_2 Leuchtzeit LED 1 und 2 · k Zeitfaktor · R_B_1, R_B_2 Basiswiderstände · C Kondensator · I_B Basisstrom · I_C Kollektorstrom · β Stromverstärkung';
   rsLegendLM = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R Messwiderstand · I LED-Strom · P Leistung · U_m_i_n kleinste Speisespannung';
   rsLegendKT = 'U_B Speisespannung · U_L_E_D Spannung aller LEDs · R_S Messwiderstand · R_B Basiswiderstand · U_B_E Basis-Emitter-Spannung · β Stromverstärkung · P Leistung · U_m_i_n kleinste Speisespannung';
+  rsThanks = 'Danke fürs Benutzen! LedPreResistor ist ein Hobbyprojekt aus der Schweiz. Wenn es dir hilft:';
+  rsThanksShort = 'Danke fürs Benutzen!';
   rsHintDatasheet = 'Hinweis: Durchlassspannung und Strom aus dem Datenblatt der verwendeten LED nehmen, die Vorgaben sind nur Richtwerte.';
   rsStep1 = 'Spannung am Widerstand: U_R = U_B − U_F = %s − %s = **%s**';
   rsStep1N = 'Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**';
@@ -741,6 +748,10 @@ const
   INI_KEY_TAB = 'Reiter';                                // zuletzt gewählter Reiter (0 ... 2)
   INI_KEY_CIRCUIT = 'Schaltung';                         // Blinkschaltung (0 = NE555, 1 = Multivibrator)
   INI_KEY_KSQ = 'Konstantstrom';                         // 0 = LM317, 1 = zwei Transistoren
+  INI_KEY_THANKS = 'DankHinweis';                        // Version, für die der Dank-Hinweis schon kam
+  { Der Dank-Hinweis erscheint einmal pro neuer Haupt- oder Unterversion
+    (2.6 = 206). Bei 2.7 auf 207 erhöhen, bei Fehlerbehebungen (2.6.1) nicht. }
+  THANKS_VERSION = 206;
 
 {------------------------------------------------------------------------------
   ReadViewSetting
@@ -2347,13 +2358,20 @@ begin
   C.TextOut((FCopyBtn.Left + FCopyBtn.Right - C.TextWidth(BtnText)) div 2,
     (FCopyBtn.Top + FCopyBtn.Bottom - C.TextHeight('Ag')) div 2, BtnText);
   HintRight := FCopyBtn.Left - Px(14);
-  HintText := _(rsHintDatasheet);
-  C.Font.Color := clrTextSoft;
-  while (C.Font.Size > 7) and (C.TextWidth(HintText) > HintRight - HintX) do
-    C.Font.Size := C.Font.Size - 1;
-  if C.TextWidth(HintText) <= HintRight - HintX then
-    C.TextOut(HintRight - C.TextWidth(HintText),
-      R.Top + (HeadH - C.TextHeight('Ag')) div 2, HintText);
+  FThanksLink := Rect(0, 0, 0, 0);
+  FThanksClose := Rect(0, 0, 0, 0);
+  if FThanksOn then
+    PaintThanks(C, HintX, HintRight, R.Top, HeadH)
+  else
+  begin
+    HintText := _(rsHintDatasheet);
+    C.Font.Color := clrTextSoft;
+    while (C.Font.Size > 7) and (C.TextWidth(HintText) > HintRight - HintX) do
+      C.Font.Size := C.Font.Size - 1;
+    if C.TextWidth(HintText) <= HintRight - HintX then
+      C.TextOut(HintRight - C.TextWidth(HintText),
+        R.Top + (HeadH - C.TextHeight('Ag')) div 2, HintText);
+  end;
   C.Font.Size := 9;
   C.Font.Color := clrText;
   // ----- 2. Zugeklappt: fertig -----
@@ -2435,6 +2453,67 @@ begin
 end;
 
 {------------------------------------------------------------------------------
+  PaintThanks
+------------------------------------------------------------------------------
+  Dank-Hinweis rechts in der Kopfzeile des Rechenwegs, einmal pro neuer
+  Version nach dem ersten «Kopieren». Ersetzt so lange den Hinweis zum
+  Datenblatt, unterbricht nichts und lässt sich mit dem Kreuz schliessen.
+  Ablauf:
+    1. Breiten messen: Satz, Link «Kaffee spendieren», Kreuz
+    2. Platz zu knapp: Schrift kleiner, sonst kurzer Satz, sonst nur der Link
+    3. Satz, unterstrichenen Link und Kreuz zeichnen, Klickflächen merken
+------------------------------------------------------------------------------}
+procedure TFormMain.PaintThanks(C: TCanvas; ALeft, ARight, ATop, AHeadH: Integer);
+var
+  Txt, LinkTxt: string;                                  // Satz und Link-Text
+  TxtW, LinkW, CloseW: Integer;                          // Breiten
+  X, Y, Mid: Integer;                                    // Lage
+  K: Integer;                                            // halbe Kreuzgrösse
+begin
+  // ----- 1. Breiten messen -----
+  C.Font.Style := [];
+  Txt := _(rsThanks);
+  LinkTxt := _(rsKofi);
+  CloseW := Px(18);
+  // ----- 2. Platz: Schrift kleiner, dann kürzer -----
+  while (C.Font.Size > 7) and
+    (C.TextWidth(Txt + ' ') + C.TextWidth(LinkTxt) + Px(10) + CloseW > ARight - ALeft) do
+    C.Font.Size := C.Font.Size - 1;
+  if C.TextWidth(Txt + ' ') + C.TextWidth(LinkTxt) + Px(10) + CloseW > ARight - ALeft then
+    Txt := _(rsThanksShort);
+  if C.TextWidth(Txt + ' ') + C.TextWidth(LinkTxt) + Px(10) + CloseW > ARight - ALeft then
+    Txt := '';
+  if Txt <> '' then TxtW := C.TextWidth(Txt + ' ') else TxtW := 0;
+  LinkW := C.TextWidth(LinkTxt);
+  // ----- 3. Zeichnen, rechtsbündig vor dem Knopf «Kopieren» -----
+  X := ARight - CloseW - Px(10) - LinkW - TxtW;
+  if X < ALeft then Exit;                                // gar kein Platz: nichts zeigen
+  Y := ATop + (AHeadH - C.TextHeight('Ag')) div 2;
+  C.Brush.Style := bsClear;
+  if Txt <> '' then
+  begin
+    C.Font.Color := clrTextSoft;
+    C.TextOut(X, Y, Txt);
+    Inc(X, TxtW);
+  end;
+  C.Font.Color := clrAccent;
+  C.Font.Style := [fsUnderline];
+  C.TextOut(X, Y, LinkTxt);
+  C.Font.Style := [];
+  FThanksLink := Rect(X - Px(2), ATop + Px(4), X + LinkW + Px(2), ATop + AHeadH - Px(4));
+  // Kreuz selbst zeichnen (nicht jede Schrift hat das Zeichen)
+  X := ARight - CloseW;
+  Mid := ATop + AHeadH div 2;
+  K := Px(4);
+  C.Pen.Color := clrTextSoft;
+  C.Pen.Width := Max(1, Px(1));
+  C.Line(X + Px(9) - K, Mid - K, X + Px(9) + K + 1, Mid + K + 1);
+  C.Line(X + Px(9) - K, Mid + K, X + Px(9) + K + 1, Mid - K - 1);
+  C.Pen.Width := 1;
+  FThanksClose := Rect(X, ATop + Px(4), X + CloseW, ATop + AHeadH - Px(4));
+end;
+
+{------------------------------------------------------------------------------
   PaintRechenwegMouseUp
 ------------------------------------------------------------------------------
   Klick in die Kopfzeile des Rechenwegs: auf «Kopieren» kopieren, sonst auf-
@@ -2444,6 +2523,15 @@ procedure TFormMain.PaintRechenwegMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   if Button <> mbLeft then Exit;
+  // Dank-Hinweis: Link öffnet Ko-fi, Kreuz schliesst; beides blendet ihn aus
+  if FThanksOn and (PtInRect(FThanksLink, Point(X, Y)) or PtInRect(FThanksClose, Point(X, Y))) then
+  begin
+    if PtInRect(FThanksLink, Point(X, Y)) then
+      OpenURL(KOFI_URL);
+    FThanksOn := False;
+    PaintRechenweg.Invalidate;
+    Exit;
+  end;
   // Klick auf den Knopf kopiert, sonst klappt die Kopfzeile auf oder zu
   if PtInRect(FCopyBtn, Point(X, Y)) then
     CopyClick(Sender)
@@ -2701,6 +2789,14 @@ end;
 procedure TFormMain.CopyClick(Sender: TObject);
 begin
   Clipboard.AsText := CopyText;
+  // Erster Erfolg in dieser Version: einmal den Dank-Hinweis zeigen
+  if (((FMode = 0) and (FRes.Status = csOk)) or ((FMode = 1) and (FBRes.Status = bsOk)) or
+      ((FMode = 2) and (FKRes.Status = ksOk))) and
+     (ReadViewSetting(INI_KEY_THANKS, 0) < THANKS_VERSION) then
+  begin
+    FThanksOn := True;
+    WriteViewSetting(INI_KEY_THANKS, THANKS_VERSION);
+  end;
   // kurz «Kopiert ✓» anzeigen
   FCopied := True;
   FCopyTimer.Enabled := False;

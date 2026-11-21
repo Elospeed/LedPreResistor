@@ -268,6 +268,14 @@ window.LPR_TEXTS = {
 "Spannung am Widerstand: U_R = U_B − n × U_F = %s − %d × %s = **%s**",
 "Voltage across the resistor: U_R = U_B − n × U_F = %s − %d × %s = **%s**"
 ],
+"rsThanks": [
+"Danke fürs Benutzen! LedPreResistor ist ein Hobbyprojekt aus der Schweiz. Wenn es dir hilft:",
+"Thanks for using it! LedPreResistor is a hobby project from Switzerland. If it helps you:"
+],
+"rsClose": [
+"Schliessen",
+"Close"
+],
 "rsKofi": [
 "Kaffee spendieren",
 "Buy me a coffee"
