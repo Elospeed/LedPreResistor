@@ -21,7 +21,7 @@
   /* ===========================================================================
      KONSTANTEN
      =========================================================================== */
-  var APP_VER = '2.5.2';
+  var APP_VER = '2.6';
   var MAX_U = 60.0, MAX_LEDS = 30, MAX_STRINGS = 20;
   var LED_GLOW = ['#FF2B2B', '#FFD000', '#25E35D', '#2F7DFF', '#FFFFFF', '#9A2A6A'];
   var C = { ok: '#3DDC84', okBack: '#10301E', warn: '#FFCC33', warnBack: '#3A3110', error: '#FF5C5C',
@@ -854,7 +854,7 @@
     $('rechenweg').classList.toggle('open', rwOpen);
     $('rwToggle').setAttribute('aria-expanded', rwOpen ? 'true' : 'false');
     var c = currentLines(), h = '';
-    if (c.ok) c.lines.forEach(function (l, i) { h += '<div class="rw-line"><span class="n">' + (i + 1) + '</span><span class="f">' + rich(l) + '</span></div>'; });
+    if (c.ok) c.lines.forEach(function (l, i) { h += '<div class="rw-line"><span class="n">' + (i + 1) + '</span><span class="f">' + rich(keepUnits(l)) + '</span></div>'; });
     else c.lines.forEach(function (l) { h += '<div class="rw-err">' + rich(l) + '</div>'; });
     var leg = rechenwegLegend();
     if (leg) h += '<div class="rw-legend"><span class="lt">' + esc(_('rsCopyLegend')) + '</span><span>' +

@@ -28,10 +28,13 @@
              steht in src/lang/en.po.
 
   Einstel-   Gewählter Reiter, Blinkschaltung und Konstantstromquelle stehen
-  lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]).
+  lungen:    in LedPreResistor.ini (Abschnitt [Ansicht]), dazu die Version, für die
+             der Hinweis nach dem ersten «Kopieren» schon kam.
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
+  Versionen: 2.6  21.11.2026  Ergebniskarten mit Rand unten; Hinweis in der Kopfzeile des
+                              Rechenwegs nach dem ersten «Kopieren» einer Version
+             2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
                               Auslastung bezieht sich auf ⅛ W, wenn ⅛ W reicht
              2.5.1 17.11.2026 Schaltplan: zweiter Strang direkt an der Quelle;
                               Rechenweg Schritt 6: Aufteilung der Leistung LEDs/Widerstand
@@ -59,7 +62,7 @@ uses
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.5.2';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.6';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
