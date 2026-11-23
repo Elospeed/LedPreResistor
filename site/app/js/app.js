@@ -836,8 +836,8 @@
   function acStatus() {
     if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
     var c = collect(), w = aRes.warnings;
-    if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_('rsAWarnRPower'), F.formatPower(aRes.PR)));
     if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_('rsAWarnDim'), F.formatPercent(aRes.brightness)));
+    if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_('rsAWarnRPower'), F.formatPower(aRes.PR), F.formatNum(Math.ceil(2 * aRes.PR), 0, 0) + ' W'));
     if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));
     if (c.chips.length) {
       var txt = c.texts[0];

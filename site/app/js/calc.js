@@ -457,7 +457,7 @@
      =========================================================================== */
   var AC_FREQ = 50.0, AC_U_MAX = 42.0, AC_I_MAX = 1.0, AC_UD_DIODE = 0.7, AC_BRIDGE_DIODES = 2,
       AC_RIPPLE = 0.2, AC_CAP_MARGIN = 1.25, AC_CAP_BIG = 4700e-6, AC_1N4148_I_PEAK = 0.3,
-      AC_UR_MIN = 1.0, AC_I_REV_MAX = 1.0, AC_DIM_MIN = 0.2;
+      AC_UR_MIN = 1.0, AC_UR_FRAC = 0.25, AC_I_REV_MAX = 1.0, AC_DIM_MIN = 0.2;
   var CAP_DIGITS = [10, 15, 22, 33, 47, 68];                 // Elko-Werte pro Dekade (E6) × 10
   var CAP_VOLTS = [10, 16, 25, 35, 50, 63, 100];             // übliche Nennspannungen (V)
 
@@ -508,8 +508,10 @@
     r.UPeak = inp.U * Math.SQRT2;
     r.ULeds = inp.N * inp.Ud;
     var UDrop = bridge ? AC_BRIDGE_DIODES * AC_UD_DIODE : 0;
-    if (bridge) r.UNeedAc = (r.ULeds + UDrop + AC_UR_MIN * (1 + AC_RIPPLE / 2)) / Math.SQRT2;
-    else r.UNeedAc = (r.ULeds + AC_UR_MIN) / Math.SQRT2;
+    // mindestens 1 V und ein Viertel der Spitze (bzw. Elko-Spannung) am Widerstand
+    if (bridge) r.UNeedAc = (Math.max(r.ULeds + AC_UR_MIN * (1 + AC_RIPPLE / 2),
+      r.ULeds / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Math.SQRT2;
+    else r.UNeedAc = Math.max(r.ULeds + AC_UR_MIN, r.ULeds / (1 - AC_UR_FRAC)) / Math.SQRT2;
     if (inp.U < r.UNeedAc - 1e-9) { r.status = 'uTooLow'; return r; }
 
     if (!bridge) {

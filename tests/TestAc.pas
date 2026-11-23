@@ -216,7 +216,7 @@ begin
   Inp.N := 5;
   R := CalculateAc(Inp);
   AssertTrue('Einfach', R.Status = asUTooLow);
-  AssertEquals('nötig', (16 + 1) / Sqrt(2), R.UNeedAc, 1e-9);
+  AssertEquals('nötig', 16 / 0.75 / Sqrt(2), R.UNeedAc, 1e-6);   // ein Viertel bleibt am R
   Inp.Circuit := acBridge;
   R := CalculateAc(Inp);
   AssertTrue('Elko', R.Status = asUTooLow);
@@ -227,7 +227,8 @@ end;
 ------------------------------------------------------------------------------
   Viele LEDs in «Einfach»: R wird klein, der Rückstrom durch die
   Schutzdiode gross. 16 V~, 4 × 3,2 V: Hinweis «sehr dunkel» (unter 20 %);
-  42 V~, 18 × 3,2 V, 1 A: Rückstrom über 1 A ist ein Fehler.
+  42 V~, 18 × 3,2 V: zu wenig Spannung bleibt am R (Fehler);
+  42 V~, 13 × 3,2 V, 0,5 A: Rückstrom 1,5 A über 1 A ist ein Fehler.
 ------------------------------------------------------------------------------}
 procedure TTestAc.EinfachVieleLeds;
 var
@@ -244,7 +245,10 @@ begin
   AssertTrue('4 LEDs dunkel', awDim in R.Warnings);
   Inp.U := 42;
   Inp.N := 18;
-  Inp.I := 1.0;
+  R := CalculateAc(Inp);
+  AssertTrue('18 LEDs: zu wenig Reserve am R', R.Status = asUTooLow);
+  Inp.N := 13;                                           // 42 V~, 13 LEDs, 0,5 A: R = 39 Ω
+  Inp.I := 0.5;
   R := CalculateAc(Inp);
   AssertTrue('Rückstrom', R.Status = asRevTooHigh);
   AssertTrue('Rückstrom über 1 A', R.IRevPeak > AC_I_REV_MAX);

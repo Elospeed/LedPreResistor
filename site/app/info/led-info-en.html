@@ -484,7 +484,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <div class="cols">
     <div>
       <h3>Simple: with a protection diode</h3>
-      <p>Series resistor plus a diode (1N4148) anti-parallel to the LED: diode cathode to the LED anode. In one half-wave the LED lights, in the other the diode conducts and keeps the reverse voltage at the LED at about 0.7 V. The resistor is chosen so that the peak current is at most the current you entered. Because the LED is lit only part of the time, it is dimmer (about one third) and flickers slightly.</p>
+      <p>Series resistor plus a diode (1N4148) anti-parallel to the LED (1N4007 for large currents): diode cathode to the LED anode. In one half-wave the LED lights, in the other the diode conducts and keeps the reverse voltage at the LED at about 0.7 V. The resistor is chosen so that the peak current is at most the current you entered. Because the LED is lit only part of the time, it is dimmer (about one third) and flickers visibly. To keep the current stable, at least a quarter of the peak must remain across the resistor; otherwise the program reports that the voltage is not enough.</p>
     </div>
     <div>
       <h3>Flicker-free: rectifier and capacitor</h3>

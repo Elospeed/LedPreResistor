@@ -19,6 +19,8 @@
              eingegebene LED-Strom fliesst. Die LED wird so nie
              überlastet, leuchtet aber nur etwa ein Drittel so hell wie mit
              gleich viel Gleichstrom (der mittlere Strom wird angezeigt).
+             Damit das auch bei einem Trafo gilt, der ohne Last mehr liefert,
+             muss mindestens ein Viertel der Spitze am Widerstand bleiben.
              Ohne Flackern: Der Elko lädt sich auf die Spitze (minus zwei
              Diodenspannungen im Gleichrichter) auf und fällt zwischen den
              Ladestössen (100-mal pro Sekunde) nur wenig ab. Er wird so
@@ -106,6 +108,12 @@ const
   // Mindestens so viel Spannung muss am Widerstand übrig bleiben, sonst
   // hängt der Strom zu stark von der LED und vom Trafo ab
   AC_UR_MIN = 1.0;                                       // V
+
+  // Zusätzlich muss mindestens ein Viertel der Spitze (bzw. der Spannung am
+  // Elko) am Widerstand bleiben. Sonst steigt der LED-Strom stark, wenn der
+  // Trafo ohne Last 10 ... 20 % mehr liefert oder die LEDs etwas weniger
+  // Durchlassspannung haben (bei 18 LEDs an 42 V~ sonst bis 5-mal zu viel).
+  AC_UR_FRAC = 0.25;                                     // Anteil
 
   // Höchster Spitzenstrom durch die Schutzdiode (1N4007: 1 A Dauerstrom).
   // Mit vielen LEDs wird R klein, in der negativen Halbwelle liegt dann
@@ -380,9 +388,12 @@ begin
   // Kleinste Trafospannung: LEDs + Gleichrichter + Mindestspannung am R
   // (beim Elko zusätzlich die Brummspannung, siehe 3b)
   if Input.Circuit = acBridge then
-    Result.UNeedAc := (Result.ULeds + UDrop + AC_UR_MIN * (1 + AC_RIPPLE / 2)) / Sqrt(2)
+    // U_R = (U_DC - U_LEDs) / 1,1 >= max(1 V, 0,25 × U_DC)
+    Result.UNeedAc := (Max(Result.ULeds + AC_UR_MIN * (1 + AC_RIPPLE / 2),
+      Result.ULeds / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Sqrt(2)
   else
-    Result.UNeedAc := (Result.ULeds + AC_UR_MIN) / Sqrt(2);
+    // Û - U_LEDs >= max(1 V, 0,25 × Û)
+    Result.UNeedAc := Max(Result.ULeds + AC_UR_MIN, Result.ULeds / (1 - AC_UR_FRAC)) / Sqrt(2);
   if Input.U < Result.UNeedAc - 1e-9 then
   begin
     Result.Status := asUTooLow;

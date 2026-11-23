@@ -684,7 +684,7 @@ resourcestring
   rsAStepB3 = 'Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**';
   rsAStepB4 = 'R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsAStepB5 = 'Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s';
-  rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I LED-Strom · Î Spitzenstrom · D Schutzdiode';
+  rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode';
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
   rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe.';
@@ -693,7 +693,7 @@ resourcestring
   rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
   rsAOkBridge = 'Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)';
   rsAChipRPower = 'Leistungs-R nötig';
-  rsAWarnRPower = 'Der Widerstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen oder den Strom kleiner wählen';
+  rsAWarnRPower = 'Der Widerstand verheizt %s: einen Widerstand mit mindestens %s nehmen oder den Strom kleiner wählen';
   rsAChipBigCap = 'grosser Elko';
   rsAWarnBigCap = 'Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen';
   rsACopyTitle = 'LedPreResistor %s – Wechselstrom: %s';
@@ -706,7 +706,7 @@ resourcestring
   rsErrAUMax = 'Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.';
   rsErrARev = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen.';
   rsAChipDim = 'sehr dunkel';
-  rsAWarnDim = 'Nur %s der Helligkeit, R verheizt den Rest: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
+  rsAWarnDim = 'Nur %s der Helligkeit, die LEDs leiten nur kurz in der Spitze: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
   rsLabelIPeak = 'Spitzenstrom';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
@@ -5909,21 +5909,22 @@ begin
   end;
   // ----- 2. Hinweise -----
   N := 0;
-  if awRPower in FARes.Warnings then
-  begin
-    if N = 0 then
-    begin
-      ChipText := _(rsAChipRPower);
-      Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR)]);
-    end;
-    Inc(N);
-  end;
   if awDim in FARes.Warnings then
   begin
     if N = 0 then
     begin
       ChipText := _(rsAChipDim);
       Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)]);
+    end;
+    Inc(N);
+  end;
+  if awRPower in FARes.Warnings then
+  begin
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipRPower);
+      Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR),
+        FormatNum(Ceil(2 * FARes.PR), 0, 0) + ' W']);  // doppelte Leistung, auf ganze Watt
     end;
     Inc(N);
   end;

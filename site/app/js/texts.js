@@ -1273,8 +1273,8 @@ window.LPR_TEXTS = {
 "Power in R: P = %s × %s = **%s** → %s · in the LEDs: %s"
 ],
 "rsLegendAcS": [
-"U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I LED-Strom · Î Spitzenstrom · D Schutzdiode",
-"U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I LED current · Î peak current · D protection diode"
+"U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode",
+"U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I peak current entered · Î peak current with the standard value · D protection diode"
 ],
 "rsLegendAcB": [
 "U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom",
@@ -1309,8 +1309,8 @@ window.LPR_TEXTS = {
 "Power resistor needed"
 ],
 "rsAWarnRPower": [
-"Der Widerstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen oder den Strom kleiner wählen",
-"The resistor dissipates %s: use a power resistor (2–5 W) or choose a smaller current"
+"Der Widerstand verheizt %s: einen Widerstand mit mindestens %s nehmen oder den Strom kleiner wählen",
+"The resistor dissipates %s: use a resistor rated at least %s or choose a smaller current"
 ],
 "rsAChipBigCap": [
 "grosser Elko",
@@ -1361,8 +1361,8 @@ window.LPR_TEXTS = {
 "very dim"
 ],
 "rsAWarnDim": [
-"Nur %s der Helligkeit, R verheizt den Rest: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
-"Only %s of the brightness, R wastes the rest: fewer LEDs in series or choose «Flicker-free»"
+"Nur %s der Helligkeit, die LEDs leiten nur kurz in der Spitze: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
+"Only %s of the brightness, the LEDs conduct only briefly at the peak: fewer LEDs in series or choose «Flicker-free»"
 ],
 "rsLabelIPeak": [
 "Spitzenstrom",
