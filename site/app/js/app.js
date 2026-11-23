@@ -426,7 +426,7 @@
         // höchster Spitzenstrom, bei dem der Rückstrom sicher reicht (R ≥ R berechnet)
         var iMax = revIMax(aInp.U, aRes.ULeds);
         var bridgeOk = L.calculateAc(Object.assign({}, aInp, { circuit: 'bridge' })).status === 'ok';
-        return fmt(_(bridgeOk ? 'rsErrARev' : 'rsErrARev2'), F.formatNum(aRes.IRevPeak, 2, 2) + ' A',
+        return fmt(_(bridgeOk ? 'rsErrARev' : 'rsErrARev2'), F.formatNum(Math.ceil(aRes.IRevPeak * 100) / 100, 2, 2) + ' A',
           F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A', F.formatMilliAmp(iMax));
       }
       case 'invalidUd': return _('rsErrUd');
@@ -880,7 +880,7 @@
       // «Ohne Flackern» nur nennen, wenn es mit denselben Werten geht
       var bOk = acBridgeOk(), dk = aInp.N > 1 ? (bOk ? 'rsAWarnDim' : 'rsAWarnDim3')
         : (aInp.U >= L.AC_U_MAX - 1e-9 ? 'rsAWarnDim2' : (bOk ? 'rsAWarnDim1' : 'rsAWarnDim4'));
-      c.add(_('rsAChipDim'), fmt(_(dk), F.formatPercent(aRes.brightness)));
+      c.add(_('rsAChipDim'), fmt(_(dk), F.formatPercent(Math.floor(aRes.brightness * 100) / 100)));  // abgerundet: unter 20 %
     }
     if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_(aInp.circuit === 'simple' ? 'rsAWarnRPower' : 'rsAWarnRPowerB'),
       F.formatPower(aRes.PR), acRatingText(aRes.RRating)));

@@ -5604,10 +5604,10 @@ begin
         Alt := FAInput;                                  // geht «Ohne Flackern» mit denselben Werten?
         Alt.Circuit := acBridge;
         if CalculateAc(Alt).Status = asOk then
-          Result := Format(_(rsErrARev), [FormatNum(FARes.IRevPeak, 2, 2) + ' A',
+          Result := Format(_(rsErrARev), [FormatNum(Ceil(FARes.IRevPeak * 100) / 100, 2, 2) + ' A',
             FormatNum(AC_I_REV_MAX, 1, 0) + ' A', FormatMilliAmp(IMax)])
         else
-          Result := Format(_(rsErrARev2), [FormatNum(FARes.IRevPeak, 2, 2) + ' A',
+          Result := Format(_(rsErrARev2), [FormatNum(Ceil(FARes.IRevPeak * 100) / 100, 2, 2) + ' A',
             FormatNum(AC_I_REV_MAX, 1, 0) + ' A', FormatMilliAmp(IMax)]);
       end;
     asInvalidUd: Result := _(rsErrUd);
@@ -6029,15 +6029,15 @@ begin
       ChipText := _(rsAChipDim);
       // «Ohne Flackern» nur nennen, wenn es mit denselben Werten geht
       if (FAInput.N > 1) and BridgeOk then
-        Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)])
+        Txt := Format(_(rsAWarnDim), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])
       else if FAInput.N > 1 then
-        Txt := Format(_(rsAWarnDim3), [FormatPercent(FARes.Brightness)])
+        Txt := Format(_(rsAWarnDim3), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])
       else if FAInput.U >= AC_U_MAX - 1e-9 then
-        Txt := Format(_(rsAWarnDim2), [FormatPercent(FARes.Brightness)])   // mehr Spannung geht nicht
+        Txt := Format(_(rsAWarnDim2), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])   // mehr Spannung geht nicht
       else if BridgeOk then
-        Txt := Format(_(rsAWarnDim1), [FormatPercent(FARes.Brightness)])   // eine LED: mehr Spannung
+        Txt := Format(_(rsAWarnDim1), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])   // eine LED: mehr Spannung
       else
-        Txt := Format(_(rsAWarnDim4), [FormatPercent(FARes.Brightness)]);
+        Txt := Format(_(rsAWarnDim4), [FormatPercent(Floor(FARes.Brightness * 100) / 100)]);
     end;
     Inc(N);
   end;
