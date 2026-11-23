@@ -409,14 +409,19 @@
   }
   function acRatingText(w) { return w > 0 ? F.formatRating(w) : '> 50 W'; }
   // Gleichrichter bzw. Einzeldioden: ab 0,5 A ein stärkerer Typ (Ladestromspitzen)
-  function acBridgeName() { return aInp.I > 0.5 ? 'B80C3200' : 'B80C1500'; }
-  function acBridgeDiode() { return aInp.I > 0.5 ? '1N5408' : '1N4007'; }
+  function acBridgeName() { return aInp.I >= 0.5 ? 'B80C3200' : 'B80C1500'; }
+  function acBridgeDiode() { return aInp.I >= 0.5 ? '1N5408' : '1N4007'; }
   function acStatusText(s) {
     switch (s) {
       case 'invalidU': return fmt(_('rsErrAU'), F.formatVolt(L.AC_U_MAX));
       case 'overVoltage': return fmt(_('rsErrAUMax'), F.formatVolt(L.AC_U_MAX));
-      case 'revTooHigh': return fmt(_('rsErrARev'), F.formatNum(aRes.IRevPeak, 2, 2) + ' A', F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A',
-        F.formatMilliAmp(Math.floor(aInp.I * L.AC_I_REV_MAX / aRes.IRevPeak * 1000) / 1000));
+      case 'revTooHigh': {
+        // höchster Spitzenstrom, bei dem der Rückstrom sicher reicht (R ≥ R berechnet)
+        var iMax = Math.floor(L.AC_I_REV_MAX * (aRes.UPeak - aRes.ULeds) / (aRes.UPeak - L.AC_UD_DIODE) * 1000) / 1000;
+        var bridgeOk = L.calculateAc(Object.assign({}, aInp, { circuit: 'bridge' })).status === 'ok';
+        return fmt(_(bridgeOk ? 'rsErrARev' : 'rsErrARev2'), F.formatNum(aRes.IRevPeak, 2, 2) + ' A',
+          F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A', F.formatMilliAmp(iMax));
+      }
       case 'invalidUd': return _('rsErrUd');
       case 'invalidI': return _('rsErrI');
       case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
@@ -424,7 +429,13 @@
       case 'uTooLow': {
         // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
         var need = F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10);
-        if (aRes.NMax < 1 && aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowMax'), acLedVolt(), F.formatVolt(L.AC_U_MAX));
+        if (aRes.NMax < 1 && aRes.UNeedAc > L.AC_U_MAX) {
+          // wie viele LEDs gingen mit der höchsten erlaubten Spannung?
+          var alt = L.calculateAc(Object.assign({}, aInp, { U: L.AC_U_MAX }));
+          var n42 = alt.status === 'uTooLow' ? alt.NMax : aInp.N;
+          if (aInp.N > 1 && n42 >= 1) return fmt(_('rsErrAUTooLow42'), F.formatVolt(aInp.U), acLedVolt(), F.formatVolt(L.AC_U_MAX), n42);
+          return fmt(_('rsErrAUTooLowMax'), acLedVolt(), F.formatVolt(L.AC_U_MAX));
+        }
         if (aRes.NMax < 1) return fmt(_('rsErrAUTooLow1'), F.formatVolt(aInp.U), acLedVolt(), need);
         if (aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowN'), F.formatVolt(aInp.U), acLedVolt(), aRes.NMax);
         return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), need, aRes.NMax);
@@ -847,7 +858,7 @@
   function acStatus() {
     if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
     var c = collect(), w = aRes.warnings;
-    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_(aInp.N > 1 ? 'rsAWarnDim' : 'rsAWarnDim1'), F.formatPercent(aRes.brightness)));
+    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_(aInp.N > 1 ? 'rsAWarnDim' : (aInp.U >= L.AC_U_MAX - 1e-9 ? 'rsAWarnDim2' : 'rsAWarnDim1')), F.formatPercent(aRes.brightness)));
     if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_(aInp.circuit === 'simple' ? 'rsAWarnRPower' : 'rsAWarnRPowerB'),
       F.formatPower(aRes.PR), acRatingText(aRes.RRating)));
     if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));

@@ -1315,8 +1315,8 @@ msgid "Spitzenstrom"
 msgstr "Peak current"
 
 #: uMain.pas rsErrAUTooLowN
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spitzenspannung muss am Widerstand bleiben)."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the peak voltage must remain across the resistor)."
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (sonst bleibt zu wenig Spannung am Widerstand)."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (otherwise too little voltage remains across the resistor)."
 
 #: uMain.pas rsErrAUTooLow1
 msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
@@ -1333,3 +1333,15 @@ msgstr "R dissipates %s: use a %s type, more LEDs in series or a lower AC voltag
 #: uMain.pas rsErrAUTooLowMax
 msgid "Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen."
 msgstr "For %s at the LEDs even %s~ is not enough: choose LEDs with a lower forward voltage."
+
+#: uMain.pas rsErrARev2
+msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken."
+msgstr "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
+
+#: uMain.pas rsErrAUTooLow42
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ gehen höchstens %d LEDs in Reihe."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ at most %d LEDs in series are possible."
+
+#: uMain.pas rsAWarnDim2
+msgid "Nur %s der Helligkeit: «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: choose «Flicker-free»"

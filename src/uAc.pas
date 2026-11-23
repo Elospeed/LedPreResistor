@@ -83,7 +83,7 @@ const
   // wie beim Gleichstrom höchstens 60 V (Kleinspannung).
   AC_U_MAX = 42.0;                                       // V~
 
-  // Höchster LED-Strom (Gleichrichter z. B. B80C1500, Schutzdiode 1N4007)
+  // Höchster LED-Strom (Gleichrichter ab 0,5 A B80C3200, Schutzdiode 1N4007)
   AC_I_MAX = 1.0;                                        // A
 
   // Durchlassspannung einer Siliziumdiode (Schutzdiode, Gleichrichter)
