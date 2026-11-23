@@ -1285,8 +1285,8 @@ window.LPR_TEXTS = {
 "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 ],
 "rsErrAUTooLow": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe.",
-"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or use fewer LEDs in series."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe.",
+"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or at most %d LEDs in series."
 ],
 "rsErrACurrent": [
 "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
@@ -1367,5 +1367,13 @@ window.LPR_TEXTS = {
 "rsLabelIPeak": [
 "Spitzenstrom",
 "Peak current"
+],
+"rsErrAUTooLowN": [
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben).",
+"The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the voltage must remain across the resistor)."
+],
+"rsErrAUTooLow1": [
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
+"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
 ]
 };

@@ -1230,8 +1230,8 @@ msgid "Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung)."
 msgstr "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 
 #: uMain.pas rsErrAUTooLow
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or use fewer LEDs in series."
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or at most %d LEDs in series."
 
 #: uMain.pas rsErrACurrent
 msgid "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen."
@@ -1313,3 +1313,11 @@ msgstr "Only %s of the brightness, the LEDs conduct only briefly at the peak: fe
 #: uMain.pas rsLabelIPeak
 msgid "Spitzenstrom"
 msgstr "Peak current"
+
+#: uMain.pas rsErrAUTooLowN
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben)."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the voltage must remain across the resistor)."
+
+#: uMain.pas rsErrAUTooLow1
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."

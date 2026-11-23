@@ -509,10 +509,18 @@
     r.ULeds = inp.N * inp.Ud;
     var UDrop = bridge ? AC_BRIDGE_DIODES * AC_UD_DIODE : 0;
     // mindestens 1 V und ein Viertel der Spitze (bzw. Elko-Spannung) am Widerstand
-    if (bridge) r.UNeedAc = (Math.max(r.ULeds + AC_UR_MIN * (1 + AC_RIPPLE / 2),
-      r.ULeds / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Math.SQRT2;
-    else r.UNeedAc = Math.max(r.ULeds + AC_UR_MIN, r.ULeds / (1 - AC_UR_FRAC)) / Math.SQRT2;
-    if (inp.U < r.UNeedAc - 1e-9) { r.status = 'uTooLow'; return r; }
+    function needAc(UL) {
+      if (bridge) return (Math.max(UL + AC_UR_MIN * (1 + AC_RIPPLE / 2),
+        UL / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Math.SQRT2;
+      return Math.max(UL + AC_UR_MIN, UL / (1 - AC_UR_FRAC)) / Math.SQRT2;
+    }
+    r.UNeedAc = needAc(r.ULeds);
+    if (inp.U < r.UNeedAc - 1e-9) {
+      r.status = 'uTooLow';
+      r.NMax = inp.N - 1;                            // so viele LEDs gingen (0 = keine)
+      while (r.NMax > 0 && inp.U < needAc(r.NMax * inp.Ud) - 1e-9) r.NMax--;
+      return r;
+    }
 
     if (!bridge) {
       // ----- 3a. Einfach: Vorwiderstand + Schutzdiode -----

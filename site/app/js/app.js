@@ -417,7 +417,13 @@
       case 'invalidI': return _('rsErrI');
       case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
       case 'tooMuchCurrent': return _('rsErrACurrent');
-      case 'uTooLow': return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10));
+      case 'uTooLow': {
+        // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
+        var need = F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10);
+        if (aRes.NMax < 1) return fmt(_('rsErrAUTooLow1'), F.formatVolt(aInp.U), acLedVolt(), need);
+        if (aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowN'), F.formatVolt(aInp.U), acLedVolt(), aRes.NMax);
+        return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), need, aRes.NMax);
+      }
       case 'noStdValue': return _('rsErrNoStd');
     }
     return '';

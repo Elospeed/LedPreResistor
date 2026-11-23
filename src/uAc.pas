@@ -181,6 +181,7 @@ type
     UPeak: Double;                                       // Spitzenspannung des Trafos Û (V)
     ULeds: Double;                                       // Spannung an allen LEDs zusammen (V)
     UNeedAc: Double;                                     // kleinste Trafospannung, die reicht (V~)
+    NMax: Integer;                                       // bei asUTooLow: so viele LEDs gingen (0 = keine)
     RCalc: Double;                                       // berechneter Widerstand (Ω)
     Std: TStdValue;                                      // Normwert (nächsthöher)
     R: Double;                                           // Normwert (Ω)
@@ -359,6 +360,25 @@ function CalculateAc(const Input: TAcInput): TAcResult;
 var
   UDrop: Double;                                         // Spannung, die vor den LEDs abgeht (Gleichrichter)
   URes: Double;                                          // Spannung am Widerstand (V)
+
+  {----------------------------------------------------------------------------
+    NeedAc
+  ----------------------------------------------------------------------------
+    Kleinste Trafospannung (V~) für ULeds an den LEDs: Gleichrichter und
+    Mindestspannung am R, mindestens 1 V und ein Viertel der Spitze bzw.
+    der Spannung am Elko (beim Elko zusätzlich die Brummspannung, siehe 3b).
+  ----------------------------------------------------------------------------}
+  function NeedAc(ULeds: Double): Double;
+  begin
+    if Input.Circuit = acBridge then
+      // U_R = (U_DC - U_LEDs) / 1,1 >= max(1 V, 0,25 × U_DC)
+      Result := (Max(ULeds + AC_UR_MIN * (1 + AC_RIPPLE / 2),
+        ULeds / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + AC_BRIDGE_DIODES * AC_UD_DIODE) / Sqrt(2)
+    else
+      // Û - U_LEDs >= max(1 V, 0,25 × Û)
+      Result := Max(ULeds + AC_UR_MIN, ULeds / (1 - AC_UR_FRAC)) / Sqrt(2);
+  end;
+
 begin
   Result := Default(TAcResult);                          // alle Werte auf 0, Status = asOk
 
@@ -385,18 +405,14 @@ begin
     UDrop := AC_BRIDGE_DIODES * AC_UD_DIODE              // 1,4 V im Gleichrichter
   else
     UDrop := 0;
-  // Kleinste Trafospannung: LEDs + Gleichrichter + Mindestspannung am R
-  // (beim Elko zusätzlich die Brummspannung, siehe 3b)
-  if Input.Circuit = acBridge then
-    // U_R = (U_DC - U_LEDs) / 1,1 >= max(1 V, 0,25 × U_DC)
-    Result.UNeedAc := (Max(Result.ULeds + AC_UR_MIN * (1 + AC_RIPPLE / 2),
-      Result.ULeds / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Sqrt(2)
-  else
-    // Û - U_LEDs >= max(1 V, 0,25 × Û)
-    Result.UNeedAc := Max(Result.ULeds + AC_UR_MIN, Result.ULeds / (1 - AC_UR_FRAC)) / Sqrt(2);
+  Result.UNeedAc := NeedAc(Result.ULeds);
   if Input.U < Result.UNeedAc - 1e-9 then
   begin
     Result.Status := asUTooLow;
+    // Wie viele LEDs gingen mit dieser Trafospannung? (für die Abhilfe)
+    Result.NMax := Input.N - 1;
+    while (Result.NMax > 0) and (Input.U < NeedAc(Result.NMax * Input.Ud) - 1e-9) do
+      Dec(Result.NMax);
     Exit;
   end;
 

@@ -687,7 +687,9 @@ resourcestring
   rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode';
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
-  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe.';
+  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe.';
+  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben).';
+  rsErrAUTooLow1 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';
   rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
@@ -5565,8 +5567,16 @@ begin
     asInvalidI: Result := _(rsErrI);
     asInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     asTooMuchCurrent: Result := _(rsErrACurrent);
-    asUTooLow: Result := Format(_(rsErrAUTooLow), [FormatVolt(FAInput.U), AcLedVolt,
-      FormatVolt(Ceil(FARes.UNeedAc * 10) / 10)]);
+    asUTooLow:
+      // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
+      if FARes.NMax < 1 then
+        Result := Format(_(rsErrAUTooLow1), [FormatVolt(FAInput.U), AcLedVolt,
+          FormatVolt(Ceil(FARes.UNeedAc * 10) / 10)])
+      else if FARes.UNeedAc > AC_U_MAX then
+        Result := Format(_(rsErrAUTooLowN), [FormatVolt(FAInput.U), AcLedVolt, FARes.NMax])
+      else
+        Result := Format(_(rsErrAUTooLow), [FormatVolt(FAInput.U), AcLedVolt,
+          FormatVolt(Ceil(FARes.UNeedAc * 10) / 10), FARes.NMax]);
     asNoStdValue: Result := _(rsErrNoStd);
   else
     Result := '';

@@ -247,6 +247,7 @@ begin
   Inp.N := 18;
   R := CalculateAc(Inp);
   AssertTrue('18 LEDs: zu wenig Reserve am R', R.Status = asUTooLow);
+  AssertEquals('so viele LEDs gingen', 13, R.NMax);
   Inp.N := 13;                                           // 42 V~, 13 LEDs, 0,5 A: R = 39 Ω
   Inp.I := 0.5;
   R := CalculateAc(Inp);
