@@ -17,6 +17,9 @@
              - NE555 (alle LED-Anschlüsse, mit und ohne Diode),
                Multivibrator, LM317, zwei Transistoren: jede LED in Reihe
                mit ihrem Vorwiderstand an den richtigen Knoten
+             - Wechselstrom: Schutzdiode antiparallel (Kathode an der
+               Anode der ersten LED), Gleichrichter richtig gepolt, Elko
+               mit Plus am Plus des Gleichrichters
 
   Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
              Prozedur unter «published» ist ein Test. Braucht die LCL
@@ -24,7 +27,8 @@
              (im Build-Workflow über xvfb-run).
 
   Autor:     Elospeed
-  Versionen: 2.5.1 17.11.2026  neu
+  Versionen: 2.7  23.11.2026  Wechselstrom (Einfach, Ohne Flackern)
+             2.5.1 17.11.2026  neu
 ==============================================================================}
 unit TestSchaltplan;
 
@@ -64,12 +68,14 @@ type
     procedure Multivibrator;
     procedure KonstantstromLM317;
     procedure KonstantstromTransistoren;
+    procedure WechselstromEinfach;
+    procedure WechselstromElko;
   end;
 
 implementation
 
 uses
-  SysUtils, Types, Graphics, uSchemNetz, uSchematic, uBlink, uBlinkSchematic, uKsqSchematic;
+  SysUtils, Types, Graphics, uSchemNetz, uSchematic, uBlink, uBlinkSchematic, uKsqSchematic, uAcSchematic;
 
 var
   Bild: TBitmap;                                         // Zeichenfläche für alle Tests
@@ -438,6 +444,65 @@ begin
     Verbunden(Plan, 'T2.C', 'T1.B');                     // T2 nimmt T1 den Basisstrom
     Verbunden(Plan, 'T2.B', 'RS.1');                     // Fühler: oberes Ende R_S
     Verbunden(Plan, 'T2.E', 'UB.-');
+  end;
+end;
+
+{==============================================================================
+  WECHSELSTROM
+==============================================================================}
+
+procedure TTestSchaltplan.WechselstromEinfach;
+var
+  V: TAcSchemValues;                                     // Werte des Plans
+  N: Integer;                                            // LEDs in Reihe
+  Plan: string;                                          // Name für die Meldungen
+begin
+  for N in [1, 2, 3, 4, 30] do
+  begin
+    V := Default(TAcSchemValues);
+    V.LedCount := N;
+    V.LedColor := clWhite;
+    Plan := Format('Wechselstrom einfach %d LED', [N]);
+    NetzStart;
+    DrawSchematicAcSimple(Flaeche, Rect(0, 0, 580, 300), V, Farben);
+    NetzStop;
+    PruefeGrundregeln(Plan);
+    Verbunden(Plan, 'TRAFO.1', 'R.1');
+    KsqKette(Plan, N, 'R.2', 'TRAFO.2');
+    // Schutzdiode antiparallel: Kathode an der Anode der ersten LED,
+    // Anode an der Kathode der letzten (sonst schützt sie nicht)
+    Verbunden(Plan, 'D.K', 'LED1.A');
+    Verbunden(Plan, 'D.A', 'TRAFO.2');
+    Getrennt(Plan, 'D.A', 'LED1.A');
+    Getrennt(Plan, 'D.K', 'TRAFO.2');
+  end;
+end;
+
+procedure TTestSchaltplan.WechselstromElko;
+var
+  V: TAcSchemValues;                                     // Werte des Plans
+  N: Integer;                                            // LEDs in Reihe
+  Plan: string;                                          // Name für die Meldungen
+begin
+  for N in [1, 2, 3, 4, 30] do
+  begin
+    V := Default(TAcSchemValues);
+    V.LedCount := N;
+    V.LedColor := clWhite;
+    Plan := Format('Wechselstrom Elko %d LED', [N]);
+    NetzStart;
+    DrawSchematicAcBridge(Flaeche, Rect(0, 0, 580, 300), V, Farben);
+    NetzStop;
+    PruefeGrundregeln(Plan);
+    Verbunden(Plan, 'TRAFO.1', 'GL.~1');                 // Trafo nur an die Wechselspannungs-Anschlüsse
+    Verbunden(Plan, 'TRAFO.2', 'GL.~2');
+    Getrennt(Plan, 'TRAFO.1', 'GL.+');
+    Getrennt(Plan, 'TRAFO.2', 'GL.-');
+    Verbunden(Plan, 'GL.+', 'C.+');                      // Elko richtig gepolt
+    Verbunden(Plan, 'GL.-', 'C.-');
+    Getrennt(Plan, 'GL.+', 'C.-');
+    Verbunden(Plan, 'GL.+', 'R.1');
+    KsqKette(Plan, N, 'R.2', 'GL.-');                    // LEDs mit der Anode zum Plus
   end;
 end;
 

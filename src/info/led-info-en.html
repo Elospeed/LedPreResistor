@@ -211,6 +211,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <a href="#mehrere">Several LEDs</a>
   <a href="#blinken">Blinking circuits</a>
   <a href="#konstantstrom">Constant current</a>
+  <a href="#wechselstrom">AC supply</a>
   <a href="#waerme">Heat &amp; lifetime</a>
   <a href="#geschichte">History</a>
   <a href="#tipps">Practical tips</a>
@@ -474,6 +475,23 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     </div>
   </div>
   <p class="note"><strong>In a car:</strong> The on-board voltage is up to 14.4 V while charging. Calculate the series resistor with this value, otherwise too much current flows with the engine running, or use a constant current source.</p>
+</section>
+
+<section id="wechselstrom">
+  <div class="eyebrow">Model railways and transformers</div>
+  <h2>LEDs on AC voltage</h2>
+  <p>Many model railway transformers have a lighting output with AC voltage, often 16 V~. The voltage changes direction 50 times per second, and its peak is √2 times the stated value: 22.6 V at 16 V~. An LED conducts in one direction only and often withstands only 5 V in reverse. The «AC supply» tab calculates two circuits for this.</p>
+  <div class="cols">
+    <div>
+      <h3>Simple: with a protection diode</h3>
+      <p>Series resistor plus a diode (1N4148) anti-parallel to the LED: diode cathode to the LED anode. In one half-wave the LED lights, in the other the diode conducts and keeps the reverse voltage at the LED at about 0.7 V. The resistor is chosen so that the peak current is at most the current you entered. Because the LED is lit only part of the time, it is dimmer (about one third) and flickers slightly.</p>
+    </div>
+    <div>
+      <h3>Flicker-free: rectifier and capacitor</h3>
+      <p>A bridge rectifier (e.g. B80C1500 or four 1N4007) and an electrolytic capacitor turn it into an almost smooth DC voltage, a little below the peak. The series resistor is then calculated as usual, and the LED lights fully without visible flicker. Fit the capacitor the right way round: plus to «+» of the rectifier. Its voltage rating has a margin, because an unloaded transformer often delivers more than its label says.</p>
+    </div>
+  </div>
+  <p class="note"><strong>Tip:</strong> If you can, measure the transformer voltage and enter that value. Up to 42 V~ (extra-low voltage); mains voltage (230 V) must never go directly to an LED circuit.</p>
 </section>
 
 <section id="waerme">

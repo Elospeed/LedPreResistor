@@ -7,6 +7,16 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.7 – Unveröffentlicht
+
+### Neu
+- Reiter «Wechselstrom» für LEDs an Wechselspannung, z. B. am Lichtausgang eines Modellbahn-Trafos (16 V~):
+  - «Einfach»: Vorwiderstand und Schutzdiode antiparallel zu den LEDs. Der Widerstand ist so gewählt, dass in der Spitze (U × √2) höchstens der eingegebene Strom fliesst; angezeigt werden Spitzen- und Mittelwert des Stroms, die Leistung über beide Halbwellen und die Diode (1N4148, bei grossem Strom 1N4007).
+  - «Ohne Flackern»: Brückengleichrichter und Elko. Der Elko ist so gross, dass der LED-Strom höchstens etwa ±10 % schwankt; seine Spannungsfestigkeit hat 25 % Reserve.
+  - Grenzen: bis 42 V~ (Spitze unter 60 V) und 1 A.
+- Schaltpläne mit Trafo-Symbol, Schutzdiode bzw. Gleichrichter und Elko; der Verbindungstest prüft auch hier Polung und Richtung.
+- LED-Info: neuer Abschnitt «LEDs an Wechselspannung».
+
 ## 2.6 – 21. November 2026
 
 ### Anzeige

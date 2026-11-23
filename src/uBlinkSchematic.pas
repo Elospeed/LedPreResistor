@@ -207,6 +207,14 @@ procedure LedDown(C: TCanvas; const M: TMap; X, Top: Double; Lit: Boolean;
 ------------------------------------------------------------------------------}
 procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
   const Col: TBlinkSchemColors);
+{------------------------------------------------------------------------------
+  CapV
+------------------------------------------------------------------------------
+  Zeichnet einen Kondensator in einer senkrechten Leitung: zwei waagrechte
+  Platten bei Y und Y + 8 (auch für uAcSchematic).
+  Parameter: Elko - True: Plus-Zeichen an die obere Platte
+------------------------------------------------------------------------------}
+procedure CapV(C: TCanvas; const M: TMap; X, Y: Double; Elko: Boolean; const Col: TBlinkSchemColors);
 
 implementation
 

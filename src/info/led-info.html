@@ -211,6 +211,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <a href="#mehrere">Mehrere LEDs</a>
   <a href="#blinken">Blinkschaltungen</a>
   <a href="#konstantstrom">Konstantstrom</a>
+  <a href="#wechselstrom">Wechselstrom</a>
   <a href="#waerme">Wärme &amp; Lebensdauer</a>
   <a href="#geschichte">Entwicklung</a>
   <a href="#tipps">Praxistipps</a>
@@ -474,6 +475,23 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     </div>
   </div>
   <p class="note"><strong>Im Auto:</strong> Die Bordspannung beträgt beim Laden bis 14,4 V. Rechne den Vorwiderstand mit diesem Wert, sonst fliesst bei laufendem Motor zu viel Strom, oder nimm eine Konstantstromquelle.</p>
+</section>
+
+<section id="wechselstrom">
+  <div class="eyebrow">Modellbahn und Trafo</div>
+  <h2>LEDs an Wechselspannung</h2>
+  <p>Viele Modellbahn-Trafos haben einen Lichtausgang mit Wechselspannung, oft 16 V~. Die Spannung wechselt 50-mal pro Sekunde die Richtung, ihre Spitze ist √2-mal so hoch wie der angegebene Wert: bei 16 V~ also 22,6 V. Eine LED leitet nur in einer Richtung und verträgt in Sperrrichtung oft nur 5 V. Im Reiter «Wechselstrom» rechnet das Programm zwei Schaltungen dafür.</p>
+  <div class="cols">
+    <div>
+      <h3>Einfach: mit Schutzdiode</h3>
+      <p>Vorwiderstand und eine Diode (1N4148) antiparallel zur LED: Kathode der Diode an die Anode der LED. In der einen Halbwelle leuchtet die LED, in der anderen leitet die Diode und hält die Sperrspannung an der LED bei etwa 0,7 V. Der Widerstand ist so gewählt, dass in der Spitze höchstens der eingegebene Strom fliesst. Weil die LED nur einen Teil der Zeit leuchtet, ist sie dunkler (etwa ein Drittel) und flackert leicht.</p>
+    </div>
+    <div>
+      <h3>Ohne Flackern: Gleichrichter und Elko</h3>
+      <p>Ein Brückengleichrichter (z. B. B80C1500 oder vier 1N4007) und ein Elko machen daraus eine fast glatte Gleichspannung, etwas unter der Spitze. Danach rechnet der Vorwiderstand wie gewohnt, die LED leuchtet voll und ohne sichtbares Flackern. Den Elko richtig herum einbauen: Plus an «+» des Gleichrichters. Seine Spannungsfestigkeit hat Reserve, weil ein Trafo ohne Last oft mehr liefert als aufgedruckt.</p>
+    </div>
+  </div>
+  <p class="note"><strong>Tipp:</strong> Wenn möglich die Trafospannung messen und diesen Wert eingeben. Bis 42 V~ (Kleinspannung); Netzspannung 230 V gehört nie direkt an eine LED-Schaltung.</p>
 </section>
 
 <section id="waerme">
