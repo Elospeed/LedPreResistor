@@ -1,4 +1,4 @@
-/* texts.js - alle sichtbaren Texte [Deutsch, Englisch], erzeugt aus uMain.pas und lang/en.po (Windows 2.5.2) */
+/* texts.js - alle sichtbaren Texte [Deutsch, Englisch], erzeugt aus uMain.pas und lang/en.po (Windows 2.7) */
 window.LPR_TEXTS = {
 "rsCaption": [
 "LedPreResistor · Elospeed %s",
@@ -1171,5 +1171,181 @@ window.LPR_TEXTS = {
 "rsAbout": [
 "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004.",
 "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware \"LED Pre-Resistor\"."
+],
+"rsTabAc": [
+"Wechselstrom",
+"AC supply"
+],
+"rsLabelTrafo": [
+"Trafospannung",
+"AC voltage"
+],
+"rsAcSimple": [
+"Einfach (mit Schutzdiode)",
+"Simple (protection diode)"
+],
+"rsAcBridge": [
+"Ohne Flackern (mit Elko)",
+"Flicker-free (capacitor)"
+],
+"rsACardIAvg": [
+"Mittlerer LED-Strom",
+"Average LED current"
+],
+"rsACardIAvgSub": [
+"Spitze %s; etwa %s der Helligkeit mit %s Gleichstrom",
+"Peak %s; about %s of the brightness at %s DC"
+],
+"rsACardISubB": [
+"Soll %s; schwankt um ±%s (100 Hz, nicht sichtbar)",
+"Target %s; varies by ±%s (100 Hz, not visible)"
+],
+"rsACardPeak": [
+"Spitzenspannung",
+"Peak voltage"
+],
+"rsACardPeakSub": [
+"%s × √2; ein Trafo ohne Last liefert oft etwas mehr",
+"%s × √2; an unloaded transformer often gives a bit more"
+],
+"rsACardDiode": [
+"Schutzdiode",
+"Protection diode"
+],
+"rsACardDiodeSub": [
+"antiparallel zu den LEDs: Sperrspannung nur %s statt %s",
+"anti-parallel to the LEDs: reverse voltage only %s instead of %s"
+],
+"rsACardCap": [
+"Elko",
+"Capacitor"
+],
+"rsACardCapSub": [
+"mindestens %s; Plus an «+» des Gleichrichters",
+"at least %s; plus to «+» of the rectifier"
+],
+"rsACardBridge": [
+"Gleichrichter",
+"Rectifier"
+],
+"rsACardBridgeSub": [
+"oder 4 × 1N4007; am Elko bis %s",
+"or 4 × 1N4007; up to %s at the capacitor"
+],
+"rsAStepS1": [
+"Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**",
+"Peak voltage: Û = U × √2 = %s × 1.414 = **%s**"
+],
+"rsAStepS2": [
+"In der Spitze höchstens %s: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s**",
+"At most %s at the peak: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → next %s value up: **%s**"
+],
+"rsAStepS3": [
+"Strom nur in einer Halbwelle, solange mehr als %s anliegen: Spitze Î = **%s**, Mittelwert **%s** (ca. %s von %s)",
+"Current flows in one half-wave only, while more than %s is applied: peak Î = **%s**, average **%s** (approx. %s of %s)"
+],
+"rsAStepS4": [
+"Leistung am R über beide Halbwellen (die negative fliesst über D): **%s** → %s",
+"Power in R over both half-waves (the negative one flows through D): **%s** → %s"
+],
+"rsAStepS5": [
+"Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**",
+"Protection diode D: LEDs often withstand only 5 V reverse voltage, with D only %s · current through D up to %s → **%s**"
+],
+"rsAStepB1": [
+"Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**",
+"Rectifier (2 diodes in the current path): U_D_C = U × √2 − 2 × 0.7 V = %s − 1.4 V = **%s**"
+],
+"rsAStepB2": [
+"Elko für ca. ±10 %% Stromschwankung: ΔU = 0,2 × (%s − %s) / 1,1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**",
+"Capacitor for approx. ±10%% current ripple: ΔU = 0.2 × (%s − %s) / 1.1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**"
+],
+"rsAStepB3": [
+"Mittlere Spannung am Elko: U_D_C − ΔU / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**",
+"Average voltage at the capacitor: U_D_C − ΔU / 2 = %s − %s / 2 = **%s** · capacitor voltage at least 1.25 × %s → **%s**"
+],
+"rsAStepB4": [
+"R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**",
+"R = (%s − %s) / %s = %s → next %s value up: **%s** → I = **%s**"
+],
+"rsAStepB5": [
+"Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s",
+"Power in R: P = %s × %s = **%s** → %s · in the LEDs: %s"
+],
+"rsLegendAcS": [
+"U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I LED-Strom · Î Spitzenstrom · D Schutzdiode",
+"U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I LED current · Î peak current · D protection diode"
+],
+"rsLegendAcB": [
+"U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom",
+"U AC voltage (RMS) · U_D_C capacitor voltage (peak) · ΔU ripple voltage · C capacitor · U_L_E_D voltage of all LEDs · I LED current"
+],
+"rsErrAU": [
+"Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).",
+"Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
+],
+"rsErrAUTooLow": [
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
+"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+],
+"rsErrACurrent": [
+"Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
+"More than 1 A is too much for these circuits: choose a smaller current."
+],
+"rsAChipOk": [
+"Schaltung passt",
+"Circuit OK"
+],
+"rsAOkSimple": [
+"Flackert leicht (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen",
+"Flickers slightly (50 Hz) and is dimmer: choose «Flicker-free» for full brightness"
+],
+"rsAOkBridge": [
+"Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)",
+"No visible flicker; fit the capacitor the right way round (plus to «+»)"
+],
+"rsAChipRPower": [
+"R über 1 W",
+"R over 1 W"
+],
+"rsAWarnRPower": [
+"Der Widerstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen oder den Strom kleiner wählen",
+"The resistor dissipates %s: use a power resistor (2–5 W) or choose a smaller current"
+],
+"rsAChipBigCap": [
+"grosser Elko",
+"large capacitor"
+],
+"rsAWarnBigCap": [
+"Der Elko wird sehr gross (%s): kleinerer Strom oder mehr LEDs in Reihe helfen",
+"The capacitor gets very large (%s): a smaller current or more LEDs in series help"
+],
+"rsACopyTitle": [
+"LedPreResistor %s – Wechselstrom: %s",
+"LedPreResistor %s – AC supply: %s"
+],
+"rsACopyInput": [
+"Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s",
+"AC voltage %s~, %d × LED %s with U_F = %s, current %s"
+],
+"rsACopyISimple": [
+"LED-Strom: Spitze %s, Mittelwert %s",
+"LED current: peak %s, average %s"
+],
+"rsACopyDiode": [
+"Schutzdiode antiparallel zu den LEDs: %s",
+"Protection diode anti-parallel to the LEDs: %s"
+],
+"rsACopyCap": [
+"Elko: %s, mindestens %s",
+"Capacitor: %s, at least %s"
+],
+"rsACopyBridge": [
+"Gleichrichter: B80C1500 (oder 4 × 1N4007)",
+"Rectifier: B80C1500 (or 4 × 1N4007)"
+],
+"rsACopyPower": [
+"Leistung am Widerstand: %s → %s",
+"Power in the resistor: %s → %s"
 ]
 };

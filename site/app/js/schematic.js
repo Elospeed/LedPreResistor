@@ -10,12 +10,15 @@
                 multi     Vorlage 600 × 300  (Multivibrator, 2 × BC547)
                 lm317     Vorlage 580 × 300
                 ksqT      Vorlage 600 × 300  (Konstantstrom mit 2 Transistoren)
+                acSimple  Vorlage 580 × 300  (Wechselstrom mit Schutzdiode)
+                acBridge  Vorlage 580 × 300  (Wechselstrom mit Gleichrichter und Elko)
    Polarität: LEDs zeigen mit der Spitze nach unten (Anode oben, Kathode mit
               Querstrich unten), Elkos mit «+» an der Platte zur höheren
               Spannung, NPN mit Emitterpfeil nach aussen, NE555-Pins wie im
               Datenblatt. Jede Lage ist aus der Pascal-Vorlage übernommen.
    Autor:     Elospeed
    Versionen: 2.5.2-html 18.11.2026  erste Fassung
+              2.7        23.11.2026  Wechselstrom (Trafo, Schutzdiode, Gleichrichter)
    ============================================================================== */
 (function (global) {
   'use strict';
@@ -539,6 +542,91 @@
     return P.svg(600, 300);
   }
 
+  /* ==========================================================================
+     WECHSELSTROM (uAcSchematic), Vorlage 580 × 300
+     ========================================================================== */
+  /* Wechselspannungsquelle (Trafo): Kreis r = 22 mit Sinuswelle, Anschlüsse oben und unten */
+  function acSource(P, x, y) {
+    var pts = [], STEPS = 24;
+    P.circle(x, y, 22, COL.body, COL.line, 1.6);
+    for (var i = 0; i <= STEPS; i++) pts.push(x - 13 + 26 * i / STEPS, y - 7 * Math.sin(2 * Math.PI * i / STEPS));
+    P.poly(pts, COL.line, 1.6);
+  }
+  /* Diode von Anode (xa, ya) zur Kathode (xk, yk), beliebige Richtung: Dreieck
+     (18 breit, 16 lang) in der Mitte zeigt zur Kathode, dort der Querstrich */
+  function diodeSeg(P, xa, ya, xk, yk, color) {
+    var l = Math.sqrt((xk - xa) * (xk - xa) + (yk - ya) * (yk - ya));
+    if (l <= 0) return;
+    var dx = (xk - xa) / l, dy = (yk - ya) / l, nx = -dy, ny = dx;
+    var bx = (xa + xk) / 2 - 8 * dx, by = (ya + yk) / 2 - 8 * dy;
+    var tx = (xa + xk) / 2 + 8 * dx, ty = (ya + yk) / 2 + 8 * dy;
+    P.line(xa, ya, bx, by, color, 1.6);
+    P.line(tx, ty, xk, yk, color, 1.6);
+    P.polygon([bx + 9 * nx, by + 9 * ny, bx - 9 * nx, by - 9 * ny, tx, ty], color);
+    P.line(tx + 9 * nx, ty + 9 * ny, tx - 9 * nx, ty - 9 * ny, color, 2.2);
+  }
+  function acLedTop(N) { return N >= 3 ? 156 : (N === 2 ? 168 : 186); }
+  function acLabels(P, V) {
+    P.txt(436, 96, V.RText, COL.accent, 0, true);
+    P.txt(436, 116, V.RSubText, COL.dim, 0, false);
+    if (V.LedCount >= 2) { P.txt(462, 196, V.LedText, COL.text, 0, false); P.txt(462, 216, V.UFText, COL.dim, 0, false); }
+    else { P.txt(462, 198, V.LedText, COL.text, 0, false); P.txt(462, 218, V.UFText, COL.dim, 0, false); }
+  }
+  /* Einfach: Trafo, R, LEDs, Schutzdiode antiparallel (Kathode oben) */
+  function acSimple(V) {
+    var P = new Pen(), C = COL, top, bot;
+    wire(P, [60, 148, 60, 60, 420, 60, 420, 72]);       // Trafo oben -> R
+    wire(P, [60, 192, 60, 280, 420, 280]);              // Trafo unten -> zurück
+    acSource(P, 60, 170);
+    resBands(P, 420, 72, 120, V.Bands);
+    top = acLedTop(V.LedCount);
+    wire(P, [420, 120, 420, top]);
+    bot = ksqLeds(P, 420, top, V);
+    wire(P, [420, bot, 420, 280]);
+    wire(P, [420, 150, 340, 150, 340, 183]);
+    wire(P, [340, 223, 340, 280]);
+    diodeSeg(P, 340, 223, 340, 183, C.line);            // Anode unten, Kathode oben
+    dot(P, 420, 150); dot(P, 340, 280);
+    P.txt(96, 166, V.UText, C.text, 0, false);
+    P.txt(96, 186, V.UPeakText, C.dim, 0, false);
+    P.txt(326, 200, V.DiodeText, C.text, 2, false);
+    P.txt(326, 220, V.DiodeSubText, C.dim, 2, false);
+    acLabels(P, V);
+    return P.svg(580, 300);
+  }
+  /* Ohne Flackern: Trafo, Gleichrichter-Kasten, Elko (Plus oben), R, LEDs */
+  function acBridge(V) {
+    var P = new Pen(), C = COL, top, bot;
+    wire(P, [60, 148, 60, 130, 120, 130]);
+    wire(P, [60, 192, 60, 210, 120, 210]);
+    acSource(P, 60, 170);
+    wire(P, [220, 130, 290, 130, 290, 60, 420, 60, 420, 72]);  // Plus -> R
+    wire(P, [220, 210, 290, 210, 290, 280, 420, 280]);         // Minus -> Rückleitung
+    P.rect(120, 110, 220, 230, C.body, C.line, 1.6);
+    diodeSeg(P, 146, 170, 194, 170, C.line);
+    wire(P, [340, 60, 340, 158]);
+    wire(P, [340, 166, 340, 280]);
+    capV(P, 340, 158, true);
+    dot(P, 340, 60); dot(P, 340, 280);
+    resBands(P, 420, 72, 120, V.Bands);
+    top = acLedTop(V.LedCount);
+    wire(P, [420, 120, 420, top]);
+    bot = ksqLeds(P, 420, top, V);
+    wire(P, [420, bot, 420, 280]);
+    P.txt(60, 254, V.UText, C.text, 1, false);
+    P.txt(60, 274, V.UPeakText, C.dim, 1, false);
+    P.txt(170, 254, V.BridgeText, C.text, 1, false);
+    P.txt(318, 152, V.CapText, C.accent, 2, true);
+    P.txt(318, 172, V.CapSubText, C.accent, 2, false);
+    P.txt(300, 50, V.UDcText, C.dim, 0, false);
+    P.txt(126, 124, '~', C.dim, 0, false, 10);
+    P.txt(126, 226, '~', C.dim, 0, false, 10);
+    P.txt(214, 124, '+', C.dim, 2, false, 10);
+    P.txt(214, 226, '–', C.dim, 2, false, 10);
+    acLabels(P, V);
+    return P.svg(580, 300);
+  }
+
   global.LPRSchem = { COL: COL, BAND: BAND, resistor: resistor, ne555: ne555, multi: multi,
-    lm317: lm317, ksqT: ksqT, resistorSvg: resistorSvg };
+    lm317: lm317, ksqT: ksqT, acSimple: acSimple, acBridge: acBridge, resistorSvg: resistorSvg };
 })(typeof window !== 'undefined' ? window : globalThis);

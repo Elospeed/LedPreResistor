@@ -1,18 +1,20 @@
 /* ==============================================================================
    app.js - Hauptfenster von LedPreResistor (HTML-Version)
    ==============================================================================
-   Zweck:     Übertragung von uMain.pas (Windows 2.5.2): verbindet Eingaben,
-              Rechnung (calc.js) und Anzeige. Drei Reiter:
-                0 Vorwiderstand, 1 Blinkschaltung, 2 Konstantstrom
+   Zweck:     Übertragung von uMain.pas (Windows 2.7): verbindet Eingaben,
+              Rechnung (calc.js) und Anzeige. Vier Reiter:
+                0 Vorwiderstand, 1 Blinkschaltung, 2 Konstantstrom, 3 Wechselstrom
               Gerechnet wird live bei jeder Eingabe.
    Aufbau:    links Eingaben und LED-Vorschau, rechts Schaltplan und vier
               Karten, darunter Statuszeile (mit Ko-fi) und Rechenweg.
-   Tasten:    Strg+1/2/3 bzw. Alt+1/2/3 (Reiter), F1 (LED-Info),
+   Tasten:    Strg+1…4 bzw. Alt+1…4 (Reiter), F1 (LED-Info),
               Strg+Umschalt+C (kopieren), Pfeil hoch/runter in Feldern.
-   Einstel-   Reiter, Blinkschaltung, Konstantstromquelle und Sprache im
+   Einstel-   Reiter, Blinkschaltung, Konstantstromquelle, Wechselstrom-
+              Schaltung und Sprache im
    lungen:    localStorage des Browsers (wie LedPreResistor.ini).
    Autor:     Elospeed
    Versionen: 2.5.2-html 18.11.2026  erste Fassung (Stand Windows 2.5.2)
+              2.7        23.11.2026  Reiter Wechselstrom
    ============================================================================== */
 (function () {
   'use strict';
@@ -21,7 +23,7 @@
   /* ===========================================================================
      KONSTANTEN
      =========================================================================== */
-  var APP_VER = '2.6';
+  var APP_VER = '2.7';
   var MAX_U = 60.0, MAX_LEDS = 30, MAX_STRINGS = 20;
   var LED_GLOW = ['#FF2B2B', '#FFD000', '#25E35D', '#2F7DFF', '#FFFFFF', '#9A2A6A'];
   var C = { ok: '#3DDC84', okBack: '#10301E', warn: '#FFCC33', warnBack: '#3A3110', error: '#FF5C5C',
@@ -47,6 +49,7 @@
   var inp = {}, res = {}, bands = null;              // Vorwiderstand
   var bInp = {}, bRes = {}, bBands1 = null, bBands2 = null;   // Blinkschaltung
   var kInp = {}, kRes = {}, kBands = null, kBandsB = null;    // Konstantstrom
+  var aInp = {}, aRes = {}, aBands = null;                    // Wechselstrom
   var blinkTimer = null, blinkStart = 0, ledLit = true, onLevel = 1.0;
   var ledCache = { key: '', on: null, off: null };
   var copiedTimer = null;
@@ -157,6 +160,7 @@
     fillSelect($('comboCircuit'), ['rsCircuit555', 'rsCircuitMulti']);
     fillSelect($('comboConn'), ['rsConnGnd', 'rsConnVcc', 'rsConnBoth']);
     fillSelect($('comboKsq'), ['rsKsqLM317', 'rsKsqTrans']);
+    fillSelect($('comboAc'), ['rsAcSimple', 'rsAcBridge']);
   }
   function isMulti() { return $('comboCircuit').selectedIndex === 1; }
 
@@ -172,7 +176,7 @@
   function layoutLeft() {
     var box = $('leftRows'), pool = $('pool');
     while (box.firstChild) pool.appendChild(box.firstChild);
-    var blink = mode === 1, ksq = mode === 2, is555 = !isMulti();
+    var blink = mode === 1, ksq = mode === 2, ac = mode === 3, is555 = !isMulti();
     var add = function (el) { box.appendChild(el); };
     $('labelColor').style.display = mode === 0 ? '' : 'none';
     $('fSeries').classList.toggle('k', ksq);
@@ -185,6 +189,13 @@
       add(row('full', ['fColor']));
       add(row('', ['fUd', 'fI']));
       add(row('', ['fSeries', 'fN']));
+    } else if (ac) {
+      add(row('full', ['fAc']));
+      add(row('', ['fU', 'fSeries']));
+      add($('headLed'));
+      add(row('full', ['fColor']));
+      add(row('', ['fUd', 'fI']));
+      add(row('', ['fN']));
     } else if (!blink) {
       add(row('', ['fU', 'fSeries']));
       add(row('full', ['fColor']));
@@ -210,7 +221,8 @@
   /* Beschriftungen, die vom Reiter abhängen (ModeCaptions, UpdateTimingLabels) */
   function modeCaptions() {
     $('headInputs').textContent = mode === 0 ? _('rsHeadInputs') : _('rsHeadCircuit');
-    $('labelU').textContent = mode === 2 ? _('rsLabelFrom') : _('rsLabelU');
+    $('labelU').textContent = mode === 2 ? _('rsLabelFrom') : (mode === 3 ? _('rsLabelTrafo') : _('rsLabelU'));
+    $('unitU').textContent = mode === 3 ? 'V~' : 'V';
     updateTimingLabels();
   }
   function updateTimingLabels() {
@@ -228,7 +240,7 @@
       $('editT1').dataset.step = '-1'; $('editT2').dataset.step = '-1';
     }
     $('labelT3').textContent = 'C'; $('unitT3').textContent = 'µF'; $('editT3').dataset.step = '-2';
-    $('headLed').textContent = mode === 2 ? _('rsHeadLeds') : (is555 ? _('rsHeadLed') : _('rsHeadLeds'));
+    $('headLed').textContent = (mode === 2 || mode === 3) ? _('rsHeadLeds') : (is555 ? _('rsHeadLed') : _('rsHeadLeds'));
     $('modeParts').textContent = _('rsModeParts');
     $('modeRev').textContent = is555 ? _('rsModeFreq') : _('rsModeTimes');
     $('modeParts').classList.toggle('on', !reverse);
@@ -270,6 +282,7 @@
     bands = res.status === 'ok' ? L.colorBands(res.std, inp.series) : null;
     recalcBlink();
     recalcKsq();
+    recalcAc();
     paintAll();
   }
 
@@ -314,6 +327,18 @@
       kBands = L.colorBands(kRes.std, kInp.series);
       if (kInp.circuit === 'trans') kBandsB = L.colorBands(kRes.RBStd, kInp.series);
     }
+  }
+
+  /* Wechselstrom (RecalcAc): Trafospannung direkt aus dem Feld, Grenze 42 V~
+     prüft calculateAc; LED-Werte wie im Reiter «Vorwiderstand» */
+  function recalcAc() {
+    var v;
+    aInp = { circuit: $('comboAc').selectedIndex === 1 ? 'bridge' : 'simple', U: 0,
+             Ud: inp.Ud, I: inp.I, N: inp.N, series: inp.series };
+    v = L.parseDecimal($('editU').value); if (v !== null) aInp.U = v;
+    aRes = L.calculateAc(aInp);
+    aBands = aRes.status === 'ok' ? L.colorBands(aRes.std, aInp.series) : null;
+    if (mode === 3) updateBlink();
   }
 
   /* ===========================================================================
@@ -377,6 +402,23 @@
     return '';
   }
 
+  function acLedVolt() {
+    return aInp.N > 1 ? aInp.N + ' × ' + F.formatVolt(aInp.Ud) : F.formatVolt(aInp.Ud);
+  }
+  function acRatingText(w) { return w > 0 ? F.formatRating(w) : _('rsCardRatingNone'); }
+  function acStatusText(s) {
+    switch (s) {
+      case 'invalidU': case 'overVoltage': return fmt(_('rsErrAU'), F.formatVolt(L.AC_U_MAX));
+      case 'invalidUd': return _('rsErrUd');
+      case 'invalidI': return _('rsErrI');
+      case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
+      case 'tooMuchCurrent': return _('rsErrACurrent');
+      case 'uTooLow': return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10));
+      case 'noStdValue': return _('rsErrNoStd');
+    }
+    return '';
+  }
+
   /* ===========================================================================
      SCHALTPLAN
      =========================================================================== */
@@ -423,8 +465,10 @@
       svg = SCH.resistor(V);
     } else if (mode === 1) {
       svg = blinkSchematic(); wide = true;
-    } else {
+    } else if (mode === 2) {
       svg = ksqSchematic(); wide = true;
+    } else {
+      svg = acSchematic(); wide = true;
     }
     el.innerHTML = svg;
     el.classList.toggle('wide', wide);
@@ -506,6 +550,31 @@
     return kInp.circuit === 'lm317' ? SCH.lm317(V) : SCH.ksqT(V);
   }
 
+  function acSchematic() {
+    var dash = '–', ok = aRes.status === 'ok', V = {}, name = ledColorName();
+    V.UText = 'U = ' + (aInp.U > 0 ? F.formatVolt(aInp.U) + '~' : dash);
+    if (ok) {
+      V.UPeakText = 'Û = ' + F.formatVolt(aRes.UPeak);
+      V.RText = 'R = ' + F.formatOhm(aRes.R);
+      V.RSubText = aInp.circuit === 'simple' ? 'Î = ' + F.formatMilliAmp(aRes.IPeak) : 'I = ' + F.formatMilliAmp(aRes.IAct);
+      V.DiodeText = 'D ' + aRes.diode;
+      V.CapText = 'C = ' + F.formatCap(aRes.C);
+      V.CapSubText = F.formatVolt(aRes.CVolt);
+      V.UDcText = 'U_D_C = ' + F.formatVolt(aRes.UDc);
+      V.Bands = aBands;
+    } else {
+      V.RText = 'R = ' + dash; V.RSubText = ''; V.DiodeText = 'D'; V.CapText = 'C = ' + dash;
+    }
+    V.DiodeSubText = _('rsACardDiode');
+    V.BridgeText = 'B80C1500';
+    if (aInp.N > 1) { V.LedText = fmt(_('rsSchemLedN'), aInp.N, name); V.UFText = fmt(_('rsSchemUFN'), aInp.N, F.formatVolt(aInp.Ud)); }
+    else { V.LedText = fmt(_('rsSchemLed'), name); V.UFText = fmt(_('rsSchemUF'), F.formatVolt(aInp.Ud)); }
+    V.LedCount = aInp.N;
+    V.LedColor = LED_GLOW[currentLed()];
+    V.LedOff = mixColor(V.LedColor, C.deep, 0.22);
+    return aInp.circuit === 'simple' ? SCH.acSimple(V) : SCH.acBridge(V);
+  }
+
   /* ===========================================================================
      KARTEN
      =========================================================================== */
@@ -522,6 +591,7 @@
     el.classList.toggle('res', mode === 0);
     if (mode === 1) h = blinkCards();
     else if (mode === 2) h = ksqCards();
+    else if (mode === 3) h = acCards();
     else {
       var ok = res.status === 'ok', title0 = fmt(_('rsCardStd'), seriesName(inp.series));
       if (ok) {
@@ -650,6 +720,35 @@
     return h;
   }
 
+  /* Karten Wechselstrom (PaintAcCards):
+       Einfach:       Vorwiderstand, mittlerer Strom, Spitzenspannung, Schutzdiode
+       Ohne Flackern: Vorwiderstand, LED-Strom, Elko, Gleichrichter */
+  function acCards() {
+    var ok = aRes.status === 'ok', simple = aInp.circuit === 'simple', h = '', t, sub;
+    t = fmt(_('rsBCardRv'), seriesName(aInp.series));
+    if (ok) {
+      sub = fmt(_('rsKCardRSub'), bandNames(aBands, ' · '), acRatingText(aRes.RRating), F.formatPower(aRes.PR));
+      h += card(t, F.formatOhm(aRes.R), '', C.bright, resistorPic(aBands) + '<div class="rings">' + esc(keepUnits(sub)) + '</div>');
+    } else h += card(t, '–', '');
+    if (!ok) h += card(_('rsKCardI'), '–', '');
+    else if (simple) h += card(_('rsACardIAvg'), F.formatMilliAmp(aRes.IAvg),
+      fmt(_('rsACardIAvgSub'), F.formatMilliAmp(aRes.IPeak), F.formatPercent(aRes.brightness), F.formatMilliAmp(aInp.I)));
+    else h += card(_('rsKCardI'), F.formatMilliAmp(aRes.IAct), fmt(_('rsACardISubB'), F.formatMilliAmp(aInp.I), F.formatPercent(aRes.IRipple)));
+    if (simple) {
+      sub = aInp.U > 0 ? fmt(_('rsACardPeakSub'), F.formatVolt(aInp.U) + '~') : '';
+      h += ok ? card(_('rsACardPeak'), F.formatVolt(aRes.UPeak), sub) : card(_('rsACardPeak'), '–', '');
+      h += ok ? card(_('rsACardDiode'), aRes.diode, fmt(_('rsACardDiodeSub'), F.formatVolt(aRes.URevLed), F.formatVolt(aRes.UPeak)), C.ok)
+              : card(_('rsACardDiode'), '–', '');
+    } else {
+      h += ok ? card(_('rsACardCap'), F.formatCap(aRes.C), fmt(_('rsACardCapSub'), F.formatVolt(aRes.CVolt)),
+                     aRes.warnings.indexOf('bigCap') >= 0 ? C.warn : C.ok)
+              : card(_('rsACardCap'), '–', '');
+      h += ok ? card(_('rsACardBridge'), 'B80C1500', fmt(_('rsACardBridgeSub'), F.formatVolt(aRes.UDc)), C.ok)
+              : card(_('rsACardBridge'), '–', '');
+    }
+    return h;
+  }
+
   /* ===========================================================================
      STATUSZEILE
      =========================================================================== */
@@ -662,6 +761,7 @@
     var s;
     if (mode === 1) s = blinkStatus();
     else if (mode === 2) s = ksqStatus();
+    else if (mode === 3) s = acStatus();
     else if (res.status !== 'ok') s = { chip: '', txt: statusText(res.status), sym: 2, fore: C.error, back: C.errorBack };
     else {
       var lvl = L.loadLevelOf(res.load), txt;
@@ -726,6 +826,20 @@
     else if (kInp.circuit === 'lm317') t = fmt(_('rsKOkRangeL'), F.formatPercent(kRes.RvRise), F.formatVolt(kRes.UMax));
     else t = fmt(_('rsKOkRangeT'), F.formatPercent(kRes.RvRise), F.formatVolt(kRes.UMax), F.formatPercent1(kRes.ksqRise));
     return { chip: _('rsKChipOk'), txt: t, sym: 0, fore: C.ok, back: C.okBack };
+  }
+
+  /* Statuszeile Wechselstrom (AcStatus): Fehler rot, Hinweise gelb, sonst grün */
+  function acStatus() {
+    if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
+    var c = collect(), w = aRes.warnings;
+    if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_('rsAWarnRPower'), F.formatPower(aRes.PR)));
+    if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));
+    if (c.chips.length) {
+      var txt = c.texts[0];
+      if (c.chips.length > 1) txt += fmt(_('rsMoreHints'), c.chips.length - 1);
+      return { chip: c.chips[0], txt: txt, sym: 1, fore: C.warn, back: C.warnBack };
+    }
+    return { chip: _('rsAChipOk'), txt: aInp.circuit === 'simple' ? _('rsAOkSimple') : _('rsAOkBridge'), sym: 0, fore: C.ok, back: C.okBack };
   }
 
   /* ===========================================================================
@@ -827,15 +941,41 @@
     return r;
   }
 
+  function acRechenwegLines() {
+    var R = aRes, I = aInp;
+    if (R.status !== 'ok') return [acStatusText(R.status)];
+    var ser = seriesName(I.series), r = [];
+    if (I.circuit === 'simple') {
+      r.push(fmt(_('rsAStepS1'), F.formatVolt(I.U), F.formatVolt(R.UPeak)));
+      r.push(exactStd(fmt(_('rsAStepS2'), F.formatMilliAmp(I.I), F.formatVolt(R.UPeak), F.formatVolt(R.ULeds), F.formatMilliAmp(I.I),
+        F.formatOhm(R.RCalc), ser, F.formatOhm(R.R)), ser, R.RCalc, R.R));
+      r.push(fmt(_('rsAStepS3'), F.formatVolt(R.ULeds), F.formatMilliAmp(R.IPeak), F.formatMilliAmp(R.IAvg), F.formatPercent(R.brightness),
+        F.formatMilliAmp(I.I)));
+      r.push(fmt(_('rsAStepS4'), F.formatPower(R.PR), acRatingText(R.RRating)));
+      r.push(fmt(_('rsAStepS5'), F.formatVolt(R.URevLed), F.formatMilliAmp(R.IRevPeak), R.diode));
+    } else {
+      r.push(fmt(_('rsAStepB1'), F.formatVolt(R.UPeak), F.formatVolt(R.UDc)));
+      r.push(fmt(_('rsAStepB2'), F.formatVolt(R.UDc), F.formatVolt(R.ULeds), F.formatVolt(R.rippleCalc), F.formatCap(R.CCalc), F.formatCap(R.C)));
+      r.push(fmt(_('rsAStepB3'), F.formatVolt(R.UDc), F.formatVolt(R.ripple), F.formatVolt(R.UMean), F.formatVolt(R.UDc), F.formatVolt(R.CVolt)));
+      r.push(exactStd(fmt(_('rsAStepB4'), F.formatVolt(R.UMean), F.formatVolt(R.ULeds), F.formatMilliAmp(I.I), F.formatOhm(R.RCalc), ser,
+        F.formatOhm(R.R), F.formatMilliAmp(R.IAct)), ser, R.RCalc, R.R));
+      r.push(fmt(_('rsAStepB5'), F.formatVolt(R.UMean - R.ULeds), F.formatMilliAmp(R.IAct), F.formatPower(R.PR), acRatingText(R.RRating),
+        F.formatPower(R.PLeds)));
+    }
+    return r;
+  }
+
   function rechenwegLegend() {
     if (mode === 1) { if (bRes.status !== 'ok') return ''; return bInp.circuit === 'multi' ? _('rsLegendMulti') : _('rsLegend555'); }
     if (mode === 2) { if (kRes.status !== 'ok') return ''; return kInp.circuit === 'lm317' ? _('rsLegendLM') : _('rsLegendKT'); }
+    if (mode === 3) { if (aRes.status !== 'ok') return ''; return aInp.circuit === 'simple' ? _('rsLegendAcS') : _('rsLegendAcB'); }
     if (res.status !== 'ok') return '';
     return inp.N > 1 ? _('rsLegendRN') : _('rsLegendR');
   }
   function currentLines() {
     if (mode === 1) return { lines: blinkRechenwegLines(), ok: bRes.status === 'ok' };
     if (mode === 2) return { lines: ksqRechenwegLines(), ok: kRes.status === 'ok' };
+    if (mode === 3) return { lines: acRechenwegLines(), ok: aRes.status === 'ok' };
     return { lines: rechenwegLines(), ok: res.status === 'ok' };
   }
   function paintRechenweg() {
@@ -901,9 +1041,26 @@
     s.push(fmt(_('rsKCopyNeed'), F.formatVolt(kRes.UNeed)));
     return s.join('\n');
   }
+  function acSummary() {
+    if (aRes.status !== 'ok') return acStatusText(aRes.status).replace(/_/g, '');
+    var s = [];
+    s.push(fmt(_('rsACopyTitle'), APP_VER, selText('comboAc')));
+    s.push(fmt(_('rsACopyInput'), F.formatVolt(aInp.U), aInp.N, ledColorName(), F.formatVolt(aInp.Ud), F.formatMilliAmp(aInp.I)).replace(/_/g, ''));
+    s.push(fmt(_('rsCopyStd'), F.formatOhm(aRes.R), seriesName(aInp.series), bandNames(aBands, '-'), F.formatOhm(aRes.RCalc)));
+    if (aInp.circuit === 'simple') {
+      s.push(fmt(_('rsACopyISimple'), F.formatMilliAmp(aRes.IPeak), F.formatMilliAmp(aRes.IAvg)));
+      s.push(fmt(_('rsACopyDiode'), aRes.diode));
+    } else {
+      s.push(fmt(_('rsCopyCurrent'), F.formatMilliAmp(aRes.IAct)));
+      s.push(fmt(_('rsACopyCap'), F.formatCap(aRes.C), F.formatVolt(aRes.CVolt)));
+      s.push(_('rsACopyBridge'));
+    }
+    s.push(fmt(_('rsACopyPower'), F.formatPower(aRes.PR), acRatingText(aRes.RRating)));
+    return s.join('\n');
+  }
   function copyText() {
     var t, c = currentLines();
-    t = mode === 1 ? blinkSummary() : (mode === 2 ? ksqSummary() : resultSummary());
+    t = mode === 1 ? blinkSummary() : (mode === 2 ? ksqSummary() : (mode === 3 ? acSummary() : resultSummary()));
     if (!c.ok) return t;
     var out = t.split('\n');
     out.push('', _('rsCopySteps'));
@@ -914,11 +1071,11 @@
   }
   /* ---------------------------------------------------------------------------
      Zeile unter dem Rechner: Satz mit Ko-fi-Knopf, dazu einmal pro neuer Haupt-
-     oder Unterversion (2.6 = 206; bei 2.7 auf 207 erhöhen, bei 2.6.1 nicht) ein
+     oder Unterversion (2.7 = 207; bei 2.8 auf 208 erhöhen, bei 2.7.1 nicht) ein
      kleiner, schliessbarer Hinweis, nachdem der Benutzer ein paar Mal (DANK_NACH)
      erfolgreich gerechnet hat. Kein Pop-up, nichts unterbricht die Arbeit.
      --------------------------------------------------------------------------- */
-  var THANKS_VERSION = 206;
+  var THANKS_VERSION = 207;
   var DANK_NACH = 3;                // so viele eigene, gültige Berechnungen
   var dankZaehler = 0, dankTimer = null;
   function dankAnstossen() {
@@ -1007,7 +1164,9 @@
       paintLed();
       return;
     }
-    onLevel = 1.0;
+    // Wechselstrom einfach: LED leuchtet schwächer (mittlerer Strom)
+    onLevel = (mode === 3 && aRes.status === 'ok' && aInp.circuit === 'simple')
+      ? Math.min(1, Math.max(0.15, aRes.brightness)) : 1.0;
     stopTimer();
     ledLit = true;
     paintLed();
@@ -1036,13 +1195,17 @@
     $('colorDot').style.background = LED_GLOW[currentLed()];
   }
   function paintTabs() {
-    var keys = ['rsTabResistor', 'rsTabBlink', 'rsTabKsq'];
-    for (var i = 0; i < 3; i++) {
+    var keys = ['rsTabResistor', 'rsTabBlink', 'rsTabKsq', 'rsTabAc'];
+    for (var i = 0; i < 4; i++) {
       var t = $('tab' + i);
       t.textContent = _(keys[i]);
       t.classList.toggle('on', i === mode);
       t.setAttribute('aria-selected', i === mode ? 'true' : 'false');
     }
+    // schmales Handy: aktiven Reiter sichtbar machen, falls die Zeile rollt
+    var tl = $('tab' + mode).parentNode, at = $('tab' + mode);
+    if (at.offsetLeft < tl.scrollLeft || at.offsetLeft + at.offsetWidth > tl.scrollLeft + tl.clientWidth)
+      tl.scrollLeft = at.offsetLeft - 4;
     $('btnDe').classList.toggle('on', lang === 'de');
     $('btnEn').classList.toggle('on', lang === 'en');
   }
@@ -1119,6 +1282,7 @@
       $('editI').value = '15';
     }
     if (mode === 2) $('editN').value = '2';
+    if (mode === 3) $('editU').value = '16';
     $('checkDiode').checked = false;
     $('checkSym').checked = true;
     $('comboConn').selectedIndex = 0;
@@ -1241,6 +1405,7 @@
     $('comboCircuit').selectedIndex = Math.min(1, Math.max(0, parseInt(readSetting('circuit', '0'), 10) || 0));
     $('comboConn').selectedIndex = 0;
     $('comboKsq').selectedIndex = Math.min(1, Math.max(0, parseInt(readSetting('ksq', '0'), 10) || 0));
+    $('comboAc').selectedIndex = Math.min(1, Math.max(0, parseInt(readSetting('ac', '0'), 10) || 0));
     // Startwerte wie im Formular (uMain.lfm), deutsch geschrieben
     $('editU').value = '12'; $('editUd').value = '3,2'; $('editI').value = '20'; $('editN').value = '1';
     $('editStrings').value = '1'; $('editU2').value = '14,4';
@@ -1263,9 +1428,10 @@
       writeSetting('circuit', $('comboCircuit').selectedIndex);
     });
     $('comboKsq').addEventListener('change', function () { recalc(); writeSetting('ksq', $('comboKsq').selectedIndex); });
+    $('comboAc').addEventListener('change', function () { recalc(); updateBlink(); writeSetting('ac', $('comboAc').selectedIndex); });
     $('modeParts').addEventListener('click', function () { setReverse(false); });
     $('modeRev').addEventListener('click', function () { setReverse(true); });
-    for (var i = 0; i < 3; i++) (function (m) { $('tab' + m).addEventListener('click', function () { if (mode !== m) switchMode(m, true); }); })(i);
+    for (var i = 0; i < 4; i++) (function (m) { $('tab' + m).addEventListener('click', function () { if (mode !== m) switchMode(m, true); }); })(i);
     $('btnDe').addEventListener('click', function () { setLanguage('de'); });
     $('btnEn').addEventListener('click', function () { setLanguage('en'); });
     $('btnReset').addEventListener('click', resetClick);
@@ -1285,7 +1451,7 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !$('about').hidden) { $('about').hidden = true; return; }
       if ((e.key === 'C' || e.key === 'c') && (e.ctrlKey || e.metaKey) && e.shiftKey) { e.preventDefault(); copyClick(); return; }
-      if ((e.ctrlKey || e.altKey) && !e.shiftKey && /^[123]$/.test(e.key)) {
+      if ((e.ctrlKey || e.altKey) && !e.shiftKey && /^[1234]$/.test(e.key)) {
         e.preventDefault();
         var m = parseInt(e.key, 10) - 1;
         if (m !== mode) switchMode(m, true);
@@ -1299,7 +1465,7 @@
       rt = setTimeout(function () { ledCache.key = ''; paintLed(); fitCardValues(); fitSchemForPhone($('schem')); }, 120);
     });
     bindTips();
-    var startMode = Math.min(2, Math.max(0, parseInt(readSetting('tab', '0'), 10) || 0));
+    var startMode = Math.min(3, Math.max(0, parseInt(readSetting('tab', '0'), 10) || 0));
     recalc();
     switchMode(startMode, false);
   }

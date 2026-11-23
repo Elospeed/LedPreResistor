@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LedPreResistor · Elospeed 2.6</title>
-<meta name="description" content="Vorwiderstand, Blinkschaltung und Konstantstromquelle für LEDs berechnen – mit Schaltplan, Farbringen und Rechenweg.">
+<title>LedPreResistor · Elospeed 2.7</title>
+<meta name="description" content="Vorwiderstand, Blinkschaltung, Konstantstromquelle und Wechselstrom-Betrieb für LEDs berechnen – mit Schaltplan, Farbringen und Rechenweg.">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="img/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css">
@@ -18,6 +18,7 @@
       <button class="tab" role="tab" data-mode="0" id="tab0"></button>
       <button class="tab" role="tab" data-mode="1" id="tab1"></button>
       <button class="tab" role="tab" data-mode="2" id="tab2"></button>
+      <button class="tab" role="tab" data-mode="3" id="tab3"></button>
     </div>
     <div class="tab-icons">
       <button class="ico" id="btnReset" aria-label="">
@@ -53,10 +54,11 @@
         <div class="head" id="headTiming"></div>
         <div class="head" id="headLed"></div>
         <div class="field wide" id="fKsq"><div class="in"><select id="comboKsq"></select></div></div>
+        <div class="field wide" id="fAc"><div class="in"><select id="comboAc"></select></div></div>
         <div class="field wide" id="fCircuit"><div class="in"><select id="comboCircuit"></select></div></div>
         <div class="field wide" id="fConn"><div class="in"><select id="comboConn"></select></div></div>
         <div class="field" id="fU"><label for="editU" id="labelU"></label>
-          <div class="in"><input id="editU" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">V</span></div></div>
+          <div class="in"><input id="editU" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit" id="unitU">V</span></div></div>
         <div class="field" id="fU2"><label for="editU2" id="labelU2"></label>
           <div class="in"><input id="editU2" class="num" inputmode="decimal" autocomplete="off" spellcheck="false"><span class="unit">V</span></div></div>
         <div class="field" id="fSeries"><label for="comboSeries" id="labelSeries"></label>
