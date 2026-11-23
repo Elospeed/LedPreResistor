@@ -43,3 +43,10 @@ Grobe Reihenfolge bis Version 2.0. Was gerade läuft, steht in [TODO.md](TODO.md
 2. **Erwärmung** als «+X K über Umgebung» in Statuszeile, Rechenweg und LED-Info. ✔
 3. **Eingabegrenzen** – höchstens 60 V, 30 LEDs in Reihe, 20 Stränge. ✔
 4. **Testversion** unter Wine (100 %, 150 %, 200 %) und in der Windows-11-VM, danach Release 2.5. ✔
+
+## 2.7 – Wechselstrom
+
+1. **Rechenkern** `uAc` – «Einfach» (Vorwiderstand und Schutzdiode) und «Ohne Flackern» (Gleichrichter und Elko), mit Tests und numerischer Nachrechnung. ✔
+2. **Reiter «Wechselstrom»** – Schaltpläne (`uAcSchematic`) mit Verbindungs- und Polungstests, Karten, Rechenweg, Englisch, LED-Info. ✔
+3. **Webversion** – gleicher Reiter in `site/app`. ✔
+4. **Testversion** in der Windows-11-VM (100 %, 125 %, 150 %, 200 %), danach Release 2.7.

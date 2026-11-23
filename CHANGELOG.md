@@ -16,6 +16,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
   - Grenzen: bis 42 V~ (Spitze unter 60 V) und 1 A.
 - Schaltpläne mit Trafo-Symbol, Schutzdiode bzw. Gleichrichter und Elko; der Verbindungstest prüft auch hier Polung und Richtung.
 - LED-Info: neuer Abschnitt «LEDs an Wechselspannung».
+- Webversion: ebenfalls mit dem Reiter «Wechselstrom»; auf dem Handy passen die vier Reiter nebeneinander.
 
 ## 2.6 – 21. November 2026
 
