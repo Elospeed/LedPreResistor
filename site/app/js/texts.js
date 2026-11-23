@@ -1229,8 +1229,8 @@ window.LPR_TEXTS = {
 "Rectifier"
 ],
 "rsACardBridgeSub": [
-"oder 4 × 1N4007; am Elko bis %s",
-"or 4 × 1N4007; up to %s at the capacitor"
+"oder 4 × %s; am Elko bis %s",
+"or 4 × %s; up to %s at the capacitor"
 ],
 "rsAStepS1": [
 "Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**",
@@ -1309,8 +1309,8 @@ window.LPR_TEXTS = {
 "Power resistor needed"
 ],
 "rsAWarnRPower": [
-"Der Widerstand verheizt %s: einen Widerstand mit mindestens %s nehmen oder den Strom kleiner wählen",
-"The resistor dissipates %s: use a resistor rated at least %s or choose a smaller current"
+"R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen",
+"R dissipates %s (mostly in the negative half-wave): use a %s type or a smaller current"
 ],
 "rsAChipBigCap": [
 "grosser Elko",
@@ -1341,8 +1341,8 @@ window.LPR_TEXTS = {
 "Capacitor: %s, at least %s"
 ],
 "rsACopyBridge": [
-"Gleichrichter: B80C1500 (oder 4 × 1N4007)",
-"Rectifier: B80C1500 (or 4 × 1N4007)"
+"Gleichrichter: %s (oder 4 × %s)",
+"Rectifier: %s (or 4 × %s)"
 ],
 "rsACopyPower": [
 "Leistung am Widerstand: %s → %s",
@@ -1353,27 +1353,39 @@ window.LPR_TEXTS = {
 "At most %s~ (extra-low voltage): never connect mains voltage directly to an LED circuit."
 ],
 "rsErrARev": [
-"In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen.",
-"In the negative half-wave %s would flow through the protection diode (over %s): use fewer LEDs in series or choose «Flicker-free»."
+"In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen.",
+"In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s or choose «Flicker-free»."
 ],
 "rsAChipDim": [
 "sehr dunkel",
 "very dim"
 ],
 "rsAWarnDim": [
-"Nur %s der Helligkeit, die LEDs leiten nur kurz in der Spitze: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
-"Only %s of the brightness, the LEDs conduct only briefly at the peak: fewer LEDs in series or choose «Flicker-free»"
+"Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
+"Only %s of the brightness: fewer LEDs in series or choose «Flicker-free»"
 ],
 "rsLabelIPeak": [
 "Spitzenstrom",
 "Peak current"
 ],
 "rsErrAUTooLowN": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben).",
-"The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the voltage must remain across the resistor)."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spitzenspannung muss am Widerstand bleiben).",
+"The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the peak voltage must remain across the resistor)."
 ],
 "rsErrAUTooLow1": [
 "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
 "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+],
+"rsAWarnDim1": [
+"Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen",
+"Only %s of the brightness: a higher AC voltage or choose «Flicker-free»"
+],
+"rsAWarnRPowerB": [
+"R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung",
+"R dissipates %s: use a %s type, more LEDs in series or a lower AC voltage"
+],
+"rsErrAUTooLowMax": [
+"Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen.",
+"For %s at the LEDs even %s~ is not enough: choose LEDs with a lower forward voltage."
 ]
 };

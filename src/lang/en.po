@@ -1173,8 +1173,8 @@ msgid "Gleichrichter"
 msgstr "Rectifier"
 
 #: uMain.pas rsACardBridgeSub
-msgid "oder 4 × 1N4007; am Elko bis %s"
-msgstr "or 4 × 1N4007; up to %s at the capacitor"
+msgid "oder 4 × %s; am Elko bis %s"
+msgstr "or 4 × %s; up to %s at the capacitor"
 
 
 #: uMain.pas rsAStepS1
@@ -1254,8 +1254,8 @@ msgid "Leistungs-R nötig"
 msgstr "Power resistor needed"
 
 #: uMain.pas rsAWarnRPower
-msgid "Der Widerstand verheizt %s: einen Widerstand mit mindestens %s nehmen oder den Strom kleiner wählen"
-msgstr "The resistor dissipates %s: use a resistor rated at least %s or choose a smaller current"
+msgid "R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen"
+msgstr "R dissipates %s (mostly in the negative half-wave): use a %s type or a smaller current"
 
 #: uMain.pas rsAChipBigCap
 msgid "grosser Elko"
@@ -1287,8 +1287,8 @@ msgid "Elko: %s, mindestens %s"
 msgstr "Capacitor: %s, at least %s"
 
 #: uMain.pas rsACopyBridge
-msgid "Gleichrichter: B80C1500 (oder 4 × 1N4007)"
-msgstr "Rectifier: B80C1500 (or 4 × 1N4007)"
+msgid "Gleichrichter: %s (oder 4 × %s)"
+msgstr "Rectifier: %s (or 4 × %s)"
 
 #: uMain.pas rsACopyPower
 msgid "Leistung am Widerstand: %s → %s"
@@ -1299,25 +1299,37 @@ msgid "Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schal
 msgstr "At most %s~ (extra-low voltage): never connect mains voltage directly to an LED circuit."
 
 #: uMain.pas rsErrARev
-msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen."
-msgstr "In the negative half-wave %s would flow through the protection diode (over %s): use fewer LEDs in series or choose «Flicker-free»."
+msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen."
+msgstr "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s or choose «Flicker-free»."
 
 #: uMain.pas rsAChipDim
 msgid "sehr dunkel"
 msgstr "very dim"
 
 #: uMain.pas rsAWarnDim
-msgid "Nur %s der Helligkeit, die LEDs leiten nur kurz in der Spitze: weniger LEDs in Reihe oder «Ohne Flackern» wählen"
-msgstr "Only %s of the brightness, the LEDs conduct only briefly at the peak: fewer LEDs in series or choose «Flicker-free»"
+msgid "Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: fewer LEDs in series or choose «Flicker-free»"
 
 #: uMain.pas rsLabelIPeak
 msgid "Spitzenstrom"
 msgstr "Peak current"
 
 #: uMain.pas rsErrAUTooLowN
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben)."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the voltage must remain across the resistor)."
+msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spitzenspannung muss am Widerstand bleiben)."
+msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (a quarter of the peak voltage must remain across the resistor)."
 
 #: uMain.pas rsErrAUTooLow1
 msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
 msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+
+#: uMain.pas rsAWarnDim1
+msgid "Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: a higher AC voltage or choose «Flicker-free»"
+
+#: uMain.pas rsAWarnRPowerB
+msgid "R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung"
+msgstr "R dissipates %s: use a %s type, more LEDs in series or a lower AC voltage"
+
+#: uMain.pas rsErrAUTooLowMax
+msgid "Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen."
+msgstr "For %s at the LEDs even %s~ is not enough: choose LEDs with a lower forward voltage."

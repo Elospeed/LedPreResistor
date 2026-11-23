@@ -407,12 +407,16 @@
   function acLedVolt() {
     return aInp.N > 1 ? aInp.N + ' × ' + F.formatVolt(aInp.Ud) : F.formatVolt(aInp.Ud);
   }
-  function acRatingText(w) { return w > 0 ? F.formatRating(w) : _('rsCardRatingNone'); }
+  function acRatingText(w) { return w > 0 ? F.formatRating(w) : '> 50 W'; }
+  // Gleichrichter bzw. Einzeldioden: ab 0,5 A ein stärkerer Typ (Ladestromspitzen)
+  function acBridgeName() { return aInp.I > 0.5 ? 'B80C3200' : 'B80C1500'; }
+  function acBridgeDiode() { return aInp.I > 0.5 ? '1N5408' : '1N4007'; }
   function acStatusText(s) {
     switch (s) {
       case 'invalidU': return fmt(_('rsErrAU'), F.formatVolt(L.AC_U_MAX));
       case 'overVoltage': return fmt(_('rsErrAUMax'), F.formatVolt(L.AC_U_MAX));
-      case 'revTooHigh': return fmt(_('rsErrARev'), F.formatNum(aRes.IRevPeak, 1, 1) + ' A', F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A');
+      case 'revTooHigh': return fmt(_('rsErrARev'), F.formatNum(aRes.IRevPeak, 2, 2) + ' A', F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A',
+        F.formatMilliAmp(Math.floor(aInp.I * L.AC_I_REV_MAX / aRes.IRevPeak * 1000) / 1000));
       case 'invalidUd': return _('rsErrUd');
       case 'invalidI': return _('rsErrI');
       case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
@@ -420,6 +424,7 @@
       case 'uTooLow': {
         // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
         var need = F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10);
+        if (aRes.NMax < 1 && aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowMax'), acLedVolt(), F.formatVolt(L.AC_U_MAX));
         if (aRes.NMax < 1) return fmt(_('rsErrAUTooLow1'), F.formatVolt(aInp.U), acLedVolt(), need);
         if (aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowN'), F.formatVolt(aInp.U), acLedVolt(), aRes.NMax);
         return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), need, aRes.NMax);
@@ -576,7 +581,7 @@
       V.RText = 'R = ' + dash; V.RSubText = ''; V.DiodeText = 'D'; V.CapText = 'C = ' + dash;
     }
     V.DiodeSubText = _('rsACardDiode');
-    V.BridgeText = 'B80C1500';
+    V.BridgeText = acBridgeName();
     if (aInp.N > 1) { V.LedText = fmt(_('rsSchemLedN'), aInp.N, name); V.UFText = fmt(_('rsSchemUFN'), aInp.N, F.formatVolt(aInp.Ud)); }
     else { V.LedText = fmt(_('rsSchemLed'), name); V.UFText = fmt(_('rsSchemUF'), F.formatVolt(aInp.Ud)); }
     V.LedCount = aInp.N;
@@ -740,7 +745,7 @@
       sub = fmt(_('rsKCardRSub'), bandNames(aBands, ' · '), acRatingText(aRes.RRating), F.formatPower(aRes.PR));
       h += card(t, F.formatOhm(aRes.R), '', C.bright, resistorPic(aBands) + '<div class="rings">' + esc(keepUnits(sub)) + '</div>');
     } else h += card(t, '–', '');
-    if (!ok) h += card(_('rsKCardI'), '–', '');
+    if (!ok) h += card(simple ? _('rsACardIAvg') : _('rsKCardI'), '–', '');
     else if (simple) h += card(_('rsACardIAvg'), F.formatMilliAmp(aRes.IAvg),
       fmt(_('rsACardIAvgSub'), F.formatMilliAmp(aRes.IPeak), F.formatPercent(aRes.brightness), F.formatMilliAmp(aInp.I)));
     else h += card(_('rsKCardI'), F.formatMilliAmp(aRes.IAct), fmt(_('rsACardISubB'), F.formatMilliAmp(aInp.I), F.formatPercent(aRes.IRipple)));
@@ -753,7 +758,7 @@
       h += ok ? card(_('rsACardCap'), F.formatCap(aRes.C), fmt(_('rsACardCapSub'), F.formatVolt(aRes.CVolt)),
                      aRes.warnings.indexOf('bigCap') >= 0 ? C.warn : C.ok)
               : card(_('rsACardCap'), '–', '');
-      h += ok ? card(_('rsACardBridge'), 'B80C1500', fmt(_('rsACardBridgeSub'), F.formatVolt(aRes.UDc)), C.ok)
+      h += ok ? card(_('rsACardBridge'), acBridgeName(), fmt(_('rsACardBridgeSub'), acBridgeDiode(), F.formatVolt(aRes.UDc)), C.ok)
               : card(_('rsACardBridge'), '–', '');
     }
     return h;
@@ -842,8 +847,9 @@
   function acStatus() {
     if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
     var c = collect(), w = aRes.warnings;
-    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_('rsAWarnDim'), F.formatPercent(aRes.brightness)));
-    if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_('rsAWarnRPower'), F.formatPower(aRes.PR), F.formatNum(Math.ceil(2 * aRes.PR), 0, 0) + ' W'));
+    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_(aInp.N > 1 ? 'rsAWarnDim' : 'rsAWarnDim1'), F.formatPercent(aRes.brightness)));
+    if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_(aInp.circuit === 'simple' ? 'rsAWarnRPower' : 'rsAWarnRPowerB'),
+      F.formatPower(aRes.PR), acRatingText(aRes.RRating)));
     if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));
     if (c.chips.length) {
       var txt = c.texts[0];
@@ -1064,7 +1070,7 @@
     } else {
       s.push(fmt(_('rsCopyCurrent'), F.formatMilliAmp(aRes.IAct)));
       s.push(fmt(_('rsACopyCap'), F.formatCap(aRes.C), F.formatVolt(aRes.CVolt)));
-      s.push(_('rsACopyBridge'));
+      s.push(fmt(_('rsACopyBridge'), acBridgeName(), acBridgeDiode()));
     }
     s.push(fmt(_('rsACopyPower'), F.formatPower(aRes.PR), acRatingText(aRes.RRating)));
     return s.join('\n');
@@ -1177,7 +1183,7 @@
     }
     // Wechselstrom einfach: LED leuchtet schwächer (mittlerer Strom)
     onLevel = (mode === 3 && aRes.status === 'ok' && aInp.circuit === 'simple')
-      ? Math.min(1, Math.max(0.15, aRes.brightness)) : 1.0;
+      ? Math.min(1, Math.max(0.15, aRes.brightness)) : ((mode === 3 && aRes.status !== 'ok') ? 0.15 : 1.0);
     stopTimer();
     ledLit = true;
     paintLed();

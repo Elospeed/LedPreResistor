@@ -157,6 +157,8 @@ begin
   AssertTrue('Status', R.Status = asOk);
   AssertTrue('Diode 1N4007', R.Diode = ad1N4007);
   AssertTrue('Hinweis Leistung', awRPower in R.Warnings);
+  AssertTrue('Leistungswiderstand über 1 W', R.RRating > 1);
+  AssertTrue('mit doppelter Reserve', R.PR <= R.RRating / 2);
 end;
 
 {------------------------------------------------------------------------------

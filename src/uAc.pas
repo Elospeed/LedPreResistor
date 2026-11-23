@@ -19,8 +19,11 @@
              eingegebene LED-Strom fliesst. Die LED wird so nie
              überlastet, leuchtet aber nur etwa ein Drittel so hell wie mit
              gleich viel Gleichstrom (der mittlere Strom wird angezeigt).
-             Damit das auch bei einem Trafo gilt, der ohne Last mehr liefert,
-             muss mindestens ein Viertel der Spitze am Widerstand bleiben.
+             Mindestens ein Viertel der Spitze muss am Widerstand bleiben,
+             sonst steigt der Strom zu stark, wenn die LEDs etwas weniger
+             Spannung brauchen. Ein Trafo ohne Last liefert oft 10 ... 20 %
+             mehr als aufgedruckt: dann fliesst entsprechend mehr Strom.
+             Darum im Programm und in der LED-Info: Spannung messen.
              Ohne Flackern: Der Elko lädt sich auf die Spitze (minus zwei
              Diodenspannungen im Gleichrichter) auf und fällt zwischen den
              Ladestössen (100-mal pro Sekunde) nur wenig ab. Er wird so
@@ -47,7 +50,7 @@
                C      = I / (2 × 50 Hz × ΔU)            -> Normwert darüber (E6)
                U_mitt = U_DC - ΔU / 2                   (mit dem Normwert)
                R      = (U_mitt - U_LEDs) / I
-               Elko-Spannung mindestens 1,25 × U_DC     -> 16, 25, 35, 50, 63, 100 V
+               Elko-Spannung mindestens 1,25 × U_DC     -> 10, 16, 25, 35, 50, 63, 100 V
              Beispiel 16 V~, 1 weisse LED (3,2 V), 20 mA:
                Einfach:       Û = 22,6 V; R = 19,4 V / 20 mA = 971 Ω -> 1 kΩ (E12)
                               Spitze 19,4 mA, Mittel 5,7 mA
@@ -168,7 +171,7 @@ type
 
   // ----- Hinweise zu einem gültigen Resultat -----
   TAcWarning = (
-    awRPower,                                            // Widerstand braucht mehr als 1 W
+    awRPower,                                            // Widerstand braucht mehr als 1 W Bauform (über 0,5 W)
     awBigCap,                                            // Elko über 4700 µF
     awDim                                                // Einfach: unter 20 % der Helligkeit
   );
@@ -186,7 +189,7 @@ type
     Std: TStdValue;                                      // Normwert (nächsthöher)
     R: Double;                                           // Normwert (Ω)
     PR: Double;                                          // mittlere Leistung im Widerstand (W)
-    RRating: Double;                                     // Bauform (W, 0 = über 1 W)
+    RRating: Double;                                     // Bauform (W: ¼ … 50, 0 = über 50 W)
     PLeds: Double;                                       // mittlere Leistung in allen LEDs (W)
 
     // nur Einfach (Halbwelle)
@@ -272,6 +275,9 @@ const
 
   // übliche Nennspannungen von Elkos (V), aufsteigend
   CAP_VOLTS: array[0..6] of Double = (10, 16, 25, 35, 50, 63, 100);
+
+  // übliche Leistungswiderstände (W) über 1 W, aufsteigend
+  AC_POWER_RATINGS: array[0..5] of Double = (2, 3, 5, 10, 25, 50);
 
 {------------------------------------------------------------------------------
   NextCapValue - siehe Interface
@@ -360,6 +366,7 @@ function CalculateAc(const Input: TAcInput): TAcResult;
 var
   UDrop: Double;                                         // Spannung, die vor den LEDs abgeht (Gleichrichter)
   URes: Double;                                          // Spannung am Widerstand (V)
+  I: Integer;                                            // Index in AC_POWER_RATINGS
 
   {----------------------------------------------------------------------------
     NeedAc
@@ -490,7 +497,16 @@ begin
   end;
   Result.RRating := RecommendRating(Result.PR);          // ¼ W, ½ W, 1 W oder 0 = mehr
   if Result.RRating = 0 then
+  begin
+    // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 50 W)
     Include(Result.Warnings, awRPower);
+    for I := Low(AC_POWER_RATINGS) to High(AC_POWER_RATINGS) do
+      if Result.PR <= AC_POWER_RATINGS[I] / 2 then
+      begin
+        Result.RRating := AC_POWER_RATINGS[I];
+        Break;
+      end;
+  end;
 end;
 
 end.

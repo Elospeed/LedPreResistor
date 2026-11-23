@@ -673,7 +673,7 @@ resourcestring
   rsACardCap = 'Elko';
   rsACardCapSub = 'mindestens %s; Plus an «+» des Gleichrichters';
   rsACardBridge = 'Gleichrichter';
-  rsACardBridgeSub = 'oder 4 × 1N4007; am Elko bis %s';
+  rsACardBridgeSub = 'oder 4 × %s; am Elko bis %s';
   rsAStepS1 = 'Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**';
   rsAStepS2 = 'In der Spitze höchstens %s: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s**';
   rsAStepS3 = 'Strom nur in einer Halbwelle, solange mehr als %s anliegen: Spitze Î = **%s**, Mittelwert **%s** (ca. %s von %s)';
@@ -688,14 +688,14 @@ resourcestring
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
   rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe.';
-  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spannung muss am Widerstand bleiben).';
+  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (ein Viertel der Spitzenspannung muss am Widerstand bleiben).';
   rsErrAUTooLow1 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';
   rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
   rsAOkBridge = 'Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)';
   rsAChipRPower = 'Leistungs-R nötig';
-  rsAWarnRPower = 'Der Widerstand verheizt %s: einen Widerstand mit mindestens %s nehmen oder den Strom kleiner wählen';
+  rsAWarnRPower = 'R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen';
   rsAChipBigCap = 'grosser Elko';
   rsAWarnBigCap = 'Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen';
   rsACopyTitle = 'LedPreResistor %s – Wechselstrom: %s';
@@ -703,12 +703,15 @@ resourcestring
   rsACopyISimple = 'LED-Strom: Spitze %s, Mittelwert %s';
   rsACopyDiode = 'Schutzdiode antiparallel zu den LEDs: %s';
   rsACopyCap = 'Elko: %s, mindestens %s';
-  rsACopyBridge = 'Gleichrichter: B80C1500 (oder 4 × 1N4007)';
+  rsACopyBridge = 'Gleichrichter: %s (oder 4 × %s)';
   rsACopyPower = 'Leistung am Widerstand: %s → %s';
+  rsAWarnDim1 = 'Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen';
+  rsAWarnRPowerB = 'R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung';
+  rsErrAUTooLowMax = 'Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen.';
   rsErrAUMax = 'Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.';
-  rsErrARev = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen.';
+  rsErrARev = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen.';
   rsAChipDim = 'sehr dunkel';
-  rsAWarnDim = 'Nur %s der Helligkeit, die LEDs leiten nur kurz in der Spitze: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
+  rsAWarnDim = 'Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
   rsLabelIPeak = 'Spitzenstrom';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
@@ -1785,6 +1788,8 @@ begin
   // Wechselstrom einfach: nur eine Halbwelle, die LED leuchtet schwächer
   if (FMode = 3) and (FARes.Status = asOk) and (FAInput.Circuit = acSimple) then
     Level := EnsureRange(FARes.Brightness, 0.15, 1.0)
+  else if (FMode = 3) and (FARes.Status <> asOk) then
+    Level := 0.15                                        // Fehler: LED fast aus
   else
     Level := 1.0;
   if not SameValue(FOnLevel, Level) then
@@ -5561,15 +5566,18 @@ begin
   case S of
     asInvalidU: Result := Format(_(rsErrAU), [FormatVolt(AC_U_MAX)]);
     asOverVoltage: Result := Format(_(rsErrAUMax), [FormatVolt(AC_U_MAX)]);
-    asRevTooHigh: Result := Format(_(rsErrARev), [FormatNum(FARes.IRevPeak, 1, 1) + ' A',
-      FormatNum(AC_I_REV_MAX, 1, 0) + ' A']);  // Ampere: der Rückstrom ist hier gross
+    asRevTooHigh: Result := Format(_(rsErrARev), [FormatNum(FARes.IRevPeak, 2, 2) + ' A',
+      FormatNum(AC_I_REV_MAX, 1, 0) + ' A',              // Ampere: der Rückstrom ist hier gross
+      FormatMilliAmp(Floor(FAInput.I * AC_I_REV_MAX / FARes.IRevPeak * 1000) / 1000)]);
     asInvalidUd: Result := _(rsErrUd);
     asInvalidI: Result := _(rsErrI);
     asInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     asTooMuchCurrent: Result := _(rsErrACurrent);
     asUTooLow:
       // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
-      if FARes.NMax < 1 then
+      if (FARes.NMax < 1) and (FARes.UNeedAc > AC_U_MAX) then
+        Result := Format(_(rsErrAUTooLowMax), [AcLedVolt, FormatVolt(AC_U_MAX)])
+      else if FARes.NMax < 1 then
         Result := Format(_(rsErrAUTooLow1), [FormatVolt(FAInput.U), AcLedVolt,
           FormatVolt(Ceil(FARes.UNeedAc * 10) / 10)])
       else if FARes.UNeedAc > AC_U_MAX then
@@ -5613,7 +5621,23 @@ end;
 ------------------------------------------------------------------------------}
 function AcRatingText(W: Double): string;
 begin
-  if W > 0 then Result := FormatRating(W) else Result := _(rsCardRatingNone);
+  if W > 0 then Result := FormatRating(W) else Result := '> 50 W';
+end;
+
+{------------------------------------------------------------------------------
+  AcBridgeName, AcBridgeDiode
+------------------------------------------------------------------------------
+  Gleichrichter bzw. Einzeldioden: ab 0,5 A ein stärkerer Typ, damit Reserve
+  für die Ladestromspitzen des Elkos bleibt.
+------------------------------------------------------------------------------}
+function AcBridgeName(I: Double): string;
+begin
+  if I > 0.5 then Result := 'B80C3200' else Result := 'B80C1500';
+end;
+
+function AcBridgeDiode(I: Double): string;
+begin
+  if I > 0.5 then Result := '1N5408' else Result := '1N4007';
 end;
 
 {------------------------------------------------------------------------------
@@ -5705,7 +5729,7 @@ begin
     V.CapText := 'C = ' + Dash;
   end;
   V.DiodeSubText := _(rsACardDiode);
-  V.BridgeText := 'B80C1500';
+  V.BridgeText := AcBridgeName(FAInput.I);
   if FAInput.N > 1 then
   begin
     V.LedText := Format(_(rsSchemLedN), [FAInput.N, LedName]);
@@ -5845,7 +5869,9 @@ begin
             Card(T, '–', '', clrTextBright);
         end;
       1:
-        if not Ok then
+        if not Ok and Simple then
+          Card(_(rsACardIAvg), '–', '', clrTextBright)
+        else if not Ok then
           Card(_(rsKCardI), '–', '', clrTextBright)
         else if Simple then
           Card(_(rsACardIAvg), FormatMilliAmp(FARes.IAvg), Format(_(rsACardIAvgSub),
@@ -5885,7 +5911,8 @@ begin
             Card(_(rsACardDiode), '–', '', clrTextBright);
         end
         else if Ok then
-          Card(_(rsACardBridge), 'B80C1500', Format(_(rsACardBridgeSub), [FormatVolt(FARes.UDc)]), clrOk)
+          Card(_(rsACardBridge), AcBridgeName(FAInput.I), Format(_(rsACardBridgeSub),
+            [AcBridgeDiode(FAInput.I), FormatVolt(FARes.UDc)]), clrOk)
         else
           Card(_(rsACardBridge), '–', '', clrTextBright);
     end;
@@ -5924,7 +5951,10 @@ begin
     if N = 0 then
     begin
       ChipText := _(rsAChipDim);
-      Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)]);
+      if FAInput.N > 1 then
+        Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)])
+      else
+        Txt := Format(_(rsAWarnDim1), [FormatPercent(FARes.Brightness)]);  // eine LED: mehr Spannung
     end;
     Inc(N);
   end;
@@ -5933,8 +5963,10 @@ begin
     if N = 0 then
     begin
       ChipText := _(rsAChipRPower);
-      Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR),
-        FormatNum(Ceil(2 * FARes.PR), 0, 0) + ' W']);  // doppelte Leistung, auf ganze Watt
+      if FAInput.Circuit = acSimple then
+        Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)])
+      else
+        Txt := Format(_(rsAWarnRPowerB), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)]);
     end;
     Inc(N);
   end;
@@ -5991,7 +6023,7 @@ begin
     begin
       SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FARes.IAct)]));
       SL.Add(Format(_(rsACopyCap), [FormatCap(FARes.C), FormatVolt(FARes.CVolt)]));
-      SL.Add(_(rsACopyBridge));
+      SL.Add(Format(_(rsACopyBridge), [AcBridgeName(FAInput.I), AcBridgeDiode(FAInput.I)]));
     end;
     SL.Add(Format(_(rsACopyPower), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)]));
     Result := TrimRight(SL.Text);
