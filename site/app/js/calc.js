@@ -457,7 +457,7 @@
      =========================================================================== */
   var AC_FREQ = 50.0, AC_U_MAX = 42.0, AC_I_MAX = 1.0, AC_UD_DIODE = 0.7, AC_BRIDGE_DIODES = 2,
       AC_RIPPLE = 0.2, AC_CAP_MARGIN = 1.25, AC_CAP_BIG = 4700e-6, AC_1N4148_I_PEAK = 0.3,
-      AC_UR_MIN = 1.0;
+      AC_UR_MIN = 1.0, AC_I_REV_MAX = 1.0, AC_DIM_MIN = 0.2;
   var CAP_DIGITS = [10, 15, 22, 33, 47, 68];                 // Elko-Werte pro Dekade (E6) × 10
   var CAP_VOLTS = [10, 16, 25, 35, 50, 63, 100];             // übliche Nennspannungen (V)
 
@@ -528,6 +528,8 @@
       r.diode = r.IRevPeak <= AC_1N4148_I_PEAK ? '1N4148' : '1N4007';
       r.URevLed = AC_UD_DIODE;
       r.URevDiode = r.ULeds;
+      if (r.IRevPeak > AC_I_REV_MAX + 1e-9) { r.status = 'revTooHigh'; return r; }  // Rückstrom durch D
+      if (r.brightness < AC_DIM_MIN) r.warnings.push('dim');
     } else {
       // ----- 3b. Ohne Flackern: Gleichrichter + Elko -----
       r.UDc = r.UPeak - UDrop;
@@ -663,7 +665,7 @@
     calculateBlink: calculateBlink,
     KSQ_UBE_TC: KSQ_UBE_TC, KSQ_UBE_SENSE: KSQ_UBE_SENSE, partBeta: partBeta,
     calculateKsq: calculateKsq,
-    AC_UD_DIODE: AC_UD_DIODE, AC_U_MAX: AC_U_MAX, AC_I_MAX: AC_I_MAX,
+    AC_UD_DIODE: AC_UD_DIODE, AC_U_MAX: AC_U_MAX, AC_I_MAX: AC_I_MAX, AC_I_REV_MAX: AC_I_REV_MAX,
     nextCapValue: nextCapValue, capVoltage: capVoltage, calculateAc: calculateAc,
     fmtSet: fmtSet, sameValue: sameValue, formatNum: formatNum, formatVolt: formatVolt,
     formatOhm: formatOhm, formatMilliAmp: formatMilliAmp, formatPower: formatPower,

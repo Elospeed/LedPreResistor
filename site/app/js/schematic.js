@@ -619,10 +619,10 @@
     P.txt(318, 152, V.CapText, C.accent, 2, true);
     P.txt(318, 172, V.CapSubText, C.accent, 2, false);
     P.txt(300, 50, V.UDcText, C.dim, 0, false);
-    P.txt(126, 124, '~', C.dim, 0, false, 10);
-    P.txt(126, 226, '~', C.dim, 0, false, 10);
-    P.txt(214, 124, '+', C.dim, 2, false, 10);
-    P.txt(214, 226, '–', C.dim, 2, false, 10);
+    P.txt(126, 126, '~', C.text, 0, false);
+    P.txt(126, 224, '~', C.text, 0, false);
+    P.txt(214, 126, '+', C.text, 2, false);
+    P.txt(214, 224, '\u2212', C.text, 2, false);      // Minuszeichen
     acLabels(P, V);
     return P.svg(580, 300);
   }

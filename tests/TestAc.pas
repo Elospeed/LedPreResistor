@@ -12,7 +12,7 @@
              Prozedur unter «published» ist ein Test.
 
   Autor:     Elospeed
-  Versionen: 2.7  23.11.2026  neu
+  Versionen: 2.7  23.11.2026  neu (mit Rückstrom-Grenze und Hinweis «sehr dunkel»)
 ==============================================================================}
 unit TestAc;
 
@@ -39,6 +39,7 @@ type
     procedure ElkoBeispiel;
     procedure ElkoNormwerte;
     procedure SpannungZuKlein;
+    procedure EinfachVieleLeds;
     procedure Fehler;
   end;
 
@@ -113,7 +114,7 @@ begin
   AssertEquals('Sperrspannung LED', 0.7, R.URevLed, 1e-9);
   AssertEquals('Sperrspannung Diode', 3.2, R.URevDiode, 1e-9);
   AssertEquals('Strom Schutzdiode', 0.021927, R.IRevPeak, 1e-5);
-  AssertEquals('Bauform', 0.5, R.RRating, 1e-9);           // etwa 0,24 W: ¼ W wäre über 50 % ausgelastet
+  AssertEquals('Bauform', 0.5, R.RRating, 1e-9);           // etwa 0,21 W: ¼ W wäre über 50 % ausgelastet
 end;
 
 {------------------------------------------------------------------------------
@@ -219,6 +220,34 @@ begin
   Inp.Circuit := acBridge;
   R := CalculateAc(Inp);
   AssertTrue('Elko', R.Status = asUTooLow);
+end;
+
+{------------------------------------------------------------------------------
+  EinfachVieleLeds
+------------------------------------------------------------------------------
+  Viele LEDs in «Einfach»: R wird klein, der Rückstrom durch die
+  Schutzdiode gross. 16 V~, 4 × 3,2 V: Hinweis «sehr dunkel» (unter 20 %);
+  42 V~, 18 × 3,2 V, 1 A: Rückstrom über 1 A ist ein Fehler.
+------------------------------------------------------------------------------}
+procedure TTestAc.EinfachVieleLeds;
+var
+  Inp: TAcInput;                                         // Eingabe
+  R: TAcResult;                                          // Resultat
+begin
+  Inp := Basis(acSimple);
+  Inp.N := 3;
+  R := CalculateAc(Inp);
+  AssertTrue('3 LEDs hell genug', not (awDim in R.Warnings));
+  Inp.N := 4;
+  R := CalculateAc(Inp);
+  AssertTrue('Status 4', R.Status = asOk);
+  AssertTrue('4 LEDs dunkel', awDim in R.Warnings);
+  Inp.U := 42;
+  Inp.N := 18;
+  Inp.I := 1.0;
+  R := CalculateAc(Inp);
+  AssertTrue('Rückstrom', R.Status = asRevTooHigh);
+  AssertTrue('Rückstrom über 1 A', R.IRevPeak > AC_I_REV_MAX);
 end;
 
 {------------------------------------------------------------------------------

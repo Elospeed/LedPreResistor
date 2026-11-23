@@ -54,7 +54,8 @@
                               I = 16,6 mA
 
   Autor:     Elospeed
-  Versionen: 2.7  23.11.2026  neu: LEDs an Wechselspannung (Einfach, Ohne Flackern)
+  Versionen: 2.7  23.11.2026  neu: LEDs an Wechselspannung (Einfach, Ohne Flackern);
+                              Grenze Rückstrom Schutzdiode, Hinweis «sehr dunkel»
 ==============================================================================}
 unit uAc;
 
@@ -106,6 +107,17 @@ const
   // hängt der Strom zu stark von der LED und vom Trafo ab
   AC_UR_MIN = 1.0;                                       // V
 
+  // Höchster Spitzenstrom durch die Schutzdiode (1N4007: 1 A Dauerstrom).
+  // Mit vielen LEDs wird R klein, in der negativen Halbwelle liegt dann
+  // fast die ganze Spitze an R, und der Rückstrom wird ein Vielfaches des
+  // LED-Stroms. Darüber gibt es den Fehler asRevTooHigh.
+  AC_I_REV_MAX = 1.0;                                    // A
+
+  // Unter diesem Anteil der Helligkeit (mittlerer Strom / eingegebener
+  // Strom) gibt es den Hinweis awDim: der Widerstand verheizt dann fast
+  // alles, und der Strom hängt stark von der echten LED-Spannung ab.
+  AC_DIM_MIN = 0.2;                                      // Anteil
+
 {==============================================================================
   TYPEN
 ==============================================================================}
@@ -142,13 +154,15 @@ type
     asOverVoltage,                                       // über 42 V~ (Kleinspannung)
     asTooMuchCurrent,                                    // über 1 A
     asUTooLow,                                           // Spitze reicht nicht für die LEDs
-    asNoStdValue                                         // kein Normwert gefunden (sollte nicht vorkommen)
+    asNoStdValue,                                        // kein Normwert gefunden (sollte nicht vorkommen)
+    asRevTooHigh                                         // Einfach: Rückstrom durch die Schutzdiode über 1 A
   );
 
   // ----- Hinweise zu einem gültigen Resultat -----
   TAcWarning = (
     awRPower,                                            // Widerstand braucht mehr als 1 W
-    awBigCap                                             // Elko über 4700 µF
+    awBigCap,                                            // Elko über 4700 µF
+    awDim                                                // Einfach: unter 20 % der Helligkeit
   );
   TAcWarnings = set of TAcWarning;                       // mehrere Hinweise gleichzeitig möglich
 
@@ -403,6 +417,13 @@ begin
       Result.Diode := ad1N4007;
     Result.URevLed := AC_UD_DIODE;                       // Diode hält die LEDs bei 0,7 V Sperrspannung
     Result.URevDiode := Result.ULeds;                    // Diode sperrt, solange die LEDs leuchten
+    if Result.IRevPeak > AC_I_REV_MAX + 1e-9 then
+    begin
+      Result.Status := asRevTooHigh;                     // Werte bleiben für die Meldung gesetzt
+      Exit;
+    end;
+    if Result.Brightness < AC_DIM_MIN then
+      Include(Result.Warnings, awDim);
   end
   else
   begin

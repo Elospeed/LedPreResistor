@@ -1250,7 +1250,7 @@ window.LPR_TEXTS = {
 ],
 "rsAStepS5": [
 "Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**",
-"Protection diode D: LEDs often withstand only 5 V reverse voltage, with D only %s · current through D up to %s → **%s**"
+"Protection diode D: LEDs often withstand only 5 V reverse voltage, D limits it to %s · current through D up to %s → **%s**"
 ],
 "rsAStepB1": [
 "Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**",
@@ -1261,8 +1261,8 @@ window.LPR_TEXTS = {
 "Capacitor for approx. ±10%% current ripple: ΔU = 0.2 × (%s − %s) / 1.1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**"
 ],
 "rsAStepB3": [
-"Mittlere Spannung am Elko: U_D_C − ΔU / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**",
-"Average voltage at the capacitor: U_D_C − ΔU / 2 = %s − %s / 2 = **%s** · capacitor voltage at least 1.25 × %s → **%s**"
+"Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**",
+"Average voltage at the capacitor: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · capacitor voltage at least 1.25 × %s → **%s**"
 ],
 "rsAStepB4": [
 "R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**",
@@ -1277,16 +1277,16 @@ window.LPR_TEXTS = {
 "U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I LED current · Î peak current · D protection diode"
 ],
 "rsLegendAcB": [
-"U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom",
-"U AC voltage (RMS) · U_D_C capacitor voltage (peak) · ΔU ripple voltage · C capacitor · U_L_E_D voltage of all LEDs · I LED current"
+"U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom",
+"U AC voltage (RMS) · U_D_C capacitor voltage (peak) · ΔU ripple voltage · ΔU′ ripple with the standard value · C capacitor · U_L_E_D voltage of all LEDs · I LED current"
 ],
 "rsErrAU": [
 "Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).",
 "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 ],
 "rsErrAUTooLow": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
-"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe.",
+"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or use fewer LEDs in series."
 ],
 "rsErrACurrent": [
 "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
@@ -1297,16 +1297,16 @@ window.LPR_TEXTS = {
 "Circuit OK"
 ],
 "rsAOkSimple": [
-"Flackert leicht (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen",
-"Flickers slightly (50 Hz) and is dimmer: choose «Flicker-free» for full brightness"
+"Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen",
+"Visible flicker (50 Hz) and dimmer: choose «Flicker-free» for full brightness"
 ],
 "rsAOkBridge": [
 "Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)",
 "No visible flicker; fit the capacitor the right way round (plus to «+»)"
 ],
 "rsAChipRPower": [
-"R über 1 W",
-"R over 1 W"
+"Leistungs-R nötig",
+"Power resistor needed"
 ],
 "rsAWarnRPower": [
 "Der Widerstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen oder den Strom kleiner wählen",
@@ -1317,8 +1317,8 @@ window.LPR_TEXTS = {
 "large capacitor"
 ],
 "rsAWarnBigCap": [
-"Der Elko wird sehr gross (%s): kleinerer Strom oder mehr LEDs in Reihe helfen",
-"The capacitor gets very large (%s): a smaller current or more LEDs in series help"
+"Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen",
+"The capacitor gets very large (%s): a smaller current, fewer LEDs in series or a higher AC voltage help"
 ],
 "rsACopyTitle": [
 "LedPreResistor %s – Wechselstrom: %s",
@@ -1347,5 +1347,25 @@ window.LPR_TEXTS = {
 "rsACopyPower": [
 "Leistung am Widerstand: %s → %s",
 "Power in the resistor: %s → %s"
+],
+"rsErrAUMax": [
+"Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.",
+"At most %s~ (extra-low voltage): never connect mains voltage directly to an LED circuit."
+],
+"rsErrARev": [
+"In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen.",
+"In the negative half-wave %s would flow through the protection diode (over %s): use fewer LEDs in series or choose «Flicker-free»."
+],
+"rsAChipDim": [
+"sehr dunkel",
+"very dim"
+],
+"rsAWarnDim": [
+"Nur %s der Helligkeit, R verheizt den Rest: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
+"Only %s of the brightness, R wastes the rest: fewer LEDs in series or choose «Flicker-free»"
+],
+"rsLabelIPeak": [
+"Spitzenstrom",
+"Peak current"
 ]
 };

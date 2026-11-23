@@ -48,7 +48,7 @@ type
     CapText: string;                                     // Ohne Flackern: "C = 68 µF"
     CapSubText: string;                                  // Ohne Flackern: "35 V"
     BridgeText: string;                                  // Ohne Flackern: "B80C1500"
-    UDcText: string;                                     // Ohne Flackern: "U_D_C ≈ 19,8 V"
+    UDcText: string;                                     // Ohne Flackern: "U_D_C = 21,2 V" (Spitze am Elko)
     LedText: string;                                     // "2 × LED weiss"
     UFText: string;                                      // "U_F = 2 × 3,2 V"
     LedColor: TColor;                                    // Leuchtfarbe der LEDs
@@ -248,6 +248,8 @@ begin
   // ----- 3. R und LEDs -----
   NetzName('R');
   ResBands(C, M, 420, 72, 120, V.Bands, Col);
+  C.Pen.Color := Col.Line;                               // ResBands lässt dünnen Stift zurück
+  C.Pen.Width := MW(M, 1.6);
   Top := LedTop(V.LedCount);
   Wire(C, M, [420, 120, 420, Top]);
   Bot := LedColumn(C, M, 420, Top, V.LedColor, V.LedCount, Col);
@@ -324,6 +326,8 @@ begin
   // ----- 5. R und LEDs -----
   NetzName('R');
   ResBands(C, M, 420, 72, 120, V.Bands, Col);
+  C.Pen.Color := Col.Line;                               // ResBands lässt dünnen Stift zurück
+  C.Pen.Width := MW(M, 1.6);
   Top := LedTop(V.LedCount);
   Wire(C, M, [420, 120, 420, Top]);
   Bot := LedColumn(C, M, 420, Top, V.LedColor, V.LedCount, Col);
@@ -336,11 +340,11 @@ begin
   Txt(C, M, 318, 152, V.CapText, Col.Accent, 2, True);  // links vom Elko, die Platten reichen bis 326
   Txt(C, M, 318, 172, V.CapSubText, Col.Accent, 2, False);
   Txt(C, M, 300, 50, V.UDcText, Col.Dim, 0, False);
-  C.Font.Height := SmoothFontHeight(7, 10 * M.S);        // Anschlussnamen klein
-  Txt(C, M, 126, 124, '~', Col.Dim, 0, False);
-  Txt(C, M, 126, 226, '~', Col.Dim, 0, False);
-  Txt(C, M, 214, 124, '+', Col.Dim, 2, False);
-  Txt(C, M, 214, 226, '–', Col.Dim, 2, False);
+  C.Font.Height := SmoothFontHeight(8, 12 * M.S);        // Anschlussnamen
+  Txt(C, M, 126, 126, '~', Col.Text, 0, False);
+  Txt(C, M, 126, 224, '~', Col.Text, 0, False);
+  Txt(C, M, 214, 126, '+', Col.Text, 2, False);
+  Txt(C, M, 214, 224, '−', Col.Text, 2, False);       // Minuszeichen U+2212
   C.Font.Height := SmoothFontHeight(9, 12 * M.S);        // Schrift zurücksetzen
   LedLabels(C, M, V, Col);
 end;

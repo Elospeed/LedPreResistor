@@ -223,6 +223,8 @@
     $('headInputs').textContent = mode === 0 ? _('rsHeadInputs') : _('rsHeadCircuit');
     $('labelU').textContent = mode === 2 ? _('rsLabelFrom') : (mode === 3 ? _('rsLabelTrafo') : _('rsLabelU'));
     $('unitU').textContent = mode === 3 ? 'V~' : 'V';
+    // Wechselstrom einfach (Halbwelle): das Feld ist der Spitzenstrom
+    $('labelI').textContent = (mode === 3 && $('comboAc').selectedIndex === 0) ? _('rsLabelIPeak') : _('rsLabelI');
     updateTimingLabels();
   }
   function updateTimingLabels() {
@@ -408,7 +410,9 @@
   function acRatingText(w) { return w > 0 ? F.formatRating(w) : _('rsCardRatingNone'); }
   function acStatusText(s) {
     switch (s) {
-      case 'invalidU': case 'overVoltage': return fmt(_('rsErrAU'), F.formatVolt(L.AC_U_MAX));
+      case 'invalidU': return fmt(_('rsErrAU'), F.formatVolt(L.AC_U_MAX));
+      case 'overVoltage': return fmt(_('rsErrAUMax'), F.formatVolt(L.AC_U_MAX));
+      case 'revTooHigh': return fmt(_('rsErrARev'), F.formatNum(aRes.IRevPeak, 1, 1) + ' A', F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A');
       case 'invalidUd': return _('rsErrUd');
       case 'invalidI': return _('rsErrI');
       case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
@@ -833,6 +837,7 @@
     if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
     var c = collect(), w = aRes.warnings;
     if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_('rsAWarnRPower'), F.formatPower(aRes.PR)));
+    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_('rsAWarnDim'), F.formatPercent(aRes.brightness)));
     if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));
     if (c.chips.length) {
       var txt = c.texts[0];
@@ -1428,7 +1433,7 @@
       writeSetting('circuit', $('comboCircuit').selectedIndex);
     });
     $('comboKsq').addEventListener('change', function () { recalc(); writeSetting('ksq', $('comboKsq').selectedIndex); });
-    $('comboAc').addEventListener('change', function () { recalc(); updateBlink(); writeSetting('ac', $('comboAc').selectedIndex); });
+    $('comboAc').addEventListener('change', function () { modeCaptions(); recalc(); updateBlink(); writeSetting('ac', $('comboAc').selectedIndex); });
     $('modeParts').addEventListener('click', function () { setReverse(false); });
     $('modeRev').addEventListener('click', function () { setReverse(true); });
     for (var i = 0; i < 4; i++) (function (m) { $('tab' + m).addEventListener('click', function () { if (mode !== m) switchMode(m, true); }); })(i);

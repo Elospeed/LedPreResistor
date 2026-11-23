@@ -681,21 +681,21 @@ resourcestring
   rsAStepS5 = 'Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**';
   rsAStepB1 = 'Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**';
   rsAStepB2 = 'Elko für ca. ±10 %% Stromschwankung: ΔU = 0,2 × (%s − %s) / 1,1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**';
-  rsAStepB3 = 'Mittlere Spannung am Elko: U_D_C − ΔU / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**';
+  rsAStepB3 = 'Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**';
   rsAStepB4 = 'R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
   rsAStepB5 = 'Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s';
   rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I LED-Strom · Î Spitzenstrom · D Schutzdiode';
-  rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
+  rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
-  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
+  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';
-  rsAOkSimple = 'Flackert leicht (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
+  rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
   rsAOkBridge = 'Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)';
-  rsAChipRPower = 'R über 1 W';
+  rsAChipRPower = 'Leistungs-R nötig';
   rsAWarnRPower = 'Der Widerstand verheizt %s: einen Leistungswiderstand (2–5 W) nehmen oder den Strom kleiner wählen';
   rsAChipBigCap = 'grosser Elko';
-  rsAWarnBigCap = 'Der Elko wird sehr gross (%s): kleinerer Strom oder mehr LEDs in Reihe helfen';
+  rsAWarnBigCap = 'Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen';
   rsACopyTitle = 'LedPreResistor %s – Wechselstrom: %s';
   rsACopyInput = 'Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s';
   rsACopyISimple = 'LED-Strom: Spitze %s, Mittelwert %s';
@@ -703,6 +703,11 @@ resourcestring
   rsACopyCap = 'Elko: %s, mindestens %s';
   rsACopyBridge = 'Gleichrichter: B80C1500 (oder 4 × 1N4007)';
   rsACopyPower = 'Leistung am Widerstand: %s → %s';
+  rsErrAUMax = 'Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.';
+  rsErrARev = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (über %s): weniger LEDs in Reihe oder «Ohne Flackern» wählen.';
+  rsAChipDim = 'sehr dunkel';
+  rsAWarnDim = 'Nur %s der Helligkeit, R verheizt den Rest: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
+  rsLabelIPeak = 'Spitzenstrom';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -4937,6 +4942,11 @@ begin
     LabelU.Caption := _(rsLabelU);
   end;
   if FMode = 3 then LabelUUnit.Caption := 'V~' else LabelUUnit.Caption := 'V';
+  // Einfach (Halbwelle): das Feld ist der Spitzenstrom, der Mittelwert ist kleiner
+  if (FMode = 3) and (ComboAc.ItemIndex = Ord(acSimple)) then
+    LabelI.Caption := _(rsLabelIPeak)
+  else
+    LabelI.Caption := _(rsLabelI);
   UpdateTimingLabels;                                    // Kopf «LEDS» bzw. «LED AM AUSGANG»
 end;
 
@@ -5497,6 +5507,7 @@ end;
 procedure TFormMain.AcCircuitChange(Sender: TObject);
 begin
   if FUpdating then Exit;
+  ModeCaptions;                                          // Feld «Spitzenstrom» bzw. «LED-Strom»
   Recalc;
   WriteViewSetting(INI_KEY_AC, ComboAc.ItemIndex);
   DankAnstossen;                                         // eigene Eingabe des Benutzers
@@ -5546,7 +5557,10 @@ end;
 function TFormMain.AcStatusText(S: TAcStatus): string;
 begin
   case S of
-    asInvalidU, asOverVoltage: Result := Format(_(rsErrAU), [FormatVolt(AC_U_MAX)]);
+    asInvalidU: Result := Format(_(rsErrAU), [FormatVolt(AC_U_MAX)]);
+    asOverVoltage: Result := Format(_(rsErrAUMax), [FormatVolt(AC_U_MAX)]);
+    asRevTooHigh: Result := Format(_(rsErrARev), [FormatNum(FARes.IRevPeak, 1, 1) + ' A',
+      FormatNum(AC_I_REV_MAX, 1, 0) + ' A']);  // Ampere: der Rückstrom ist hier gross
     asInvalidUd: Result := _(rsErrUd);
     asInvalidI: Result := _(rsErrI);
     asInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
@@ -5897,8 +5911,20 @@ begin
   N := 0;
   if awRPower in FARes.Warnings then
   begin
-    ChipText := _(rsAChipRPower);
-    Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR)]);
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipRPower);
+      Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR)]);
+    end;
+    Inc(N);
+  end;
+  if awDim in FARes.Warnings then
+  begin
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipDim);
+      Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)]);
+    end;
     Inc(N);
   end;
   if awBigCap in FARes.Warnings then
@@ -5907,11 +5933,11 @@ begin
     begin
       ChipText := _(rsAChipBigCap);
       Txt := Format(_(rsAWarnBigCap), [FormatCap(FARes.C)]);
-    end
-    else
-      Txt := Txt + Format(_(rsMoreHints), [1]);
+    end;
     Inc(N);
   end;
+  if N > 1 then
+    Txt := Txt + Format(_(rsMoreHints), [N - 1]);    // weitere Hinweise nur gezählt
   if N > 0 then
   begin
     Sym := 1;
