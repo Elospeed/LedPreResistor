@@ -1285,8 +1285,8 @@ window.LPR_TEXTS = {
 "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 ],
 "rsErrAUTooLow": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe.",
-"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or at most %d LEDs in series."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe (höchstens %d).",
+"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or fewer LEDs in series (at most %d)."
 ],
 "rsErrACurrent": [
 "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
@@ -1369,8 +1369,8 @@ window.LPR_TEXTS = {
 "Peak current"
 ],
 "rsErrAUTooLowN": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (sonst bleibt zu wenig Spannung am Widerstand).",
-"The AC voltage %s~ is not enough for %s at the LEDs: at most %d LEDs in series (otherwise too little voltage remains across the resistor)."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d), sonst bleibt zu wenig Spannung am Widerstand.",
+"The AC voltage %s~ is not enough for %s at the LEDs: fewer LEDs in series (at most %d), otherwise too little voltage remains across the resistor."
 ],
 "rsErrAUTooLow1": [
 "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
@@ -1393,11 +1393,27 @@ window.LPR_TEXTS = {
 "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
 ],
 "rsErrAUTooLow42": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ gehen höchstens %d LEDs in Reihe.",
-"The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ at most %d LEDs in series are possible."
+"Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs in Reihe (höchstens %d).",
+"The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ only fewer LEDs in series (at most %d)."
 ],
 "rsAWarnDim2": [
 "Nur %s der Helligkeit: «Ohne Flackern» wählen",
 "Only %s of the brightness: choose «Flicker-free»"
+],
+"rsErrAAlsoCurrent": [
+" Dann zusätzlich den Spitzenstrom auf höchstens %s senken (Rückstrom durch die Schutzdiode).",
+" Then also lower the peak current to at most %s (reverse current through the protection diode)."
+],
+"rsAWarnDim3": [
+"Nur %s der Helligkeit: weniger LEDs in Reihe",
+"Only %s of the brightness: fewer LEDs in series"
+],
+"rsAWarnDim4": [
+"Nur %s der Helligkeit: mehr Trafospannung",
+"Only %s of the brightness: a higher AC voltage"
+],
+"rsAOkSimple2": [
+"Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht",
+"Visible flicker (50 Hz) and dimmer; the AC voltage is not enough for «Flicker-free»"
 ]
 };

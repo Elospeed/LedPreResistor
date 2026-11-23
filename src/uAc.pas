@@ -189,7 +189,7 @@ type
     Std: TStdValue;                                      // Normwert (nächsthöher)
     R: Double;                                           // Normwert (Ω)
     PR: Double;                                          // mittlere Leistung im Widerstand (W)
-    RRating: Double;                                     // Bauform (W: ¼ … 50, 0 = über 50 W)
+    RRating: Double;                                     // Bauform (W: ¼ … 100, 0 = über 100 W)
     PLeds: Double;                                       // mittlere Leistung in allen LEDs (W)
 
     // nur Einfach (Halbwelle)
@@ -277,7 +277,7 @@ const
   CAP_VOLTS: array[0..6] of Double = (10, 16, 25, 35, 50, 63, 100);
 
   // übliche Leistungswiderstände (W) über 1 W, aufsteigend
-  AC_POWER_RATINGS: array[0..5] of Double = (2, 3, 5, 10, 25, 50);
+  AC_POWER_RATINGS: array[0..6] of Double = (2, 3, 5, 10, 25, 50, 100);
 
 {------------------------------------------------------------------------------
   NextCapValue - siehe Interface
@@ -498,7 +498,7 @@ begin
   Result.RRating := RecommendRating(Result.PR);          // ¼ W, ½ W, 1 W oder 0 = mehr
   if Result.RRating = 0 then
   begin
-    // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 50 W)
+    // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 100 W)
     Include(Result.Warnings, awRPower);
     for I := Low(AC_POWER_RATINGS) to High(AC_POWER_RATINGS) do
       if Result.PR <= AC_POWER_RATINGS[I] / 2 then

@@ -407,7 +407,14 @@
   function acLedVolt() {
     return aInp.N > 1 ? aInp.N + ' × ' + F.formatVolt(aInp.Ud) : F.formatVolt(aInp.Ud);
   }
-  function acRatingText(w) { return w > 0 ? F.formatRating(w) : '> 50 W'; }
+  function acRatingText(w) { return w > 0 ? F.formatRating(w) : '> 100 W'; }
+  /* höchster Spitzenstrom (A, auf 1 mA abgerundet), bei dem der Rückstrom durch die
+     Schutzdiode 1 A nicht übersteigt: R ≥ R berechnet, also I_D ≤ I × (Û − 0,7) / (Û − U_LEDs) */
+  function revIMax(UAc, ULeds) {
+    var up = UAc * Math.SQRT2;
+    return Math.floor(L.AC_I_REV_MAX * (up - ULeds) / (up - L.AC_UD_DIODE) * 1000) / 1000;
+  }
+  function acBridgeOk() { return L.calculateAc(Object.assign({}, aInp, { circuit: 'bridge' })).status === 'ok'; }
   // Gleichrichter bzw. Einzeldioden: ab 0,5 A ein stärkerer Typ (Ladestromspitzen)
   function acBridgeName() { return aInp.I >= 0.5 ? 'B80C3200' : 'B80C1500'; }
   function acBridgeDiode() { return aInp.I >= 0.5 ? '1N5408' : '1N4007'; }
@@ -417,7 +424,7 @@
       case 'overVoltage': return fmt(_('rsErrAUMax'), F.formatVolt(L.AC_U_MAX));
       case 'revTooHigh': {
         // höchster Spitzenstrom, bei dem der Rückstrom sicher reicht (R ≥ R berechnet)
-        var iMax = Math.floor(L.AC_I_REV_MAX * (aRes.UPeak - aRes.ULeds) / (aRes.UPeak - L.AC_UD_DIODE) * 1000) / 1000;
+        var iMax = revIMax(aInp.U, aRes.ULeds);
         var bridgeOk = L.calculateAc(Object.assign({}, aInp, { circuit: 'bridge' })).status === 'ok';
         return fmt(_(bridgeOk ? 'rsErrARev' : 'rsErrARev2'), F.formatNum(aRes.IRevPeak, 2, 2) + ' A',
           F.formatNum(L.AC_I_REV_MAX, 1, 0) + ' A', F.formatMilliAmp(iMax));
@@ -427,18 +434,29 @@
       case 'invalidN': return fmt(_('rsErrN'), MAX_LEDS);
       case 'tooMuchCurrent': return _('rsErrACurrent');
       case 'uTooLow': {
-        // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
-        var need = F.formatVolt(Math.ceil(aRes.UNeedAc * 10) / 10);
+        // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs. Bei «Einfach»
+        // prüfen, ob dort der Rückstrom reicht (iMax = kleinster zulässiger Spitzenstrom).
+        var needV = Math.ceil(aRes.UNeedAc * 10) / 10, need = F.formatVolt(needV), t, iMax = 1;
         if (aRes.NMax < 1 && aRes.UNeedAc > L.AC_U_MAX) {
           // wie viele LEDs gingen mit der höchsten erlaubten Spannung?
           var alt = L.calculateAc(Object.assign({}, aInp, { U: L.AC_U_MAX }));
           var n42 = alt.status === 'uTooLow' ? alt.NMax : aInp.N;
-          if (aInp.N > 1 && n42 >= 1) return fmt(_('rsErrAUTooLow42'), F.formatVolt(aInp.U), acLedVolt(), F.formatVolt(L.AC_U_MAX), n42);
-          return fmt(_('rsErrAUTooLowMax'), acLedVolt(), F.formatVolt(L.AC_U_MAX));
+          if (aInp.N > 1 && n42 >= 1) {
+            t = fmt(_('rsErrAUTooLow42'), F.formatVolt(aInp.U), acLedVolt(), F.formatVolt(L.AC_U_MAX), n42);
+            iMax = revIMax(L.AC_U_MAX, n42 * aInp.Ud);
+          } else t = fmt(_('rsErrAUTooLowMax'), acLedVolt(), F.formatVolt(L.AC_U_MAX));
+        } else if (aRes.NMax < 1) {
+          t = fmt(_('rsErrAUTooLow1'), F.formatVolt(aInp.U), acLedVolt(), need);
+          iMax = revIMax(needV, aRes.ULeds);
+        } else if (aRes.UNeedAc > L.AC_U_MAX) {
+          t = fmt(_('rsErrAUTooLowN'), F.formatVolt(aInp.U), acLedVolt(), aRes.NMax);
+          iMax = revIMax(aInp.U, aRes.NMax * aInp.Ud);
+        } else {
+          t = fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), need, aRes.NMax);
+          iMax = Math.min(revIMax(needV, aRes.ULeds), revIMax(aInp.U, aRes.NMax * aInp.Ud));
         }
-        if (aRes.NMax < 1) return fmt(_('rsErrAUTooLow1'), F.formatVolt(aInp.U), acLedVolt(), need);
-        if (aRes.UNeedAc > L.AC_U_MAX) return fmt(_('rsErrAUTooLowN'), F.formatVolt(aInp.U), acLedVolt(), aRes.NMax);
-        return fmt(_('rsErrAUTooLow'), F.formatVolt(aInp.U), acLedVolt(), need, aRes.NMax);
+        if (aInp.circuit === 'simple' && iMax < aInp.I) t += fmt(_('rsErrAAlsoCurrent'), F.formatMilliAmp(iMax));
+        return t;
       }
       case 'noStdValue': return _('rsErrNoStd');
     }
@@ -858,7 +876,12 @@
   function acStatus() {
     if (aRes.status !== 'ok') return { chip: '', txt: acStatusText(aRes.status), sym: 2, fore: C.error, back: C.errorBack };
     var c = collect(), w = aRes.warnings;
-    if (w.indexOf('dim') >= 0) c.add(_('rsAChipDim'), fmt(_(aInp.N > 1 ? 'rsAWarnDim' : (aInp.U >= L.AC_U_MAX - 1e-9 ? 'rsAWarnDim2' : 'rsAWarnDim1')), F.formatPercent(aRes.brightness)));
+    if (w.indexOf('dim') >= 0) {
+      // «Ohne Flackern» nur nennen, wenn es mit denselben Werten geht
+      var bOk = acBridgeOk(), dk = aInp.N > 1 ? (bOk ? 'rsAWarnDim' : 'rsAWarnDim3')
+        : (aInp.U >= L.AC_U_MAX - 1e-9 ? 'rsAWarnDim2' : (bOk ? 'rsAWarnDim1' : 'rsAWarnDim4'));
+      c.add(_('rsAChipDim'), fmt(_(dk), F.formatPercent(aRes.brightness)));
+    }
     if (w.indexOf('rPower') >= 0) c.add(_('rsAChipRPower'), fmt(_(aInp.circuit === 'simple' ? 'rsAWarnRPower' : 'rsAWarnRPowerB'),
       F.formatPower(aRes.PR), acRatingText(aRes.RRating)));
     if (w.indexOf('bigCap') >= 0) c.add(_('rsAChipBigCap'), fmt(_('rsAWarnBigCap'), F.formatCap(aRes.C)));
@@ -867,7 +890,7 @@
       if (c.chips.length > 1) txt += fmt(_('rsMoreHints'), c.chips.length - 1);
       return { chip: c.chips[0], txt: txt, sym: 1, fore: C.warn, back: C.warnBack };
     }
-    return { chip: _('rsAChipOk'), txt: aInp.circuit === 'simple' ? _('rsAOkSimple') : _('rsAOkBridge'), sym: 0, fore: C.ok, back: C.okBack };
+    return { chip: _('rsAChipOk'), txt: aInp.circuit === 'simple' ? _(acBridgeOk() ? 'rsAOkSimple' : 'rsAOkSimple2') : _('rsAOkBridge'), sym: 0, fore: C.ok, back: C.okBack };
   }
 
   /* ===========================================================================

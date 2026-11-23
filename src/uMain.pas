@@ -687,8 +687,8 @@ resourcestring
   rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode';
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
-  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder höchstens %d LEDs in Reihe.';
-  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: höchstens %d LEDs in Reihe (sonst bleibt zu wenig Spannung am Widerstand).';
+  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe (höchstens %d).';
+  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d), sonst bleibt zu wenig Spannung am Widerstand.';
   rsErrAUTooLow1 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';
@@ -705,8 +705,12 @@ resourcestring
   rsACopyCap = 'Elko: %s, mindestens %s';
   rsACopyBridge = 'Gleichrichter: %s (oder 4 × %s)';
   rsACopyPower = 'Leistung am Widerstand: %s → %s';
+  rsErrAAlsoCurrent = ' Dann zusätzlich den Spitzenstrom auf höchstens %s senken (Rückstrom durch die Schutzdiode).';
+  rsAWarnDim3 = 'Nur %s der Helligkeit: weniger LEDs in Reihe';
+  rsAWarnDim4 = 'Nur %s der Helligkeit: mehr Trafospannung';
+  rsAOkSimple2 = 'Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht';
   rsErrARev2 = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken.';
-  rsErrAUTooLow42 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ gehen höchstens %d LEDs in Reihe.';
+  rsErrAUTooLow42 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs in Reihe (höchstens %d).';
   rsAWarnDim2 = 'Nur %s der Helligkeit: «Ohne Flackern» wählen';
   rsAWarnDim1 = 'Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen';
   rsAWarnRPowerB = 'R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung';
@@ -5565,7 +5569,25 @@ end;
   Fehlertext zum Status der Wechselstrom-Schaltung
 ------------------------------------------------------------------------------}
 function TFormMain.AcStatusText(S: TAcStatus): string;
+
+  {----------------------------------------------------------------------------
+    RevIMax
+  ----------------------------------------------------------------------------
+    Höchster Spitzenstrom (A, auf 1 mA abgerundet), bei dem der Rückstrom
+    durch die Schutzdiode 1 A nicht übersteigt: R ≥ R_berechnet, darum
+    I_D ≤ I × (Û − 0,7 V) / (Û − U_LEDs).
+    Parameter: UAc - Trafospannung (V~); ULeds - Spannung an den LEDs (V)
+  ----------------------------------------------------------------------------}
+  function RevIMax(UAc, ULeds: Double): Double;
+  var
+    UP: Double;                                          // Spitzenspannung (V)
+  begin
+    UP := UAc * Sqrt(2);
+    Result := Floor(AC_I_REV_MAX * (UP - ULeds) / (UP - AC_UD_DIODE) * 1000) / 1000;
+  end;
+
 var
+  UNeed: Double;                                         // nötige Trafospannung, auf 0,1 V~ aufgerundet
   IMax: Double;                                          // höchster zulässiger Spitzenstrom (A)
   Alt: TAcInput;                                         // Eingaben für eine Vergleichsrechnung
   AltRes: TAcResult;                                     // Resultat der Vergleichsrechnung
@@ -5578,7 +5600,7 @@ begin
       begin
         // Höchster Spitzenstrom, bei dem der Rückstrom sicher reicht: mit R ≥ R_berechnet
         // gilt I_D ≤ I × (Û − 0,7 V) / (Û − U_LEDs), darum I ≤ 1 A × (Û − U_LEDs) / (Û − 0,7 V)
-        IMax := Floor(AC_I_REV_MAX * (FARes.UPeak - FARes.ULeds) / (FARes.UPeak - AC_UD_DIODE) * 1000) / 1000;
+        IMax := RevIMax(FAInput.U, FARes.ULeds);
         Alt := FAInput;                                  // geht «Ohne Flackern» mit denselben Werten?
         Alt.Circuit := acBridge;
         if CalculateAc(Alt).Status = asOk then
@@ -5593,28 +5615,47 @@ begin
     asInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
     asTooMuchCurrent: Result := _(rsErrACurrent);
     asUTooLow:
-      // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs
-      if (FARes.NMax < 1) and (FARes.UNeedAc > AC_U_MAX) then
       begin
-        // Wie viele LEDs gingen mit der höchsten erlaubten Spannung?
-        Alt := FAInput;
-        Alt.U := AC_U_MAX;
-        AltRes := CalculateAc(Alt);
-        if AltRes.Status = asUTooLow then N42 := AltRes.NMax else N42 := FAInput.N;
-        if (FAInput.N > 1) and (N42 >= 1) then
-          Result := Format(_(rsErrAUTooLow42), [FormatVolt(FAInput.U), AcLedVolt,
-            FormatVolt(AC_U_MAX), N42])
+        // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs. Bei
+        // «Einfach» prüfen, ob dort der Rückstrom reicht (IMax = kleinster
+        // zulässiger Spitzenstrom der genannten Abhilfen, 1 = kein Zusatz).
+        IMax := 1;
+        UNeed := Ceil(FARes.UNeedAc * 10) / 10;
+        if (FARes.NMax < 1) and (FARes.UNeedAc > AC_U_MAX) then
+        begin
+          // Wie viele LEDs gingen mit der höchsten erlaubten Spannung?
+          Alt := FAInput;
+          Alt.U := AC_U_MAX;
+          AltRes := CalculateAc(Alt);
+          if AltRes.Status = asUTooLow then N42 := AltRes.NMax else N42 := FAInput.N;
+          if (FAInput.N > 1) and (N42 >= 1) then
+          begin
+            Result := Format(_(rsErrAUTooLow42), [FormatVolt(FAInput.U), AcLedVolt,
+              FormatVolt(AC_U_MAX), N42]);
+            IMax := RevIMax(AC_U_MAX, N42 * FAInput.Ud);
+          end
+          else
+            Result := Format(_(rsErrAUTooLowMax), [AcLedVolt, FormatVolt(AC_U_MAX)]);
+        end
+        else if FARes.NMax < 1 then
+        begin
+          Result := Format(_(rsErrAUTooLow1), [FormatVolt(FAInput.U), AcLedVolt, FormatVolt(UNeed)]);
+          IMax := RevIMax(UNeed, FARes.ULeds);
+        end
+        else if FARes.UNeedAc > AC_U_MAX then
+        begin
+          Result := Format(_(rsErrAUTooLowN), [FormatVolt(FAInput.U), AcLedVolt, FARes.NMax]);
+          IMax := RevIMax(FAInput.U, FARes.NMax * FAInput.Ud);
+        end
         else
-          Result := Format(_(rsErrAUTooLowMax), [AcLedVolt, FormatVolt(AC_U_MAX)]);
-      end
-      else if FARes.NMax < 1 then
-        Result := Format(_(rsErrAUTooLow1), [FormatVolt(FAInput.U), AcLedVolt,
-          FormatVolt(Ceil(FARes.UNeedAc * 10) / 10)])
-      else if FARes.UNeedAc > AC_U_MAX then
-        Result := Format(_(rsErrAUTooLowN), [FormatVolt(FAInput.U), AcLedVolt, FARes.NMax])
-      else
-        Result := Format(_(rsErrAUTooLow), [FormatVolt(FAInput.U), AcLedVolt,
-          FormatVolt(Ceil(FARes.UNeedAc * 10) / 10), FARes.NMax]);
+        begin
+          Result := Format(_(rsErrAUTooLow), [FormatVolt(FAInput.U), AcLedVolt,
+            FormatVolt(UNeed), FARes.NMax]);
+          IMax := Min(RevIMax(UNeed, FARes.ULeds), RevIMax(FAInput.U, FARes.NMax * FAInput.Ud));
+        end;
+        if (FAInput.Circuit = acSimple) and (IMax < FAInput.I) then
+          Result := Result + Format(_(rsErrAAlsoCurrent), [FormatMilliAmp(IMax)]);
+      end;
     asNoStdValue: Result := _(rsErrNoStd);
   else
     Result := '';
@@ -5647,11 +5688,11 @@ end;
 {------------------------------------------------------------------------------
   AcRatingText
 ------------------------------------------------------------------------------
-  Empfohlene Bauform des Widerstands als Text («½ W», «5 W» oder «> 50 W»)
+  Empfohlene Bauform des Widerstands als Text («½ W», «5 W» oder «> 100 W»)
 ------------------------------------------------------------------------------}
 function AcRatingText(W: Double): string;
 begin
-  if W > 0 then Result := FormatRating(W) else Result := '> 50 W';
+  if W > 0 then Result := FormatRating(W) else Result := '> 100 W';
 end;
 
 {------------------------------------------------------------------------------
@@ -5963,6 +6004,8 @@ end;
 procedure TFormMain.AcStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
 var
   N: Integer;                                            // Anzahl Hinweise
+  Alt: TAcInput;                                         // gleiche Eingaben mit «Ohne Flackern»
+  BridgeOk: Boolean;                                     // «Ohne Flackern» ginge mit denselben Werten
 begin
   // ----- 1. Fehler -----
   if FARes.Status <> asOk then
@@ -5975,18 +6018,26 @@ begin
     Exit;
   end;
   // ----- 2. Hinweise -----
+  Alt := FAInput;                                        // ginge «Ohne Flackern» mit denselben Werten?
+  Alt.Circuit := acBridge;
+  BridgeOk := CalculateAc(Alt).Status = asOk;
   N := 0;
   if awDim in FARes.Warnings then
   begin
     if N = 0 then
     begin
       ChipText := _(rsAChipDim);
-      if FAInput.N > 1 then
+      // «Ohne Flackern» nur nennen, wenn es mit denselben Werten geht
+      if (FAInput.N > 1) and BridgeOk then
         Txt := Format(_(rsAWarnDim), [FormatPercent(FARes.Brightness)])
+      else if FAInput.N > 1 then
+        Txt := Format(_(rsAWarnDim3), [FormatPercent(FARes.Brightness)])
       else if FAInput.U >= AC_U_MAX - 1e-9 then
         Txt := Format(_(rsAWarnDim2), [FormatPercent(FARes.Brightness)])   // mehr Spannung geht nicht
+      else if BridgeOk then
+        Txt := Format(_(rsAWarnDim1), [FormatPercent(FARes.Brightness)])   // eine LED: mehr Spannung
       else
-        Txt := Format(_(rsAWarnDim1), [FormatPercent(FARes.Brightness)]);  // eine LED: mehr Spannung
+        Txt := Format(_(rsAWarnDim4), [FormatPercent(FARes.Brightness)]);
     end;
     Inc(N);
   end;
@@ -6022,7 +6073,12 @@ begin
   end;
   // ----- 3. OK -----
   ChipText := _(rsAChipOk);
-  if FAInput.Circuit = acSimple then Txt := _(rsAOkSimple) else Txt := _(rsAOkBridge);
+  if (FAInput.Circuit = acSimple) and BridgeOk then
+    Txt := _(rsAOkSimple)
+  else if FAInput.Circuit = acSimple then
+    Txt := _(rsAOkSimple2)                               // «Ohne Flackern» reicht hier nicht
+  else
+    Txt := _(rsAOkBridge);
   Sym := 0;
   Fore := clrOk;
   Back := clrOkBack;

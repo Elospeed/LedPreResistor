@@ -460,7 +460,7 @@
       AC_UR_MIN = 1.0, AC_UR_FRAC = 0.25, AC_I_REV_MAX = 1.0, AC_DIM_MIN = 0.2;
   var CAP_DIGITS = [10, 15, 22, 33, 47, 68];                 // Elko-Werte pro Dekade (E6) × 10
   var CAP_VOLTS = [10, 16, 25, 35, 50, 63, 100];             // übliche Nennspannungen (V)
-  var AC_POWER_RATINGS = [2, 3, 5, 10, 25, 50];               // Leistungswiderstände über 1 W
+  var AC_POWER_RATINGS = [2, 3, 5, 10, 25, 50, 100];               // Leistungswiderstände über 1 W
 
   // nächster Elko-Normwert darüber (E6); 0 bei ungültigem C
   function nextCapValue(C) {
@@ -567,7 +567,7 @@
     }
     r.RRating = recommendRating(r.PR);
     if (r.RRating === 0) {
-      // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 50 W)
+      // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 100 W)
       r.warnings.push('rPower');
       for (var k = 0; k < AC_POWER_RATINGS.length; k++)
         if (r.PR <= AC_POWER_RATINGS[k] / 2) { r.RRating = AC_POWER_RATINGS[k]; break; }
