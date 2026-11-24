@@ -1286,7 +1286,7 @@ window.LPR_TEXTS = {
 ],
 "rsErrAUTooLow": [
 "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).",
-"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or fewer LEDs in series (at most %d)."
+"AC voltage %s~ too low for %s at the LEDs: at least %s~ needed or fewer LEDs (at most %d)."
 ],
 "rsErrACurrent": [
 "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
@@ -1368,13 +1368,17 @@ window.LPR_TEXTS = {
 "Spitzenstrom",
 "Peak current"
 ],
+"rsSchemNoRoom": [
+"Zu wenig Platz für den Schaltplan: Rechenweg zuklappen",
+"Not enough room for the schematic: collapse the calculation steps"
+],
 "rsErrAUTooLowN": [
 "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung.",
-"The AC voltage %s~ is not enough for %s at the LEDs: fewer LEDs in series (at most %d), otherwise too little voltage remains across the resistor."
+"AC voltage %s~ too low for %s at the LEDs: fewer LEDs (at most %d), else too little voltage is left at the resistor."
 ],
 "rsErrAUTooLow1": [
 "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
-"The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+"AC voltage %s~ too low for %s at the LEDs: at least %s~ needed."
 ],
 "rsAWarnDim1": [
 "Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen",
@@ -1394,7 +1398,7 @@ window.LPR_TEXTS = {
 ],
 "rsErrAUTooLow42": [
 "Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d).",
-"The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ only fewer LEDs in series (at most %d)."
+"AC voltage %s~ too low for %s at the LEDs: even with %s~ only fewer LEDs (at most %d)."
 ],
 "rsAWarnDim2": [
 "Nur %s der Helligkeit: «Ohne Flackern» wählen",

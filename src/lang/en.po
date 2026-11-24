@@ -1231,7 +1231,7 @@ msgstr "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 
 #: uMain.pas rsErrAUTooLow
 msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d)."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or fewer LEDs in series (at most %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: at least %s~ needed or fewer LEDs (at most %d)."
 
 #: uMain.pas rsErrACurrent
 msgid "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen."
@@ -1316,11 +1316,11 @@ msgstr "Peak current"
 
 #: uMain.pas rsErrAUTooLowN
 msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: fewer LEDs in series (at most %d), otherwise too little voltage remains across the resistor."
+msgstr "AC voltage %s~ too low for %s at the LEDs: fewer LEDs (at most %d), else too little voltage is left at the resistor."
 
 #: uMain.pas rsErrAUTooLow1
 msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
+msgstr "AC voltage %s~ too low for %s at the LEDs: at least %s~ needed."
 
 #: uMain.pas rsAWarnDim1
 msgid "Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen"
@@ -1340,7 +1340,7 @@ msgstr "In the negative half-wave %s would flow through the protection diode (at
 
 #: uMain.pas rsErrAUTooLow42
 msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d)."
-msgstr "The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ only fewer LEDs in series (at most %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: even with %s~ only fewer LEDs (at most %d)."
 
 #: uMain.pas rsAWarnDim2
 msgid "Nur %s der Helligkeit: «Ohne Flackern» wählen"

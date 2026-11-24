@@ -2687,13 +2687,13 @@ end;
 {------------------------------------------------------------------------------
   DankZeigen
 ------------------------------------------------------------------------------
-  Legt das Dankfenster an und zeigt es unten rechts im Hauptfenster.
+  Legt das Dankfenster an und zeigt es (Lage siehe Schritt 3).
   Ablauf:
     1. Fenster ohne Grössenänderung, dunkel wie das Programm
     2. eine Zeichenfläche für Text und Knöpfe
     3. Grösse nach der Schrift, Lage unten rechts im offenen Rechenweg, sonst
-       oben rechts im Schaltplan (Karten, Statuszeile, «Kopieren» und
-       Ko-fi-Knopf bleiben frei)
+       oben rechts im Schaltplan (Karten, Statuszeile und deren Knöpfe
+       bleiben frei)
 ------------------------------------------------------------------------------}
 procedure TFormMain.DankZeigen;
 var
