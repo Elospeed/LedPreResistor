@@ -7,6 +7,23 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
+## 2.7 – 24. November 2026
+
+**Kurz:** Neuer Reiter «Wechselstrom» für LEDs am Modellbahn-Trafo, mit Schutzdiode oder flackerfrei mit Gleichrichter und Elko. / **In short:** New «AC supply» tab for LEDs on a model railway transformer, with a protection diode or flicker-free with rectifier and capacitor.
+
+### Neu
+- Reiter «Wechselstrom» für LEDs an Wechselspannung, z. B. am Lichtausgang eines Modellbahn-Trafos (16 V~):
+  - «Einfach»: Vorwiderstand und Schutzdiode antiparallel zu den LEDs. Der Widerstand ist so gewählt, dass in der Spitze (U × √2) höchstens der eingegebene Strom fliesst; angezeigt werden Spitzen- und Mittelwert des Stroms, die Leistung über beide Halbwellen und die Diode (1N4148, bei grossem Strom 1N4007).
+  - «Ohne Flackern»: Brückengleichrichter und Elko. Der Elko ist so gross, dass der LED-Strom höchstens etwa ±10 % schwankt; seine Spannungsfestigkeit hat 25 % Reserve.
+  - Grenzen: bis 42 V~ (Spitze unter 60 V) und 1 A.
+- Schaltpläne mit Trafo-Symbol, Schutzdiode bzw. Gleichrichter (vier Dioden als Raute, wahlweise fertiger Brückengleichrichter) und Elko; der Verbindungstest prüft auch hier Polung und Richtung.
+- LED-Info: neuer Abschnitt «LEDs an Wechselspannung» mit Liste «Worauf achten» (Lichtausgang statt Fahrregler, Trafospannung messen, Polung von Schutzdiode und Elko, Digitalgleis).
+- Webversion: ebenfalls mit dem Reiter «Wechselstrom»; auf dem Handy passen die vier Reiter nebeneinander.
+
+### Behoben
+- Bei 150 und 200 % Windows-Skalierung war der untere Rand der Feldbeschriftungen (z. B. «Durchlassspannung») abgeschnitten (seit 2.5.2).
+- Bei 200 % auf einem Full-HD-Bildschirm wurde der Schaltplan mit aufgeklapptem Rechenweg so klein, dass die Beschriftungen übereinander lagen; jetzt steht dort ein kurzer Hinweis, den Rechenweg zuzuklappen.
+
 ## 2.6 – 21. November 2026
 
 ### Anzeige

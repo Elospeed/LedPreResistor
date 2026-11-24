@@ -7,6 +7,7 @@
                 uCalc     - Vorwiderstand (auch Stränge parallel)
                 uBlink    - Blinkschaltung NE555 und Multivibrator
                 uKsq      - Konstantstrom LM317 und zwei Transistoren
+                uAc       - LEDs an Wechselspannung (Einfach, Ohne Flackern)
                 uFormat   - Zahlen als Text
               Gerechnet wird immer in SI-Einheiten (V, A, Ω, F, s, Hz, W).
               Keine Oberfläche, keine Texte: Fehler und Hinweise kommen als
@@ -15,6 +16,7 @@
               «zur geraden Zahl» (Banker's Rounding), darum pasRound.
    Autor:     Elospeed
    Versionen: 2.5.2-html 18.11.2026  erste Fassung (Stand Windows 2.5.2)
+              2.7        23.11.2026  uAc: Reiter Wechselstrom
    ============================================================================== */
 (function (global) {
   'use strict';
@@ -451,6 +453,129 @@
   }
 
   /* ===========================================================================
+     uAc - WECHSELSTROM
+     =========================================================================== */
+  var AC_FREQ = 50.0, AC_U_MAX = 42.0, AC_I_MAX = 1.0, AC_UD_DIODE = 0.7, AC_BRIDGE_DIODES = 2,
+      AC_RIPPLE = 0.2, AC_CAP_MARGIN = 1.25, AC_CAP_BIG = 4700e-6, AC_1N4148_I_PEAK = 0.3,
+      AC_UR_MIN = 1.0, AC_UR_FRAC = 0.25, AC_I_REV_MAX = 1.0, AC_DIM_MIN = 0.2;
+  var CAP_DIGITS = [10, 15, 22, 33, 47, 68];                 // Elko-Werte pro Dekade (E6) × 10
+  var CAP_VOLTS = [10, 16, 25, 35, 50, 63, 100];             // übliche Nennspannungen (V)
+  var AC_POWER_RATINGS = [2, 3, 5, 10, 25, 50, 100];               // Leistungswiderstände über 1 W
+
+  // nächster Elko-Normwert darüber (E6); 0 bei ungültigem C
+  function nextCapValue(C) {
+    if (!(C > 0)) return 0;
+    var dec10 = Math.pow(10, Math.floor(Math.log10(C) + 1e-9));
+    for (var i = 0; i < CAP_DIGITS.length; i++)
+      if (CAP_DIGITS[i] / 10 * dec10 >= C * (1 - 1e-9)) return CAP_DIGITS[i] / 10 * dec10;
+    return 10 * dec10;
+  }
+  // kleinste übliche Nennspannung, die mindestens U ist; 0 wenn auch 100 V nicht reicht
+  function capVoltage(U) {
+    for (var i = 0; i < CAP_VOLTS.length; i++) if (CAP_VOLTS[i] >= U - 1e-9) return CAP_VOLTS[i];
+    return 0;
+  }
+  // mittlerer Strom einer Halbwelle über eine ganze Periode (A)
+  function halfWaveAvg(UPeak, ULeds, R) {
+    if (UPeak <= ULeds || R <= 0) return 0;
+    var T = Math.asin(Math.max(0, ULeds) / UPeak);
+    return (2 * UPeak * Math.cos(T) - ULeds * (Math.PI - 2 * T)) / (2 * Math.PI * R);
+  }
+  // mittlere Leistung in R während einer Halbwelle, über eine ganze Periode (W)
+  function halfWavePower(UPeak, ULeds, R) {
+    if (UPeak <= ULeds || R <= 0) return 0;
+    var A = UPeak, B = Math.max(0, ULeds), T = Math.asin(B / A);
+    return (A * A * ((Math.PI - 2 * T) / 2 + Math.sin(2 * T) / 2) - 4 * A * B * Math.cos(T)
+      + B * B * (Math.PI - 2 * T)) / (2 * Math.PI * R);
+  }
+
+  /* Input: { circuit: 'simple'|'bridge', U, Ud, I, N, series } */
+  function calculateAc(inp) {
+    var r = { status: 'ok', warnings: [], UPeak: 0, ULeds: 0, UNeedAc: 0, RCalc: 0, std: null,
+              R: 0, PR: 0, RRating: 0, PLeds: 0, IPeak: 0, IAvg: 0, brightness: 0, theta: 0,
+              IRevPeak: 0, URevLed: 0, URevDiode: 0, diode: '1N4148', UDc: 0, rippleCalc: 0,
+              CCalc: 0, C: 0, CVolt: 0, ripple: 0, UMean: 0, IAct: 0, IRipple: 0 };
+    // ----- 1. Eingaben prüfen -----
+    if (!(inp.U > 0)) r.status = 'invalidU';
+    else if (!(inp.Ud > 0)) r.status = 'invalidUd';
+    else if (!(inp.I > 0)) r.status = 'invalidI';
+    else if (inp.N < 1) r.status = 'invalidN';
+    else if (inp.U > AC_U_MAX + 1e-9) r.status = 'overVoltage';
+    else if (inp.I > AC_I_MAX + 1e-9) r.status = 'tooMuchCurrent';
+    if (r.status !== 'ok') return r;
+
+    // ----- 2. Spannungen -----
+    var bridge = inp.circuit === 'bridge';
+    r.UPeak = inp.U * Math.SQRT2;
+    r.ULeds = inp.N * inp.Ud;
+    var UDrop = bridge ? AC_BRIDGE_DIODES * AC_UD_DIODE : 0;
+    // mindestens 1 V und ein Viertel der Spitze (bzw. Elko-Spannung) am Widerstand
+    function needAc(UL) {
+      if (bridge) return (Math.max(UL + AC_UR_MIN * (1 + AC_RIPPLE / 2),
+        UL / (1 - AC_UR_FRAC * (1 + AC_RIPPLE / 2))) + UDrop) / Math.SQRT2;
+      return Math.max(UL + AC_UR_MIN, UL / (1 - AC_UR_FRAC)) / Math.SQRT2;
+    }
+    r.UNeedAc = needAc(r.ULeds);
+    if (inp.U < r.UNeedAc - 1e-9) {
+      r.status = 'uTooLow';
+      r.NMax = inp.N - 1;                            // so viele LEDs gingen (0 = keine)
+      while (r.NMax > 0 && inp.U < needAc(r.NMax * inp.Ud) - 1e-9) r.NMax--;
+      return r;
+    }
+
+    if (!bridge) {
+      // ----- 3a. Einfach: Vorwiderstand + Schutzdiode -----
+      r.RCalc = (r.UPeak - r.ULeds) / inp.I;
+      r.std = nextStdValue(r.RCalc, inp.series);
+      if (!r.std) { r.status = 'noStdValue'; return r; }
+      r.R = r.std.value;
+      r.IPeak = (r.UPeak - r.ULeds) / r.R;
+      r.theta = Math.asin(r.ULeds / r.UPeak);
+      r.IAvg = halfWaveAvg(r.UPeak, r.ULeds, r.R);
+      r.brightness = r.IAvg / inp.I;
+      r.PR = halfWavePower(r.UPeak, r.ULeds, r.R) + halfWavePower(r.UPeak, AC_UD_DIODE, r.R);
+      r.PLeds = r.ULeds * r.IAvg;
+      r.IRevPeak = (r.UPeak - AC_UD_DIODE) / r.R;
+      r.diode = r.IRevPeak <= AC_1N4148_I_PEAK ? '1N4148' : '1N4007';
+      r.URevLed = AC_UD_DIODE;
+      r.URevDiode = r.ULeds;
+      if (r.IRevPeak > AC_I_REV_MAX + 1e-9) { r.status = 'revTooHigh'; return r; }  // Rückstrom durch D
+      if (r.brightness < AC_DIM_MIN) r.warnings.push('dim');
+    } else {
+      // ----- 3b. Ohne Flackern: Gleichrichter + Elko -----
+      r.UDc = r.UPeak - UDrop;
+      r.rippleCalc = AC_RIPPLE * (r.UDc - r.ULeds) / (1 + AC_RIPPLE / 2);
+      r.CCalc = inp.I / (2 * AC_FREQ * r.rippleCalc);
+      r.C = nextCapValue(r.CCalc);
+      if (r.C <= 0) { r.status = 'noStdValue'; return r; }
+      r.ripple = inp.I / (2 * AC_FREQ * r.C);
+      r.UMean = r.UDc - r.ripple / 2;
+      r.CVolt = capVoltage(AC_CAP_MARGIN * r.UDc);
+      var URes = r.UMean - r.ULeds;
+      r.RCalc = URes / inp.I;
+      r.std = nextStdValue(r.RCalc, inp.series);
+      if (!r.std) { r.status = 'noStdValue'; return r; }
+      r.R = r.std.value;
+      r.IAct = URes / r.R;
+      r.IPeak = r.IAct;
+      r.IAvg = r.IAct;
+      r.brightness = r.IAct / inp.I;
+      r.IRipple = r.IAct / (2 * AC_FREQ * r.C) / 2 / URes;
+      r.PR = URes * r.IAct;
+      r.PLeds = r.ULeds * r.IAct;
+      if (r.C > AC_CAP_BIG * (1 + 1e-9)) r.warnings.push('bigCap');
+    }
+    r.RRating = recommendRating(r.PR);
+    if (r.RRating === 0) {
+      // Leistungswiderstand: übliche Bauform mit doppelter Reserve (0 = über 100 W)
+      r.warnings.push('rPower');
+      for (var k = 0; k < AC_POWER_RATINGS.length; k++)
+        if (r.PR <= AC_POWER_RATINGS[k] / 2) { r.RRating = AC_POWER_RATINGS[k]; break; }
+    }
+    return r;
+  }
+
+  /* ===========================================================================
      uFormat - ZAHLEN ALS TEXT
      =========================================================================== */
   var fmtSet = { dec: ',', pct: ' ' };   // Deutsch: «4,7» und «66 %»; Englisch: «4.7» und «66%»
@@ -556,6 +681,8 @@
     calculateBlink: calculateBlink,
     KSQ_UBE_TC: KSQ_UBE_TC, KSQ_UBE_SENSE: KSQ_UBE_SENSE, partBeta: partBeta,
     calculateKsq: calculateKsq,
+    AC_UD_DIODE: AC_UD_DIODE, AC_U_MAX: AC_U_MAX, AC_I_MAX: AC_I_MAX, AC_I_REV_MAX: AC_I_REV_MAX,
+    nextCapValue: nextCapValue, capVoltage: capVoltage, calculateAc: calculateAc,
     fmtSet: fmtSet, sameValue: sameValue, formatNum: formatNum, formatVolt: formatVolt,
     formatOhm: formatOhm, formatMilliAmp: formatMilliAmp, formatPower: formatPower,
     formatRating: formatRating, formatPercent: formatPercent, formatPercent1: formatPercent1,

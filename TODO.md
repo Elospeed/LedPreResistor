@@ -6,7 +6,7 @@ Jede Aufgabe trägt sich im selben Pull Request hier ein und wieder aus. Erledig
 
 ## In Arbeit
 
-- (nichts)
+- [ ] 2.7: Reiter «Wechselstrom» – Prüfung aller Ansichten, Test in der Windows-11-VM, Release
 
 ## Als Nächstes
 

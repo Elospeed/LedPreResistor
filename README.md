@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.6
+# Elospeed LedPreResistor 2.7
 
 **by Elospeed**
 
@@ -21,6 +21,7 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 - **LED preview**: a 5 mm LED in the chosen colour with anode, cathode and flat side labelled.
 - **Blink circuit** tab (since 2.3): NE555 astable (optionally with a diode across R2) or a two-transistor multivibrator (BC547). Calculates frequency, on/off times and the LED series resistor from the parts, or the timing resistors from a desired frequency and duty cycle (NE555) or the on times of both LEDs (multivibrator, 1:1 by default). The preview blinks at the calculated rate, with schematic, "How it is calculated" and checks (supply range, output current, transistor saturation, base reverse voltage).
 - **Constant current** tab (since 2.4): LM317 as a current source or a two-transistor current source. Enter the supply as a range (e.g. 12 … 14.4 V in a car) and see how little the LED current changes compared with a plain series resistor. Calculates the sense resistor, minimum supply voltage, power loss with heatsink hint, and suggests the part (LM317L/LM317, T1 as BC547, BC337 or BD139).
+- **AC supply** tab (since 2.7): LEDs on AC voltage, e.g. the 16 V~ lighting output of a model railway transformer. "Simple" uses a series resistor and a protection diode anti-parallel to the LEDs (shows peak and average current, flickers slightly); "Flicker-free" adds a bridge rectifier and an electrolytic capacitor (calculates capacitance and voltage rating).
 - **Parallel strings** (since 2.4): several identical LED strings, each with its own resistor, with total current and power.
 - **Sensible limits** (since 2.5): supply up to 60 V (extra-low voltage), up to 30 LEDs in series and 20 parallel strings. Since 2.5.2 the circuits also respect component limits (NE555 up to 16 V, BC547 up to 45 V and 100 mA, LM317 up to 40 V between IN and OUT) and give a clear message instead of a result.
 - **LED info** "The LED" built in (F1, opens in your browser, also offline).
@@ -29,7 +30,7 @@ LedPreResistor calculates the series resistor for one or more LEDs. It is the ne
 
 **Example:** 12 V supply, one white LED (3.2 V), 20 mA → 440 Ω calculated, **470 Ω** (E12, yellow-violet-brown-gold), 18.72 mA real current, 164.8 mW in the resistor → use a ½ W resistor.
 
-LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way. The program never asks; there is just a small "Buy me a coffee" button in the status bar.
+LedPreResistor is a one-person hobby project. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/elospeed) ☕. Entirely optional, the tool stays free either way.
 
 ## Getting started
 

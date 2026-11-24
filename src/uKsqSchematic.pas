@@ -19,7 +19,8 @@
              Die LEDs leuchten hier dauernd (kein Blinken).
 
   Autor:     Elospeed
-  Versionen: 2.5.2 17.11.2026 ab 4 LEDs in Reihe: LED, Punkte, LED (wie Vorwiderstand)
+  Versionen: 2.7  23.11.2026  LedColumn öffentlich (für uAcSchematic)
+             2.5.2 17.11.2026 ab 4 LEDs in Reihe: LED, Punkte, LED (wie Vorwiderstand)
              2.5.1 17.11.2026 Bauteile für die Verbindungstests benannt
              2.4  14.11.2026  neu: Schaltpläne LM317 und zwei Transistoren
 ==============================================================================}
@@ -84,32 +85,39 @@ procedure DrawSchematicLM317(Canvas: TCanvas; const Rect: TRect;
 procedure DrawSchematicKsqT(Canvas: TCanvas; const Rect: TRect;
   const V: TKsqSchemValues; const Col: TBlinkSchemColors);
 
+{------------------------------------------------------------------------------
+  LedColumn
+------------------------------------------------------------------------------
+  Zeichnet LEDs senkrecht nach unten, Anode oben (auch für uAcSchematic).
+  Parameter: C, M     - Leinwand und Umrechnung Vorlage -> Pixel
+             X        - waagrechte Lage der Leitung (Vorlage)
+             Top      - Oberkante der ersten LED (Vorlage)
+             LedColor - Leuchtfarbe
+             LedCount - LEDs in Reihe (1 bis 3 einzeln, ab 4: LED, Punkte, LED)
+             Col      - Farben
+  Rückgabe:  Unterkante der letzten LED (Vorlage); dort geht die Leitung
+             weiter.
+------------------------------------------------------------------------------}
+function LedColumn(C: TCanvas; const M: TMap; X, Top: Double; LedColor: TColor;
+  LedCount: Integer; const Col: TBlinkSchemColors): Double;
+
 implementation
 
 uses
   SysUtils, Math, uTheme, uSmooth, uSchemNetz;
 
 {------------------------------------------------------------------------------
-  Leds
-------------------------------------------------------------------------------
-  Zeichnet eine oder zwei LEDs senkrecht nach unten, Anode oben.
-  Parameter: C, M - Leinwand und Umrechnung Vorlage -> Pixel
-             X    - waagrechte Lage der Leitung (Vorlage)
-             Top  - Oberkante der ersten LED (Vorlage)
-             V    - LED-Farbe und LedCount (1 bis 3 einzeln, ab 4: LED, Punkte, LED)
-             Col  - Farben
-  Rückgabe:  Unterkante der letzten LED (Vorlage); dort geht die Leitung
-             weiter.
+  LedColumn - siehe Interface
 ------------------------------------------------------------------------------}
-function Leds(C: TCanvas; const M: TMap; X, Top: Double; const V: TKsqSchemValues;
-  const Col: TBlinkSchemColors): Double;
+function LedColumn(C: TCanvas; const M: TMap; X, Top: Double; LedColor: TColor;
+  LedCount: Integer; const Col: TBlinkSchemColors): Double;
 var
   BV: TBlinkSchemValues;                                 // für LedDown: nur die Leuchtfarbe
   N: Integer;                                            // LEDs in Reihe
 begin
   BV := Default(TBlinkSchemValues);
-  BV.LedColor := V.LedColor;
-  N := Max(1, V.LedCount);
+  BV.LedColor := LedColor;
+  N := Max(1, LedCount);
   NetzName('LED1');                                      // Namen für die Verbindungstests
   LedDown(C, M, X, Top, True, BV, Col);
   Result := Top + 24;                                    // eine LED ist 24 Punkte hoch
@@ -194,7 +202,7 @@ begin
   // mehr LEDs: höher beginnen (eine 24, zwei 56, drei oder mit Punkten 88 Punkte hoch)
   if V.LedCount >= 3 then Top := 156 else if V.LedCount = 2 then Top := 168 else Top := 186;
   Wire(C, M, [420, 150, 420, Top]);
-  Bot := Leds(C, M, 420, Top, V, Col);
+  Bot := LedColumn(C, M, 420, Top, V.LedColor, V.LedCount, Col);
   Wire(C, M, [420, Bot, 420, 280]);
   Dot(C, M, 420, 150, Col.Line);                         // Verbindungspunkt am Knoten
   C.Pen.Color := Col.Line;
@@ -275,7 +283,7 @@ begin
   // ----- 3. LEDs von +U_B zum Kollektor von T1 -----
   if V.LedCount >= 3 then Top := 36 else if V.LedCount = 2 then Top := 44 else Top := 62;
   Wire(C, M, [420, 30, 420, Top]);
-  Bot := Leds(C, M, 420, Top, V, Col);
+  Bot := LedColumn(C, M, 420, Top, V.LedColor, V.LedCount, Col);
   Wire(C, M, [420, Bot, 420, 128]);
   // ----- 4. Emitter T1 über R_S nach Masse, Fühlerleitung zu T2 -----
   Wire(C, M, [420, 172, 420, 196]);                      // Emitter T1 -> R_S

@@ -1,4 +1,4 @@
-# Elospeed LedPreResistor 2.6
+# Elospeed LedPreResistor 2.7
 
 **von Elospeed**
 
@@ -21,6 +21,7 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 - **LED-Vorschau**: eine 5-mm-LED in der gewählten Farbe, Anode, Kathode und flache Seite beschriftet.
 - Reiter **«Blinkschaltung»** (seit 2.3): NE555 astabil (wahlweise mit Diode über R2) oder Multivibrator mit zwei Transistoren (BC547). Rechnet aus den Bauteilen Frequenz, Ein-/Auszeit und den Vorwiderstand der LED oder umgekehrt aus Wunschfrequenz und Tastgrad (NE555) bzw. den Leuchtzeiten beider LEDs (Multivibrator, Standard 1:1) die Widerstände. Die Vorschau blinkt im berechneten Takt, dazu Schaltplan, Rechenweg und Prüfungen (Spannungsbereich, Ausgangsstrom, Sättigung der Transistoren, Sperrspannung an der Basis).
 - Reiter **«Konstantstrom»** (seit 2.4): LM317 als Stromquelle oder Konstantstromquelle mit zwei Transistoren. Die Speisespannung lässt sich als Bereich eingeben (z. B. 12 … 14,4 V im Auto); das Programm zeigt, wie wenig sich der LED-Strom ändert, verglichen mit einem einfachen Vorwiderstand. Rechnet Fühlerwiderstand, Mindestspannung, Verlustleistung mit Kühlkörper-Hinweis und schlägt das Bauteil vor (LM317L/LM317, T1 als BC547, BC337 oder BD139).
+- Reiter **«Wechselstrom»** (seit 2.7): LEDs an Wechselspannung, z. B. am Lichtausgang eines Modellbahn-Trafos mit 16 V~. «Einfach» mit Vorwiderstand und Schutzdiode antiparallel zu den LEDs (zeigt Spitzen- und Mittelwert des Stroms, flackert leicht); «Ohne Flackern» mit Brückengleichrichter und Elko (rechnet Kapazität und Spannungsfestigkeit).
 - **Stränge parallel** (seit 2.4): mehrere gleiche LED-Stränge mit je eigenem Vorwiderstand, mit Gesamtstrom und Gesamtleistung.
 - **Sinnvolle Grenzen** (seit 2.5): Speisespannung bis 60 V (Kleinspannung), bis 30 LEDs in Reihe und 20 Stränge parallel. Seit 2.5.2 beachten die Schaltungen auch die Grenzen der Bauteile (NE555 bis 16 V, BC547 bis 45 V und 100 mA, LM317 bis 40 V zwischen IN und OUT) und melden zu grosse Werte klar, statt ein Resultat zu zeigen.
 - **LED-Info** «Die Leuchtdiode» eingebaut (F1, öffnet sich im Browser, auch offline).
@@ -29,7 +30,7 @@ LedPreResistor berechnet den Vorwiderstand für eine oder mehrere LEDs. Es ist d
 
 **Beispiel:** 12 V, eine weisse LED (3,2 V), 20 mA → berechnet 440 Ω, **470 Ω** (E12, gelb-violett-braun-gold), tatsächlich 18,72 mA, 164,8 mW im Widerstand → ½-W-Widerstand nehmen.
 
-LedPreResistor ist ein Ein-Personen-Hobbyprojekt. Wenn es dir hilft, kannst du mir auf [Ko-fi](https://ko-fi.com/elospeed) einen Kaffee spendieren ☕. Ganz freiwillig, das Tool bleibt so oder so kostenlos. Das Programm fragt nie; unten in der Statuszeile gibt es nur einen kleinen Knopf «Kaffee spendieren».
+LedPreResistor ist ein Ein-Personen-Hobbyprojekt. Wenn es dir hilft, kannst du mir auf [Ko-fi](https://ko-fi.com/elospeed) einen Kaffee spendieren ☕. Ganz freiwillig, das Tool bleibt so oder so kostenlos.
 
 ## Loslegen
 

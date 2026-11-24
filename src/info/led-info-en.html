@@ -211,6 +211,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   <a href="#mehrere">Several LEDs</a>
   <a href="#blinken">Blinking circuits</a>
   <a href="#konstantstrom">Constant current</a>
+  <a href="#wechselstrom">AC supply</a>
   <a href="#waerme">Heat &amp; lifetime</a>
   <a href="#geschichte">History</a>
   <a href="#tipps">Practical tips</a>
@@ -474,6 +475,33 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
     </div>
   </div>
   <p class="note"><strong>In a car:</strong> The on-board voltage is up to 14.4 V while charging. Calculate the series resistor with this value, otherwise too much current flows with the engine running, or use a constant current source.</p>
+</section>
+
+<section id="wechselstrom">
+  <div class="eyebrow">Model railways and transformers</div>
+  <h2>LEDs on AC voltage</h2>
+  <p>Many model railway transformers have a lighting output with AC voltage, often 16&nbsp;V~. The voltage changes direction 50 times per second, and its peak is √2 times the stated value: 22.6&nbsp;V at 16&nbsp;V~. An LED conducts in one direction only and often withstands only 5&nbsp;V in reverse. The «AC supply» tab calculates two circuits for this.</p>
+  <div class="cols">
+    <div>
+      <h3>Simple: with a protection diode</h3>
+      <p>Series resistor plus a diode (1N4148) anti-parallel to the LED (1N4007 for large currents): diode cathode to the LED anode. In one half-wave the LED lights, in the other the diode conducts and keeps the reverse voltage at the LED at about 0.7&nbsp;V. The resistor is chosen so that the peak current is at most the current you entered. Because the LED is lit only part of the time, it is dimmer (just under one third at most, less with several LEDs) and flickers visibly. An unloaded transformer often delivers 10–20&nbsp;% more than its label says, so measure its voltage if you can. To keep the current stable, at least a quarter of the peak must remain across the resistor; otherwise the program reports that the voltage is not enough.</p>
+    </div>
+    <div>
+      <h3>Flicker-free: rectifier and capacitor</h3>
+      <p>A bridge rectifier (e.g. B80C1500 or four 1N4007) and an electrolytic capacitor turn it into an almost smooth DC voltage, a little below the peak. The series resistor is then calculated as usual, and the LED lights fully without visible flicker. Fit the capacitor the right way round: plus to «+» of the rectifier. Its voltage rating has a margin, because an unloaded transformer often delivers more than its label says.</p>
+    </div>
+  </div>
+  <h3>What to watch out for</h3>
+  <ul class="check">
+    <li><span>Connect only to the fixed <strong>lighting output</strong> of the transformer, not to the speed controller: its voltage changes, and AC model railway transformers send a short pulse of much higher voltage to reverse the locomotive.</span></li>
+    <li><span>If you can, <strong>measure</strong> the transformer voltage (multimeter on V~) and enter that value. Without load a transformer often delivers 10–20&nbsp;% more than its rating.</span></li>
+    <li><span>Never leave out the <strong>protection diode</strong>, and fit it the right way round: the ring (cathode) of the diode to the anode of the LED. Without it the LED gets the full peak voltage in reverse during the other half-wave.</span></li>
+    <li><span>Fit the <strong>capacitor</strong> the right way round (minus stripe to “−” of the rectifier) and use at least the voltage rating shown. A capacitor fitted backwards can burst.</span></li>
+    <li><span>With several LED groups, each group gets its own series resistor. The groups may share the rectifier and capacitor if these are rated for the total current.</span></li>
+    <li><span>The lighting output has a limit (power in VA on the transformer). All bulbs and LEDs on it together must stay below it.</span></li>
+    <li><span>On a <strong>digital track</strong> the voltage is not a sine wave but a square wave whose peak equals the digital voltage. For “Flicker-free”, enter the digital voltage divided by 1.41 as the AC voltage (e.g. 18&nbsp;V → 12.7&nbsp;V~). Often simpler: a decoder function output with DC voltage (“Series resistor” tab).</span></li>
+    <li><span>Up to 42&nbsp;V~ (extra-low voltage). Mains voltage (230&nbsp;V) must never go directly to an LED circuit.</span></li>
+  </ul>
 </section>
 
 <section id="waerme">

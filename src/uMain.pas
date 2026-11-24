@@ -5,6 +5,7 @@
                - Vorwiderstand   (Rechnung in uCalc)
                - Blinkschaltung  (Rechnung in uBlink)
                - Konstantstrom   (Rechnung in uKsq)
+               - Wechselstrom    (Rechnung in uAc)
              Gerechnet wird live bei jeder Eingabe.
 
   Aufbau:    Entwurf A «Labor 2» mit LED-Vorschau:
@@ -18,7 +19,7 @@
              F1 (LED-Info), Strg+Umschalt+C (kopieren).
 
   Zeichnen:  Fast alles rechts ist selbst gezeichnet (TPaintBox): Schaltpläne
-             in uSchematic, uBlinkSchematic, uKsqSchematic; die LED in
+             in uSchematic, uBlinkSchematic, uKsqSchematic, uAcSchematic; die LED in
              uLedView; Farben und Schriften aus uTheme. Alle Masse gelten für
              96 dpi und werden mit Px() auf die Windows-Skalierung
              umgerechnet (100 bis 200 %).
@@ -32,7 +33,9 @@
              das Dankfenster schon kam (DankHinweis).
 
   Autor:     Elospeed
-  Versionen: 2.6  21.11.2026  Ergebniskarten mit Rand unten; kleines Dankfenster einmal pro
+  Versionen: 2.7  23.11.2026  Reiter «Wechselstrom» (Einfach mit Schutzdiode, Ohne Flackern
+                              mit Gleichrichter und Elko)
+             2.6  21.11.2026  Ergebniskarten mit Rand unten; kleines Dankfenster einmal pro
                               Version nach der ersten eigenen Eingabe
              2.5.2 17.11.2026 Schaltplan: Gesamtstrom am Pfeil, Strom je Strang bei «k Stränge parallel»;
                               Auslastung bezieht sich auf ⅛ W, wenn ⅛ W reicht
@@ -56,13 +59,13 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, StdCtrls, ExtCtrls,
-  LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uKsq, uSkalierung, uLang;
+  LCLType, Types, uESeries, uColorCode, uCalc, uBlink, uKsq, uAc, uSkalierung, uLang;
 
 {==============================================================================
   KONSTANTEN
 ==============================================================================}
 const
-  APP_VER = '2.6';                                       // Programmversion für Titelleiste und Info
+  APP_VER = '2.7';                                       // Programmversion für Titelleiste und Info
   // Obergrenzen für Hobbyschaltungen: Speisung höchstens 60 V (Grenze der
   // Schutzkleinspannung bei Gleichspannung; deckt auch volle 48-V-Akkus mit
   // rund 54 V ab). 30 rote LEDs in Reihe brauchen schon rund 54 V, 20 Stränge
@@ -84,6 +87,7 @@ type
     LabelSym: TLabel;
     ComboCircuit: TComboBox;                             // Blinkschaltung: NE555 oder Multivibrator
     ComboKsq: TComboBox;                                 // Konstantstrom: LM317 oder zwei Transistoren
+    ComboAc: TComboBox;                                  // Wechselstrom: Einfach oder Ohne Flackern
     EditU2: TEdit;                                       // Konstantstrom: Speisespannung bis (V)
     EditStrings: TEdit;                                  // Vorwiderstand: Stränge parallel
     LabelHeadSupply: TLabel;                             // Konstantstrom: Überschrift «Speisung»
@@ -141,6 +145,7 @@ type
     procedure BlinkInputChange(Sender: TObject);
     procedure CircuitChange(Sender: TObject);
     procedure KsqCircuitChange(Sender: TObject);
+    procedure AcCircuitChange(Sender: TObject);
     procedure LabelDiodeClick(Sender: TObject);
     procedure LabelSymClick(Sender: TObject);
     procedure PaintModeMouseUp(Sender: TObject; Button: TMouseButton;
@@ -188,6 +193,7 @@ type
     procedure PaintRechenwegMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PaintRechenwegPaint(Sender: TObject);
+    procedure SchemNoRoom;                               // Hinweis statt zu kleinem Schaltplan
     procedure PaintSchematicPaint(Sender: TObject);
     procedure PaintStatusPaint(Sender: TObject);
     procedure TimerBlinkTimer(Sender: TObject);
@@ -215,7 +221,7 @@ type
     FDankBox: TPaintBox;                                 // Zeichenfläche des Dankfensters
     FDankKofi, FDankClose: TRect;                        // Knöpfe im Dankfenster
     FDankHover: Integer;                                 // Maus über: 0 = nichts, 1 = Ko-fi, 2 = Schliessen
-    FMode: Integer;                                      // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
+    FMode: Integer;                                      // Reiter: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom, 3 = Wechselstrom
     FReverse: Boolean;                                   // Blinkschaltung: aus Frequenz und Tastgrad rechnen
     FCircuitShown: TBlinkCircuit;                        // Schaltung, deren Werte in den Feldern stehen
     FReverseShown: Boolean;                              // Richtung, deren Werte in den Feldern stehen
@@ -225,9 +231,12 @@ type
     FBBands1: TBandArray;                                // Farbringe Vorwiderstand LED 1
     FBBands2: TBandArray;                                // Farbringe Vorwiderstand LED 2
     FOnLevel: Double;                                    // Helligkeit der leuchtenden LED (Dauerlicht bei schnellem Takt)
-    FTabX: array[0..3] of Integer;                       // Grenzen der Reiter (für Mausklicks)
+    FTabX: array[0..4] of Integer;                       // Grenzen der Reiter (für Mausklicks)
     FKInput: TKsqInput;                                  // Eingaben der Konstantstromquelle
     FKRes: TKsqResult;                                   // Resultat der Konstantstromquelle
+    FAInput: TAcInput;                                   // Eingaben für Wechselstrom
+    FARes: TAcResult;                                    // Resultat für Wechselstrom
+    FABands: TBandArray;                                 // Farbringe des Widerstands (Wechselstrom)
     FKBands: TBandArray;                                 // Farbringe des Messwiderstands
     FKBandsB: TBandArray;                                // Farbringe von R_B (zwei Transistoren)
     FIco: array[0..4] of TRect;                          // Symbole oben rechts: zurücksetzen, DE, EN, LED-Info, Info
@@ -287,6 +296,15 @@ type
     procedure PaintKsqSchematic;
     procedure KsqStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
     function KsqSummary: string;
+    procedure RecalcAc;
+    function AcStatusText(S: TAcStatus): string;
+    function AcRechenwegLines: TStringArray;
+    procedure PaintAcCards;
+    procedure PaintAcSchematic;
+    procedure AcStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
+    function AcSummary: string;
+    function AcLedVolt: string;
+    function AcDiodeName: string;
     { Konstantstrom: Speisespannung als Bereich, z. B. "12 … 14,4 V" }
     function KsqVoltRange: string;
     { Konstantstrom: empfohlenes Bauteil mit Kühlkörper-Angabe }
@@ -324,7 +342,8 @@ type
     procedure DankAnstossen;
     procedure DankTimerTimer(Sender: TObject);
     function DankErgebnisOk: Boolean;
-    procedure DankZeigen;
+    function DankLage(out ALeft, ATop: Integer): Boolean;
+    procedure DankZeigen(ALeft, ATop: Integer);
     procedure DankPaint(Sender: TObject);
     procedure DankMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure DankMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -641,6 +660,70 @@ resourcestring
   rsKCopyLoss = 'Verlust: %s → %s';
   rsKCopyNeed = 'Mindestspannung: %s';
   rsKCopyRB = 'Basiswiderstand RB: %s (%s)';
+  { Wechselstrom }
+  rsTabAc = 'Wechselstrom';
+  rsLabelTrafo = 'Trafospannung';
+  rsAcSimple = 'Einfach (mit Schutzdiode)';
+  rsAcBridge = 'Ohne Flackern (mit Elko)';
+  rsACardIAvg = 'Mittlerer LED-Strom';
+  rsACardIAvgSub = 'Spitze %s; etwa %s der Helligkeit mit %s Gleichstrom';
+  rsACardISubB = 'Soll %s; schwankt um ±%s (100 Hz, nicht sichtbar)';
+  rsACardPeak = 'Spitzenspannung';
+  rsACardPeakSub = '%s × √2; ein Trafo ohne Last liefert oft etwas mehr';
+  rsACardDiode = 'Schutzdiode';
+  rsACardDiodeSub = 'antiparallel zu den LEDs: Sperrspannung nur %s statt %s';
+  rsACardCap = 'Elko';
+  rsACardCapSub = 'mindestens %s; Plus an «+» des Gleichrichters';
+  rsACardBridge = 'Gleichrichter';
+  rsACardBridgeSub = 'oder 4 × %s; am Elko bis %s';
+  rsAStepS1 = 'Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**';
+  rsAStepS2 = 'In der Spitze höchstens %s: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s**';
+  rsAStepS3 = 'Strom nur in einer Halbwelle, solange mehr als %s anliegen: Spitze Î = **%s**, Mittelwert **%s** (ca. %s von %s)';
+  rsAStepS4 = 'Leistung am R über beide Halbwellen (die negative fliesst über D): **%s** → %s';
+  rsAStepS5 = 'Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**';
+  rsAStepB1 = 'Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**';
+  rsAStepB2 = 'Elko für ca. ±10 %% Stromschwankung: ΔU = 0,2 × (%s − %s) / 1,1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**';
+  rsAStepB3 = 'Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**';
+  rsAStepB4 = 'R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**';
+  rsAStepB5 = 'Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s';
+  rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode';
+  rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
+  rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
+  rsErrAUTooLow = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).';
+  rsErrAUTooLowN = 'Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d).';
+  rsErrAUTooLow1 = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
+  rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
+  rsAChipOk = 'Schaltung passt';
+  rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
+  rsAOkBridge = 'Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)';
+  rsAChipRPower = 'Leistungs-R nötig';
+  rsAWarnRPower = 'R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen';
+  rsAChipBigCap = 'grosser Elko';
+  rsAWarnBigCap = 'Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen';
+  rsACopyTitle = 'LedPreResistor %s – Wechselstrom: %s';
+  rsACopyInput = 'Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s';
+  rsACopyISimple = 'LED-Strom: Spitze %s, Mittelwert %s';
+  rsACopyDiode = 'Schutzdiode antiparallel zu den LEDs: %s';
+  rsACopyCap = 'Elko: %s, mindestens %s';
+  rsACopyBridge = 'Gleichrichter: %s (oder 4 × %s)';
+  rsACopyPower = 'Leistung am Widerstand: %s → %s';
+  rsErrAAlsoCurrent = ' Dann zusätzlich den Spitzenstrom auf höchstens %s senken (Rückstrom durch die Schutzdiode).';
+  rsAWarnDim3 = 'Nur %s der Helligkeit: weniger LEDs in Reihe';
+  rsAWarnDim4 = 'Nur %s der Helligkeit: mehr Trafospannung';
+  rsAOkSimple2 = 'Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht';
+  rsErrARev2 = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken.';
+  rsErrAUTooLow42 = 'Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d).';
+  rsAWarnDim2 = 'Nur %s der Helligkeit: «Ohne Flackern» wählen';
+  rsAWarnDim1 = 'Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen';
+  rsAWarnRPowerB = 'R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung';
+  rsErrAUTooLowMax = 'Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen.';
+  rsErrAUMax = 'Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.';
+  rsErrARev = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen.';
+  rsAChipDim = 'sehr dunkel';
+  rsAWarnDim = 'Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
+  rsLabelIPeak = 'Spitzenstrom';
+  rsSchemBridgeAlt = 'oder 4 × %s';
+  rsSchemNoRoom = 'Zu wenig Platz für den Schaltplan: Rechenweg zuklappen';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -649,7 +732,7 @@ implementation
 
 uses
   Math, Clipbrd, LCLIntf, Dialogs, IniFiles, uTheme, uFormat, uLedView, uSchematic, uRichText,
-  uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic, uSmooth{$IFDEF WINDOWS}, MMSystem{$ENDIF};
+  uLedInfo, uKofiButton, uBlinkSchematic, uKsqSchematic, uAcSchematic, uSmooth{$IFDEF WINDOWS}, MMSystem{$ENDIF};
 
 {$R *.lfm}
 
@@ -762,13 +845,14 @@ end;
 const
   // Einstellungen in LedPreResistor.ini, Abschnitt [Ansicht]
   INI_SECTION_VIEW = 'Ansicht';                          // Abschnitt
-  INI_KEY_TAB = 'Reiter';                                // zuletzt gewählter Reiter (0 ... 2)
+  INI_KEY_TAB = 'Reiter';                                // zuletzt gewählter Reiter (0 ... 3)
   INI_KEY_CIRCUIT = 'Schaltung';                         // Blinkschaltung (0 = NE555, 1 = Multivibrator)
   INI_KEY_KSQ = 'Konstantstrom';                         // 0 = LM317, 1 = zwei Transistoren
+  INI_KEY_AC = 'Wechselstrom';                           // 0 = Einfach, 1 = Ohne Flackern
   INI_KEY_THANKS = 'DankHinweis';                        // Version, für die das Dankfenster schon kam
   { Das Dankfenster erscheint einmal pro neuer Haupt- oder Unterversion
-    (2.6 = 206). Bei 2.7 auf 207 erhöhen, bei Fehlerbehebungen (2.6.1) nicht. }
-  THANKS_VERSION = 206;
+    (2.7 = 207). Bei 2.8 auf 208 erhöhen, bei Fehlerbehebungen (2.7.1) nicht. }
+  THANKS_VERSION = 207;
 
 {------------------------------------------------------------------------------
   ReadViewSetting
@@ -989,6 +1073,7 @@ begin
     ComboCircuit.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_CIRCUIT, 0), 0, Ord(High(TBlinkCircuit)));
     ComboConn.ItemIndex := Ord(cnGnd);
     ComboKsq.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_KSQ, 0), 0, Ord(High(TKsqCircuit)));
+    ComboAc.ItemIndex := EnsureRange(ReadViewSetting(INI_KEY_AC, 0), 0, Ord(High(TAcCircuit)));
     LoadTimingTexts;
   finally
     FUpdating := False;
@@ -999,7 +1084,7 @@ begin
   UpdateRechenwegHeight;
   Recalc;
   // ----- 5. Zuletzt gewählten Reiter wieder öffnen -----
-  SwitchMode(EnsureRange(ReadViewSetting(INI_KEY_TAB, 0), 0, 2), False);
+  SwitchMode(EnsureRange(ReadViewSetting(INI_KEY_TAB, 0), 0, 3), False);
   OnShow := @FormShowPlatz;                              // Platz prüfen, wenn sichtbar
   PanelLeft.OnResize := @PanelLeftResize;                // LED-Vorschau füllt die Spalte
 end;
@@ -1130,7 +1215,7 @@ procedure TFormMain.ApplyLanguage;
 var
   OldKofi: string;                                       // Ko-fi-Text vor dem Wechsel (für die Breite)
   OldDec: Char;                                          // Dezimalzeichen vor dem Wechsel
-  Idx: array[0..5] of Integer;                           // gewählte Einträge der sechs Listen
+  Idx: array[0..6] of Integer;                           // gewählte Einträge der Listen
   BC: TBlinkCircuit;                                     // Schaltung
   BR: Boolean;                                           // Richtung
   K: Integer;                                            // Feld
@@ -1193,12 +1278,14 @@ begin
     Idx[3] := ComboCircuit.ItemIndex;
     Idx[4] := ComboConn.ItemIndex;
     Idx[5] := ComboKsq.ItemIndex;
+    Idx[6] := ComboAc.ItemIndex;
     FillCombos;
     ComboColor.ItemIndex := Idx[0];
     ComboSeries.ItemIndex := Idx[1];
     ComboCircuit.ItemIndex := Idx[3];
     ComboConn.ItemIndex := Idx[4];
     ComboKsq.ItemIndex := Idx[5];
+    ComboAc.ItemIndex := Idx[6];
     if OldDec <> DisplayDecimal then
     begin
       SwapDecimal(EditU);
@@ -1267,6 +1354,9 @@ begin
   ComboKsq.Items.Clear;
   ComboKsq.Items.Add(_(rsKsqLM317));
   ComboKsq.Items.Add(_(rsKsqTrans));
+  ComboAc.Items.Clear;
+  ComboAc.Items.Add(_(rsAcSimple));
+  ComboAc.Items.Add(_(rsAcBridge));
 end;
 
 {------------------------------------------------------------------------------
@@ -1414,6 +1504,7 @@ begin
   // ----- 3. Die anderen Reiter -----
   RecalcBlink;
   RecalcKsq;
+  RecalcAc;
 
   // ----- 4. Neu zeichnen -----
   PaintSchematic.Invalidate;
@@ -1654,7 +1745,7 @@ end;
   Blink-Timer je nach Häkchen und Frequenz einstellen
   Ablauf:
     1. Reiter Blinkschaltung: Helligkeit und Takt aus der Rechnung; zu schnell fürs Auge = gedimmtes Dauerlicht, sehr kurze Phasen als kurzes Aufblitzen, sonst Timer starten
-    2. Andere Reiter: Dauerlicht, Timer aus
+    2. Andere Reiter: Dauerlicht, Timer aus (Wechselstrom einfach: schwächer)
 ------------------------------------------------------------------------------}
 procedure TFormMain.UpdateBlink;
 var
@@ -1705,9 +1796,16 @@ begin
     Exit;
   end;
   // ----- 2. Andere Reiter: Dauerlicht -----
-  if not SameValue(FOnLevel, 1.0) then
+  // Wechselstrom einfach: nur eine Halbwelle, die LED leuchtet schwächer
+  if (FMode = 3) and (FARes.Status = asOk) and (FAInput.Circuit = acSimple) then
+    Level := EnsureRange(FARes.Brightness, 0.15, 1.0)
+  else if (FMode = 3) and (FARes.Status <> asOk) then
+    Level := 0.15                                        // Fehler: LED fast aus
+  else
+    Level := 1.0;
+  if not SameValue(FOnLevel, Level) then
   begin
-    FOnLevel := 1.0;
+    FOnLevel := Level;
     FLedDirty := True;
   end;
   // Vorwiderstand: LED leuchtet dauernd, geblinkt wird nur im Reiter Blinkschaltung
@@ -1733,6 +1831,32 @@ begin
   else
     timeEndPeriod(1);
   {$ENDIF}
+end;
+
+{------------------------------------------------------------------------------
+  SchemNoRoom
+------------------------------------------------------------------------------
+  Hinweis mitten in der Schaltplan-Fläche, wenn sie zu klein ist
+------------------------------------------------------------------------------}
+procedure TFormMain.SchemNoRoom;
+var
+  C: TCanvas;                                            // Zeichenfläche
+  TR: TRect;                                             // Bereich für den Hinweis
+  TS: TTextStyle;                                        // Umbruch und Mitte
+begin
+  C := PaintSchematic.Canvas;
+  C.Brush.Style := bsClear;
+  C.Font.Size := 9;
+  C.Font.Style := [];
+  C.Font.Color := clrTextDim;
+  TS := C.TextStyle;
+  TS.Wordbreak := True;
+  TS.SingleLine := False;
+  TS.Alignment := taCenter;
+  TS.Layout := tlCenter;
+  TR := PaintSchematic.ClientRect;
+  InflateRect(TR, -Px(12), -Px(6));
+  C.TextRect(TR, TR.Left, TR.Top, _(rsSchemNoRoom), TS);
 end;
 
 {------------------------------------------------------------------------------
@@ -1797,6 +1921,15 @@ begin
     Pen.Width := 1;
     Rectangle(R);
   end;
+  // ----- 1b. Zu wenig Platz (offener Rechenweg bei 200 % auf Full HD) -----
+  // Der Schaltplan würde so klein, dass die Beschriftungen übereinander
+  // liegen. Statt eines unlesbaren Bilds steht dann ein kurzer Hinweis
+  // (VM-Test 24.11.2026). Px(180) wie in RechenwegZuBeiPlatzmangel.
+  if FRechenwegOpen and (PaintSchematic.Height < Px(180)) then
+  begin
+    SchemNoRoom;
+    Exit;
+  end;
   // ----- 2. Anderer Reiter: dessen Schaltplan -----
   if FMode = 1 then
   begin
@@ -1806,6 +1939,11 @@ begin
   if FMode = 2 then
   begin
     PaintKsqSchematic;
+    Exit;
+  end;
+  if FMode = 3 then
+  begin
+    PaintAcSchematic;
     Exit;
   end;
   // ----- 3. Texte zusammenstellen -----
@@ -1948,6 +2086,11 @@ begin
   if FMode = 2 then
   begin
     PaintKsqCards;
+    Exit;
+  end;
+  if FMode = 3 then
+  begin
+    PaintAcCards;
     Exit;
   end;
   // ----- 2. Kartenbreiten -----
@@ -2177,6 +2320,11 @@ begin
     if FKRes.Status <> ksOk then Exit('');
     if FKInput.Circuit = kcLM317 then Result := _(rsLegendLM) else Result := _(rsLegendKT);
   end
+  else if FMode = 3 then
+  begin
+    if FARes.Status <> asOk then Exit('');
+    if FAInput.Circuit = acSimple then Result := _(rsLegendAcS) else Result := _(rsLegendAcB);
+  end
   else
   begin
     if FRes.Status <> csOk then Exit('');
@@ -2208,6 +2356,12 @@ begin
     Result := KsqSummary;
     L := KsqRechenwegLines;
     Ok := FKRes.Status = ksOk;
+  end
+  else if FMode = 3 then
+  begin
+    Result := AcSummary;
+    L := AcRechenwegLines;
+    Ok := FARes.Status = asOk;
   end
   else
   begin
@@ -2407,6 +2561,11 @@ begin
     L := KsqRechenwegLines;
     Ok := FKRes.Status = ksOk;
   end
+  else if FMode = 3 then
+  begin
+    L := AcRechenwegLines;
+    Ok := FARes.Status = asOk;
+  end
   else
   begin
     L := RechenwegLines;
@@ -2490,6 +2649,7 @@ begin
   case FMode of
     1: Result := FBRes.Status = bsOk;
     2: Result := FKRes.Status = ksOk;
+    3: Result := FARes.Status = asOk;
   else
     Result := FRes.Status = csOk;
   end;
@@ -2518,30 +2678,71 @@ end;
   Hauptfenster vorne ist; sonst bei der nächsten Berechnung erneut versuchen.
 ------------------------------------------------------------------------------}
 procedure TFormMain.DankTimerTimer(Sender: TObject);
+var
+  L, T: Integer;                                         // Lage des Dankfensters
 begin
   FDankTimer.Enabled := False;
   if FDankDone or not DankErgebnisOk or not Active then Exit;
+  // kein freier Platz (z. B. 200 % mit offenem Rechenweg): nicht zeigen und
+  // nichts merken, bei der nächsten Eingabe erneut versuchen
+  if not DankLage(L, T) then Exit;
   FDankDone := True;
   WriteViewSetting(INI_KEY_THANKS, THANKS_VERSION);      // in dieser Version nicht wieder
-  DankZeigen;
+  DankZeigen(L, T);
+end;
+
+{------------------------------------------------------------------------------
+  DankLage
+------------------------------------------------------------------------------
+  Sucht die Lage des Dankfensters (Bildschirmpunkte der linken oberen Ecke),
+  ohne Karten, Statuszeile und deren Knöpfe zu verdecken:
+    1. Rechenweg offen: unten rechts darin, unterhalb seiner Kopfzeile
+    2. sonst oben rechts im Schaltplan, wenn er hoch genug ist
+  Liefert False, wenn beides nicht geht (VM-Test 24.11.2026: bei 125-200 %
+  wurde das Fenster sonst über «Kopieren» und die Statuszeile geschoben).
+------------------------------------------------------------------------------}
+function TFormMain.DankLage(out ALeft, ATop: Integer): Boolean;
+var
+  W, H, TB: Integer;                                     // Grösse samt Titelleiste und Rahmen
+  P: TPoint;                                             // Bezugspunkt auf dem Bildschirm
+  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
+  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
+begin
+  W := Px(380);
+  H := Px(178);
+  TB := Px(40);                                          // ungefähre Höhe der Titelleiste samt Rahmen
+  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
+  // ----- 1. im offenen Rechenweg -----
+  if FRechenwegOpen then
+  begin
+    P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
+    T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
+    ALeft := Max(Left, P.X - W - Px(24));
+    ATop := Max(T, P.Y - H - TB - Px(8));
+    if ATop + H + TB > WA.Bottom then
+      ATop := WA.Bottom - H - TB;
+    if ATop >= T then
+      Exit(True);
+  end;
+  // ----- 2. oben rechts im Schaltplan -----
+  P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
+  ALeft := Max(Left, P.X - W - Px(16));
+  ATop := P.Y + Px(8);
+  Result := (PaintSchematic.Height >= H + TB + Px(16)) and (ATop + H + TB <= WA.Bottom);
 end;
 
 {------------------------------------------------------------------------------
   DankZeigen
 ------------------------------------------------------------------------------
-  Legt das Dankfenster an und zeigt es unten rechts im Hauptfenster.
+  Legt das Dankfenster an und zeigt es an der Stelle, die DankLage gefunden hat.
   Ablauf:
     1. Fenster ohne Grössenänderung, dunkel wie das Programm
     2. eine Zeichenfläche für Text und Knöpfe
-    3. Grösse nach der Schrift, Lage oben rechts im Schaltplan (dort ist meist
-       Platz; Statuszeile, «Kopieren» und Ko-fi-Knopf bleiben frei)
+    3. Grösse und Lage
 ------------------------------------------------------------------------------}
-procedure TFormMain.DankZeigen;
+procedure TFormMain.DankZeigen(ALeft, ATop: Integer);
 var
   W, H: Integer;                                         // Grösse des Fensters
-  P: TPoint;                                             // untere rechte Ecke des Rechenwegs auf dem Bildschirm
-  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
-  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
 begin
   // ----- 1. Fenster -----
   FDank := TForm.CreateNew(Self);
@@ -2567,16 +2768,8 @@ begin
   FDank.ClientWidth := W;
   FDank.ClientHeight := H;
   FDank.Position := poDesigned;
-  // Unten rechts im Rechenweg: Eingaben, Schaltplan, Ergebniskarten und
-  // «Kopieren» bleiben frei; oben nie über die Kopfzeile des Rechenwegs.
-  // Px(40) = ungefähre Höhe der Titelleiste samt Rahmen.
-  P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
-  T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
-  FDank.Left := Max(Left, P.X - W - Px(24));
-  FDank.Top := Max(T, P.Y - H - Px(40) - Px(8));
-  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
-  if FDank.Top + H + Px(40) > WA.Bottom then
-    FDank.Top := Max(WA.Top, WA.Bottom - H - Px(40));
+  FDank.Left := ALeft;                                   // Lage aus DankLage
+  FDank.Top := ATop;
   FDank.Show;
 end;
 
@@ -2792,6 +2985,8 @@ begin
     BlinkStatus(ChipText, Txt, Sym, Fore, Back)
   else if FMode = 2 then
     KsqStatus(ChipText, Txt, Sym, Fore, Back)
+  else if FMode = 3 then
+    AcStatus(ChipText, Txt, Sym, Fore, Back)
   else if FRes.Status <> csOk then
   begin
     ChipText := '';
@@ -3006,8 +3201,8 @@ begin
     CopyClick(Sender);
     Key := 0;
   end
-  // Strg+1/2/3: Reiter wählen
-  else if (Shift = [ssCtrl]) and (Key >= VK_1) and (Key <= VK_3) then
+  // Strg+1/2/3/4: Reiter wählen
+  else if (Shift = [ssCtrl]) and (Key >= VK_1) and (Key <= VK_4) then
   begin
     if FMode <> Key - VK_1 then SwitchMode(Key - VK_1, True);
     Key := 0;
@@ -3049,6 +3244,8 @@ begin
     end;
     if FMode = 2 then
       EditN.Text := '2';                                 // Konstantstrom: zwei weisse LEDs im Auto wie im Beispiel
+    if FMode = 3 then
+      EditU.Text := '16';                                // Wechselstrom: Lichtausgang eines Modellbahn-Trafos
     CheckDiode.Checked := False;
     CheckSym.Checked := True;
     ComboConn.ItemIndex := Ord(cnGnd);
@@ -3154,7 +3351,8 @@ end;
 {------------------------------------------------------------------------------
   SwitchMode
 ------------------------------------------------------------------------------
-  Reiter wechseln: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom
+  Reiter wechseln: 0 = Vorwiderstand, 1 = Blinkschaltung, 2 = Konstantstrom,
+  3 = Wechselstrom
 ------------------------------------------------------------------------------}
 procedure TFormMain.SwitchMode(M: Integer; Save: Boolean);
 begin
@@ -3185,7 +3383,7 @@ end;
 ------------------------------------------------------------------------------
   Bedienelemente der linken Spalte je nach Reiter anordnen
   Ablauf:
-    1. Sichtbarkeit der Felder je Reiter (Vorwiderstand, Blinkschaltung, Konstantstrom)
+    1. Sichtbarkeit der Felder je Reiter (Vorwiderstand, Blinkschaltung, Konstantstrom, Wechselstrom)
     2. Felder von oben nach unten setzen (Put) und die Tab-Reihenfolge festlegen (Tab)
     3. Zuunterst die LED-Vorschau; danach füllt sie die Spalte bis unten
 ------------------------------------------------------------------------------}
@@ -3193,6 +3391,7 @@ procedure TFormMain.LayoutLeft;
 var
   Blink: Boolean;                                        // Reiter Blinkschaltung
   Ksq: Boolean;                                          // Reiter Konstantstrom
+  Ac: Boolean;                                           // Reiter Wechselstrom
   Is555: Boolean;                                        // Schaltung NE555
   Y: Integer;                                            // laufende Zeile (96 dpi)
   Order: Integer;                                        // laufende Tab-Reihenfolge
@@ -3213,6 +3412,12 @@ var
     begin
       TLabel(C).AutoSize := False;
       if X < 140 then W := 140 - X - 4 else W := 253 - X;
+      // Ohne AutoSize bleibt sonst die Höhe aus dem Formular (15 Punkte);
+      // die Schrift braucht mit Unterlängen (g, p) etwa 16 Punkte, und bei
+      // 150 und 200 % wurde der untere Rand abgeschnitten. 17 Punkte reichen
+      // und stossen noch nicht an das Eingabefeld darunter (17–18 Punkte tiefer).
+      C.SetBounds(Px(X), Px(Top), Px(W), Px(17));
+      Exit;
     end;
     if W > 0 then
       C.SetBounds(Px(X), Px(Top), Px(W), C.Height)
@@ -3234,6 +3439,7 @@ var
 begin
   Blink := FMode = 1;
   Ksq := FMode = 2;
+  Ac := FMode = 3;
   Is555 := ComboCircuit.ItemIndex <> Ord(bcMulti);
   // ----- 1. Sichtbarkeit je Reiter -----
   PanelLeft.VertScrollBar.Position := 0;
@@ -3248,6 +3454,8 @@ begin
     LabelN.Visible := not Blink;
     EditN.Visible := not Blink;
     LabelNUnit.Visible := not Blink;
+    // nur im Reiter Wechselstrom
+    ComboAc.Visible := Ac;
     // nur im Reiter Konstantstrom
     ComboKsq.Visible := Ksq;
     LabelHeadSupply.Visible := Ksq;
@@ -3267,7 +3475,7 @@ begin
     LabelT3.Visible := Blink;
     EditT3.Visible := Blink;
     LabelT3Unit.Visible := Blink;
-    LabelHeadLed.Visible := Blink or Ksq;
+    LabelHeadLed.Visible := Blink or Ksq or Ac;
     CheckDiode.Visible := Blink and Is555;
     LabelDiode.Visible := Blink and Is555;
     CheckSym.Visible := Blink and not Is555;
@@ -3278,7 +3486,30 @@ begin
     // ----- 2. Felder setzen, Tab-Reihenfolge -----
     Order := 0;
     Put(LabelHeadInputs, 16, 12, 0);
-    if Ksq then
+    if Ac then
+    begin
+      // Schaltung, Trafospannung und E-Reihe, LEDs
+      Put(ComboAc, 16, 30, 237);
+      Put(LabelU, 16, 62, 0);
+      Put(EditU, 16, 79, 92);
+      Put(LabelUUnit, 112, 83, 0);
+      Put(LabelSeries, 140, 62, 0);
+      Put(ComboSeries, 140, 79, 113);
+      Put(LabelHeadLed, 16, 112, 0);
+      Put(ComboColor, 16, 130, 237);
+      Put(LabelUd, 16, 164, 0);
+      Put(EditUd, 16, 182, 92);
+      Put(LabelUdUnit, 112, 186, 0);
+      Put(LabelI, 140, 164, 0);
+      Put(EditI, 140, 182, 84);
+      Put(LabelIUnit, 228, 186, 0);
+      Put(LabelN, 16, 216, 0);
+      Put(EditN, 16, 234, 92);
+      Put(LabelNUnit, 112, 238, 0);
+      Y := 270;
+      Tab(ComboAc); Tab(EditU); Tab(ComboSeries); Tab(ComboColor); Tab(EditUd); Tab(EditI); Tab(EditN);
+    end
+    else if Ksq then
     begin
       // Schaltung, Speisespannung von … bis, LEDs
       Put(ComboKsq, 16, 30, 237);
@@ -3447,7 +3678,7 @@ begin
   LabelT3.Caption := 'C';
   LabelT3Unit.Caption := 'µF';
   EditT3.Tag := -2;                                      // E6-Werte
-  if FMode = 2 then
+  if FMode in [2, 3] then
     LabelHeadLed.Caption := _(rsHeadLeds)
   else if Is555 then
     LabelHeadLed.Caption := _(rsHeadLed)
@@ -3602,13 +3833,14 @@ begin
   C.Pen.Color := clrBorder;
   C.Pen.Width := 1;
   C.Line(R.Left, R.Bottom - 1, R.Right, R.Bottom - 1);
-  for I := 0 to 2 do
+  for I := 0 to 3 do
   begin
     case I of
       0: T := _(rsTabResistor);
       1: T := _(rsTabBlink);
+      2: T := _(rsTabKsq);
     else
-      T := _(rsTabKsq);
+      T := _(rsTabAc);
     end;
     W := C.TextWidth(T) + Px(32);
     if I = FMode then
@@ -3654,7 +3886,9 @@ begin
   else if (X >= FTabX[1]) and (X < FTabX[2]) and (FMode <> 1) then
     SwitchMode(1, True)
   else if (X >= FTabX[2]) and (X < FTabX[3]) and (FMode <> 2) then
-    SwitchMode(2, True);
+    SwitchMode(2, True)
+  else if (X >= FTabX[3]) and (X < FTabX[4]) and (FMode <> 3) then
+    SwitchMode(3, True);
 end;
 
 {------------------------------------------------------------------------------
@@ -3694,7 +3928,7 @@ begin
   end;
   // Tooltip neu anzeigen, wenn die Maus auf ein anderes Symbol wechselt
   Application.CancelHint;
-  if (I >= 0) or ((X >= FTabX[0]) and (X < FTabX[3])) then
+  if (I >= 0) or ((X >= FTabX[0]) and (X < FTabX[4])) then
     PaintTabs.Cursor := crHandPoint
   else
     PaintTabs.Cursor := crDefault;
@@ -3878,7 +4112,7 @@ begin
   Dec(X, LangW + Px(10));
   FIco[0] := Types.Rect(X - BW, BTop, X, BTop + BH);
   // ----- 2. Symbole nicht über die Reiter legen (sehr schmales Fenster) -----
-  if FIco[0].Left < FTabX[3] + Px(8) then
+  if FIco[0].Left < FTabX[4] + Px(8) then
   begin
     for I := 0 to High(FIco) do FIco[I] := Types.Rect(0, 0, 0, 0);
     Exit;
@@ -4790,10 +5024,21 @@ begin
         LabelHeadInputs.Caption := _(rsHeadCircuit);
         LabelU.Caption := _(rsLabelFrom);
       end;
+    3:
+      begin
+        LabelHeadInputs.Caption := _(rsHeadCircuit);
+        LabelU.Caption := _(rsLabelTrafo);
+      end;
   else
     LabelHeadInputs.Caption := _(rsHeadInputs);
     LabelU.Caption := _(rsLabelU);
   end;
+  if FMode = 3 then LabelUUnit.Caption := 'V~' else LabelUUnit.Caption := 'V';
+  // Einfach (Halbwelle): das Feld ist der Spitzenstrom, der Mittelwert ist kleiner
+  if (FMode = 3) and (ComboAc.ItemIndex = Ord(acSimple)) then
+    LabelI.Caption := _(rsLabelIPeak)
+  else
+    LabelI.Caption := _(rsLabelI);
   UpdateTimingLabels;                                    // Kopf «LEDS» bzw. «LED AM AUSGANG»
 end;
 
@@ -5335,6 +5580,619 @@ begin
       SL.Add(Format(_(rsKCopyRB), [FormatOhm(FKRes.RB), BandNames(FKBandsB, '-')]));
     SL.Add(Format(_(rsKCopyLoss), [FormatPowerRange(FKRes.PLossMin, FKRes.PLossMax), KsqPartText]));
     SL.Add(Format(_(rsKCopyNeed), [FormatVolt(FKRes.UNeed)]));
+    Result := TrimRight(SL.Text);
+  finally
+    SL.Free;
+  end;
+end;
+
+{==============================================================================
+  REITER WECHSELSTROM
+==============================================================================}
+
+{------------------------------------------------------------------------------
+  AcCircuitChange
+------------------------------------------------------------------------------
+  Andere Wechselstrom-Schaltung gewählt (Einfach / Ohne Flackern): neu
+  rechnen und die Wahl speichern.
+------------------------------------------------------------------------------}
+procedure TFormMain.AcCircuitChange(Sender: TObject);
+begin
+  if FUpdating then Exit;
+  ModeCaptions;                                          // Feld «Spitzenstrom» bzw. «LED-Strom»
+  Recalc;
+  WriteViewSetting(INI_KEY_AC, ComboAc.ItemIndex);
+  DankAnstossen;                                         // eigene Eingabe des Benutzers
+end;
+
+{------------------------------------------------------------------------------
+  RecalcAc
+------------------------------------------------------------------------------
+  Wechselstrom rechnen: Eingaben lesen (uAc), Farbringe bestimmen.
+  Ablauf:
+    1. Schaltung, Trafospannung und LED-Werte (gleiche Felder wie im Reiter
+       «Vorwiderstand»)
+    2. Rechnen (uAc) und Farbringe von R
+    3. LED-Vorschau: einfach = schwächer (nur im eigenen Reiter)
+------------------------------------------------------------------------------}
+procedure TFormMain.RecalcAc;
+var
+  V: Double;                                             // umgewandelte Eingabe
+begin
+  // ----- 1. Eingaben -----
+  FAInput := Default(TAcInput);
+  if ComboAc.ItemIndex = Ord(acBridge) then
+    FAInput.Circuit := acBridge
+  else
+    FAInput.Circuit := acSimple;
+  // Trafospannung direkt aus dem Feld: Grenze 42 V~ prüft uAc
+  if ParseDecimal(EditU.Text, V) then FAInput.U := V;
+  FAInput.Ud := FInput.Ud;
+  FAInput.I := FInput.I;
+  FAInput.N := FInput.N;
+  FAInput.Series := FInput.Series;
+  // ----- 2. Rechnen, Farbringe -----
+  FARes := CalculateAc(FAInput);
+  FABands := nil;
+  if (FARes.Status = asOk) and not ColorBands(FARes.Std, FAInput.Series, FABands) then
+    FABands := nil;
+  // ----- 3. LED-Vorschau -----
+  if FMode = 3 then
+    UpdateBlink;
+end;
+
+{------------------------------------------------------------------------------
+  AcStatusText
+------------------------------------------------------------------------------
+  Fehlertext zum Status der Wechselstrom-Schaltung
+------------------------------------------------------------------------------}
+function TFormMain.AcStatusText(S: TAcStatus): string;
+
+  {----------------------------------------------------------------------------
+    RevIMax
+  ----------------------------------------------------------------------------
+    Höchster Spitzenstrom (A, auf 1 mA abgerundet), bei dem der Rückstrom
+    durch die Schutzdiode 1 A nicht übersteigt: R ≥ R_berechnet, darum
+    I_D ≤ I × (Û − 0,7 V) / (Û − U_LEDs).
+    Parameter: UAc - Trafospannung (V~); ULeds - Spannung an den LEDs (V)
+  ----------------------------------------------------------------------------}
+  function RevIMax(UAc, ULeds: Double): Double;
+  var
+    UP: Double;                                          // Spitzenspannung (V)
+  begin
+    UP := UAc * Sqrt(2);
+    Result := Floor(AC_I_REV_MAX * (UP - ULeds) / (UP - AC_UD_DIODE) * 1000) / 1000;
+  end;
+
+var
+  UNeed: Double;                                         // nötige Trafospannung, auf 0,1 V~ aufgerundet
+  IMax: Double;                                          // höchster zulässiger Spitzenstrom (A)
+  Alt: TAcInput;                                         // Eingaben für eine Vergleichsrechnung
+  AltRes: TAcResult;                                     // Resultat der Vergleichsrechnung
+  N42: Integer;                                          // so viele LEDs gingen bei 42 V~
+begin
+  case S of
+    asInvalidU: Result := Format(_(rsErrAU), [FormatVolt(AC_U_MAX)]);
+    asOverVoltage: Result := Format(_(rsErrAUMax), [FormatVolt(AC_U_MAX)]);
+    asRevTooHigh:
+      begin
+        // Höchster Spitzenstrom, bei dem der Rückstrom sicher reicht: mit R ≥ R_berechnet
+        // gilt I_D ≤ I × (Û − 0,7 V) / (Û − U_LEDs), darum I ≤ 1 A × (Û − U_LEDs) / (Û − 0,7 V)
+        IMax := RevIMax(FAInput.U, FARes.ULeds);
+        Alt := FAInput;                                  // geht «Ohne Flackern» mit denselben Werten?
+        Alt.Circuit := acBridge;
+        if CalculateAc(Alt).Status = asOk then
+          Result := Format(_(rsErrARev), [FormatNum(Ceil(FARes.IRevPeak * 100) / 100, 2, 2) + ' A',
+            FormatNum(AC_I_REV_MAX, 1, 0) + ' A', FormatMilliAmp(IMax)])
+        else
+          Result := Format(_(rsErrARev2), [FormatNum(Ceil(FARes.IRevPeak * 100) / 100, 2, 2) + ' A',
+            FormatNum(AC_I_REV_MAX, 1, 0) + ' A', FormatMilliAmp(IMax)]);
+      end;
+    asInvalidUd: Result := _(rsErrUd);
+    asInvalidI: Result := _(rsErrI);
+    asInvalidN: Result := Format(_(rsErrN), [MAX_LEDS]);
+    asTooMuchCurrent: Result := _(rsErrACurrent);
+    asUTooLow:
+      begin
+        // Abhilfe: mehr Spannung (nur bis 42 V~) und/oder weniger LEDs. Bei
+        // «Einfach» prüfen, ob dort der Rückstrom reicht (IMax = kleinster
+        // zulässiger Spitzenstrom der genannten Abhilfen, 1 = kein Zusatz).
+        IMax := 1;
+        UNeed := Ceil(FARes.UNeedAc * 10) / 10;
+        if (FARes.NMax < 1) and (FARes.UNeedAc > AC_U_MAX) then
+        begin
+          // Wie viele LEDs gingen mit der höchsten erlaubten Spannung?
+          Alt := FAInput;
+          Alt.U := AC_U_MAX;
+          AltRes := CalculateAc(Alt);
+          if AltRes.Status = asUTooLow then N42 := AltRes.NMax else N42 := FAInput.N;
+          if (FAInput.N > 1) and (N42 >= 1) then
+          begin
+            Result := Format(_(rsErrAUTooLow42), [FormatVolt(FAInput.U), AcLedVolt,
+              FormatVolt(AC_U_MAX), N42]);
+            IMax := RevIMax(AC_U_MAX, N42 * FAInput.Ud);
+          end
+          else
+            Result := Format(_(rsErrAUTooLowMax), [AcLedVolt, FormatVolt(AC_U_MAX)]);
+        end
+        else if FARes.NMax < 1 then
+        begin
+          Result := Format(_(rsErrAUTooLow1), [FormatVolt(FAInput.U), AcLedVolt, FormatVolt(UNeed)]);
+          IMax := RevIMax(UNeed, FARes.ULeds);
+        end
+        else if FARes.UNeedAc > AC_U_MAX then
+        begin
+          Result := Format(_(rsErrAUTooLowN), [FormatVolt(FAInput.U), AcLedVolt, FARes.NMax]);
+          IMax := RevIMax(FAInput.U, FARes.NMax * FAInput.Ud);
+        end
+        else
+        begin
+          Result := Format(_(rsErrAUTooLow), [FormatVolt(FAInput.U), AcLedVolt,
+            FormatVolt(UNeed), FARes.NMax]);
+          IMax := Min(RevIMax(UNeed, FARes.ULeds), RevIMax(FAInput.U, FARes.NMax * FAInput.Ud));
+        end;
+        if (FAInput.Circuit = acSimple) and (IMax < FAInput.I) then
+          Result := Result + Format(_(rsErrAAlsoCurrent), [FormatMilliAmp(IMax)]);
+      end;
+    asNoStdValue: Result := _(rsErrNoStd);
+  else
+    Result := '';
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  AcLedVolt
+------------------------------------------------------------------------------
+  Wechselstrom: Spannung der LEDs als Text, z. B. "2 × 3,2 V"
+------------------------------------------------------------------------------}
+function TFormMain.AcLedVolt: string;
+begin
+  if FAInput.N > 1 then
+    Result := IntToStr(FAInput.N) + ' × ' + FormatVolt(FAInput.Ud)
+  else
+    Result := FormatVolt(FAInput.Ud);
+end;
+
+{------------------------------------------------------------------------------
+  AcDiodeName
+------------------------------------------------------------------------------
+  Name der empfohlenen Schutzdiode
+------------------------------------------------------------------------------}
+function TFormMain.AcDiodeName: string;
+begin
+  if FARes.Diode = ad1N4007 then Result := '1N4007' else Result := '1N4148';
+end;
+
+{------------------------------------------------------------------------------
+  AcRatingText
+------------------------------------------------------------------------------
+  Empfohlene Bauform des Widerstands als Text («½ W», «5 W» oder «> 100 W»)
+------------------------------------------------------------------------------}
+function AcRatingText(W: Double): string;
+begin
+  if W > 0 then Result := FormatRating(W) else Result := '> 100 W';
+end;
+
+{------------------------------------------------------------------------------
+  AcBridgeName, AcBridgeDiode
+------------------------------------------------------------------------------
+  Gleichrichter bzw. Einzeldioden: ab 0,5 A ein stärkerer Typ, damit Reserve
+  für die Ladestromspitzen des Elkos bleibt.
+------------------------------------------------------------------------------}
+function AcBridgeName(I: Double): string;
+begin
+  if I >= 0.5 then Result := 'B80C3200' else Result := 'B80C1500';
+end;
+
+function AcBridgeDiode(I: Double): string;
+begin
+  if I >= 0.5 then Result := '1N5408' else Result := '1N4007';
+end;
+
+{------------------------------------------------------------------------------
+  AcRechenwegLines
+------------------------------------------------------------------------------
+  Schritte des Rechenwegs für Wechselstrom mit den aktuellen Zahlen.
+------------------------------------------------------------------------------}
+function TFormMain.AcRechenwegLines: TStringArray;
+var
+  Res: TAcResult;                                        // Abkürzung
+  Ser: string;                                           // Name der Normreihe
+begin
+  Result := nil;
+  Res := FARes;
+  if Res.Status <> asOk then
+  begin
+    SetLength(Result, 1);
+    Result[0] := AcStatusText(Res.Status);
+    Exit;
+  end;
+  Ser := SeriesName(FAInput.Series);
+  SetLength(Result, 5);
+  if FAInput.Circuit = acSimple then
+  begin
+    Result[0] := Format(_(rsAStepS1), [FormatVolt(FAInput.U), FormatVolt(Res.UPeak)]);
+    Result[1] := ExactStd(Format(_(rsAStepS2), [FormatMilliAmp(FAInput.I), FormatVolt(Res.UPeak),
+      FormatVolt(Res.ULeds), FormatMilliAmp(FAInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R)]),
+      Ser, Res.RCalc, Res.R);
+    Result[2] := Format(_(rsAStepS3), [FormatVolt(Res.ULeds), FormatMilliAmp(Res.IPeak),
+      FormatMilliAmp(Res.IAvg), FormatPercent(Res.Brightness), FormatMilliAmp(FAInput.I)]);
+    Result[3] := Format(_(rsAStepS4), [FormatPower(Res.PR), AcRatingText(Res.RRating)]);
+    Result[4] := Format(_(rsAStepS5), [FormatVolt(Res.URevLed), FormatMilliAmp(Res.IRevPeak), AcDiodeName]);
+  end
+  else
+  begin
+    Result[0] := Format(_(rsAStepB1), [FormatVolt(Res.UPeak), FormatVolt(Res.UDc)]);
+    Result[1] := Format(_(rsAStepB2), [FormatVolt(Res.UDc), FormatVolt(Res.ULeds), FormatVolt(Res.RippleCalc),
+      FormatCap(Res.CCalc), FormatCap(Res.C)]);
+    Result[2] := Format(_(rsAStepB3), [FormatVolt(Res.UDc), FormatVolt(Res.Ripple), FormatVolt(Res.UMean),
+      FormatVolt(Res.UDc), FormatVolt(Res.CVolt)]);
+    Result[3] := ExactStd(Format(_(rsAStepB4), [FormatVolt(Res.UMean), FormatVolt(Res.ULeds),
+      FormatMilliAmp(FAInput.I), FormatOhm(Res.RCalc), Ser, FormatOhm(Res.R), FormatMilliAmp(Res.IAct)]),
+      Ser, Res.RCalc, Res.R);
+    Result[4] := Format(_(rsAStepB5), [FormatVolt(Res.UMean - Res.ULeds), FormatMilliAmp(Res.IAct),
+      FormatPower(Res.PR), AcRatingText(Res.RRating), FormatPower(Res.PLeds)]);
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  PaintAcSchematic
+------------------------------------------------------------------------------
+  Zeichnet den Schaltplan der gewählten Wechselstrom-Schaltung (uAcSchematic).
+------------------------------------------------------------------------------}
+procedure TFormMain.PaintAcSchematic;
+var
+  BC: TCanvas;                                           // Leinwand für das geglättete Zeichnen
+  BR: TRect;                                             // Zeichenfläche darauf
+  V: TAcSchemValues;                                     // Texte und Werte
+  Col: TBlinkSchemColors;                                // Farben
+  R: TRect;                                              // Zeichenfläche
+  Ok: Boolean;                                           // Resultat gültig
+  Dash: string;                                          // Platzhalter
+  LedName: string;                                       // Farbname der LED
+begin
+  Dash := '–';
+  Ok := FARes.Status = asOk;
+  LedName := LedColorName;
+  V := Default(TAcSchemValues);
+  if FAInput.U > 0 then V.UText := 'U = ' + FormatVolt(FAInput.U) + '~' else V.UText := 'U = ' + Dash;
+  if Ok then
+  begin
+    V.UPeakText := 'Û = ' + FormatVolt(FARes.UPeak);
+    V.RText := 'R = ' + FormatOhm(FARes.R);
+    if FAInput.Circuit = acSimple then
+      V.RSubText := 'Î = ' + FormatMilliAmp(FARes.IPeak)
+    else
+      V.RSubText := 'I = ' + FormatMilliAmp(FARes.IAct);
+    V.DiodeText := 'D ' + AcDiodeName;
+    V.CapText := 'C = ' + FormatCap(FARes.C);
+    V.CapSubText := FormatVolt(FARes.CVolt);
+    V.UDcText := 'U_D_C = ' + FormatVolt(FARes.UDc);
+    V.Bands := FABands;
+  end
+  else
+  begin
+    V.RText := 'R = ' + Dash;
+    V.RSubText := '';
+    V.DiodeText := 'D';
+    V.CapText := 'C = ' + Dash;
+  end;
+  V.DiodeSubText := _(rsACardDiode);
+  V.BridgeText := AcBridgeName(FAInput.I);
+  V.BridgeSubText := Format(_(rsSchemBridgeAlt), [AcBridgeDiode(FAInput.I)]);
+  if FAInput.N > 1 then
+  begin
+    V.LedText := Format(_(rsSchemLedN), [FAInput.N, LedName]);
+    V.UFText := Format(_(rsSchemUFN), [FAInput.N, FormatVolt(FAInput.Ud)]);
+  end
+  else
+  begin
+    V.LedText := Format(_(rsSchemLed), [LedName]);
+    V.UFText := Format(_(rsSchemUF), [FormatVolt(FAInput.Ud)]);
+  end;
+  V.LedCount := FAInput.N;                               // ab 4: LED, Punkte, LED
+  V.LedColor := LedGlowColor(CurrentLed);
+
+  Col.Line := clrLine;
+  Col.Text := clrLine;
+  Col.Accent := clrAccent;
+  Col.Dim := clrTextDim;
+  Col.Body := clrPanel;
+  Col.LedOff := MixColor(V.LedColor, clrDeep, 0.22);
+
+  R := PaintSchematic.ClientRect;
+  InflateRect(R, -Px(16), -Px(16));
+  if not BeginSmooth(PaintSchematic.Canvas, R, clrDeep, '', BC, BR) then Exit;
+  if FAInput.Circuit = acSimple then
+    DrawSchematicAcSimple(BC, BR, V, Col)
+  else
+    DrawSchematicAcBridge(BC, BR, V, Col);
+  EndSmooth;
+end;
+
+{------------------------------------------------------------------------------
+  PaintAcCards
+------------------------------------------------------------------------------
+  Zeichnet die Resultatkarten für Wechselstrom:
+    Einfach:       Vorwiderstand, mittlerer Strom, Spitzenspannung, Schutzdiode
+    Ohne Flackern: Vorwiderstand, LED-Strom, Elko, Gleichrichter
+------------------------------------------------------------------------------}
+procedure TFormMain.PaintAcCards;
+var
+  C: TCanvas;                                            // Zeichenfläche
+  Gap, W, X, I: Integer;                                 // Abstand, Breite einer Karte, Position, Zähler
+  R: TRect;                                              // aktuelle Karte
+  Pad: Integer;                                          // Innenabstand
+  Ok: Boolean;                                           // Resultat gültig
+  Simple: Boolean;                                       // Schaltung Einfach
+  T, Sub: string;                                        // Texte
+  TH, SubTop: Integer;                                   // Zeilenhöhe, Oberkante des Untertexts
+  ResTop, ResBot: Integer;                               // Lage des gezeichneten Widerstands
+
+  {----------------------------------------------------------------------------
+    Card
+  ----------------------------------------------------------------------------
+    Kartenrahmen, Titel, grosser Wert (passt sich der Breite an) und Untertext
+  ----------------------------------------------------------------------------}
+  procedure Card(const ATitle, AValue, ASub: string; AValueColor: TColor);
+  var
+    Y, Size: Integer;                                    // laufende Zeile, Schriftgrösse
+    H15: Integer;                                        // Zeilenhöhe bei voller Schriftgrösse
+  begin
+    C.Brush.Style := bsSolid;
+    C.Brush.Color := clrPanel;
+    C.Pen.Color := clrBorder;
+    C.Pen.Width := 1;
+    C.Rectangle(R);
+    C.Brush.Style := bsClear;
+    Y := R.Top + Pad;
+    C.Font.Name := FONT_UI;
+    C.Font.Size := 8;
+    C.Font.Style := [];
+    C.Font.Color := clrTextDim;
+    C.TextOut(R.Left + Pad, Y, ATitle);
+    Inc(Y, C.TextHeight('Ag') + Px(2));
+    C.Font.Style := [fsBold];
+    C.Font.Color := AValueColor;
+    Size := 15;
+    C.Font.Size := Size;
+    H15 := C.TextHeight('Ag');
+    while (Size > 9) and (C.TextWidth(AValue) > R.Right - R.Left - 2 * Pad) do
+    begin
+      Dec(Size);
+      C.Font.Size := Size;
+    end;
+    C.TextOut(R.Left + Pad, Y + H15 - C.TextHeight('Ag'), AValue);
+    Inc(Y, H15);
+    C.Font.Size := 8;
+    C.Font.Style := [];
+    C.Font.Color := clrTextSoft;
+    if ASub <> '' then
+      DrawCardSub(C, Types.Rect(R.Left + Pad, Y, R.Right - Pad, R.Bottom - Pad), KeepUnits(ASub));
+  end;
+
+begin
+  C := PaintCards.Canvas;
+  C.Brush.Color := clrWindow;
+  C.FillRect(PaintCards.ClientRect);
+  Gap := Px(8);
+  Pad := Px(10);
+  W := (PaintCards.Width - 3 * Gap) div 4;
+  Ok := FARes.Status = asOk;
+  Simple := FAInput.Circuit = acSimple;
+  X := 0;
+  for I := 0 to 3 do
+  begin
+    if I = 3 then
+      R := Types.Rect(X, 0, PaintCards.Width, PaintCards.Height)
+    else
+      R := Types.Rect(X, 0, X + W, PaintCards.Height);
+    C.ClipRect := R;
+    C.Clipping := True;
+    case I of
+      0:
+        begin
+          // Vorwiderstand mit Farbringen, Bauform und Leistung (wie Konstantstrom)
+          T := Format(_(rsBCardRv), [SeriesName(FAInput.Series)]);
+          if Ok then
+          begin
+            Card(T, FormatOhm(FARes.R), '', clrTextBright);
+            Sub := Format(_(rsKCardRSub), [BandNames(FABands, ' · '), AcRatingText(FARes.RRating),
+              FormatPower(FARes.PR)]);
+            C.Font.Size := 8;
+            C.Font.Style := [];
+            C.Font.Color := clrTextSoft;
+            TH := C.TextHeight('Ag');
+            if C.TextWidth(Sub) > R.Right - R.Left - 2 * Pad then
+              SubTop := R.Bottom - Pad - 2 * TH
+            else
+              SubTop := R.Bottom - Pad - TH;
+            C.Brush.Style := bsClear;
+            DrawCardSub(C, Types.Rect(R.Left + Pad, SubTop, R.Right - Pad, R.Bottom - Pad), KeepUnits(Sub));
+            ResBot := Min(R.Top + Px(80), SubTop - Px(4));
+            ResTop := Max(R.Top + Px(58), ResBot - Px(24));
+            if ResBot - ResTop >= Px(10) then
+              DrawResistor(C, Types.Rect(R.Left + Pad, ResTop,
+                R.Left + Pad + Min(Px(150), R.Right - R.Left - 2 * Pad), ResBot), FABands);
+          end
+          else
+            Card(T, '–', '', clrTextBright);
+        end;
+      1:
+        if not Ok and Simple then
+          Card(_(rsACardIAvg), '–', '', clrTextBright)
+        else if not Ok then
+          Card(_(rsKCardI), '–', '', clrTextBright)
+        else if Simple then
+          Card(_(rsACardIAvg), FormatMilliAmp(FARes.IAvg), Format(_(rsACardIAvgSub),
+            [FormatMilliAmp(FARes.IPeak), FormatPercent(FARes.Brightness), FormatMilliAmp(FAInput.I)]),
+            clrTextBright)
+        else
+          Card(_(rsKCardI), FormatMilliAmp(FARes.IAct), Format(_(rsACardISubB),
+            [FormatMilliAmp(FAInput.I), FormatPercent(FARes.IRipple)]), clrTextBright);
+      2:
+        if Simple then
+        begin
+          if FAInput.U > 0 then
+            Sub := Format(_(rsACardPeakSub), [FormatVolt(FAInput.U) + '~'])
+          else
+            Sub := '';
+          if Ok then
+            Card(_(rsACardPeak), FormatVolt(FARes.UPeak), Sub, clrTextBright)
+          else
+            Card(_(rsACardPeak), '–', '', clrTextBright);
+        end
+        else if Ok then
+        begin
+          if awBigCap in FARes.Warnings then
+            Card(_(rsACardCap), FormatCap(FARes.C), Format(_(rsACardCapSub), [FormatVolt(FARes.CVolt)]), clrWarn)
+          else
+            Card(_(rsACardCap), FormatCap(FARes.C), Format(_(rsACardCapSub), [FormatVolt(FARes.CVolt)]), clrOk);
+        end
+        else
+          Card(_(rsACardCap), '–', '', clrTextBright);
+      3:
+        if Simple then
+        begin
+          if Ok then
+            Card(_(rsACardDiode), AcDiodeName, Format(_(rsACardDiodeSub),
+              [FormatVolt(FARes.URevLed), FormatVolt(FARes.UPeak)]), clrOk)
+          else
+            Card(_(rsACardDiode), '–', '', clrTextBright);
+        end
+        else if Ok then
+          Card(_(rsACardBridge), AcBridgeName(FAInput.I), Format(_(rsACardBridgeSub),
+            [AcBridgeDiode(FAInput.I), FormatVolt(FARes.UDc)]), clrOk)
+        else
+          Card(_(rsACardBridge), '–', '', clrTextBright);
+    end;
+    C.Clipping := False;
+    Inc(X, W + Gap);
+  end;
+end;
+
+{------------------------------------------------------------------------------
+  AcStatus
+------------------------------------------------------------------------------
+  Hinweis-Kästchen und Text der Statuszeile für Wechselstrom.
+  Ablauf:
+    1. Fehler: rotes Kästchen mit dem Grund
+    2. Hinweise (Widerstand über 1 W, grosser Elko): gelb
+    3. Sonst OK (grün) mit dem Hinweis zur Schaltung
+------------------------------------------------------------------------------}
+procedure TFormMain.AcStatus(out ChipText, Txt: string; out Sym: Integer; out Fore, Back: TColor);
+var
+  N: Integer;                                            // Anzahl Hinweise
+  Alt: TAcInput;                                         // gleiche Eingaben mit «Ohne Flackern»
+  BridgeOk: Boolean;                                     // «Ohne Flackern» ginge mit denselben Werten
+begin
+  // ----- 1. Fehler -----
+  if FARes.Status <> asOk then
+  begin
+    ChipText := '';
+    Sym := 2;
+    Fore := clrError;
+    Back := clrErrorBack;
+    Txt := AcStatusText(FARes.Status);
+    Exit;
+  end;
+  // ----- 2. Hinweise -----
+  Alt := FAInput;                                        // ginge «Ohne Flackern» mit denselben Werten?
+  Alt.Circuit := acBridge;
+  BridgeOk := CalculateAc(Alt).Status = asOk;
+  N := 0;
+  if awDim in FARes.Warnings then
+  begin
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipDim);
+      // «Ohne Flackern» nur nennen, wenn es mit denselben Werten geht
+      if (FAInput.N > 1) and BridgeOk then
+        Txt := Format(_(rsAWarnDim), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])
+      else if FAInput.N > 1 then
+        Txt := Format(_(rsAWarnDim3), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])
+      else if FAInput.U >= AC_U_MAX - 1e-9 then
+        Txt := Format(_(rsAWarnDim2), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])   // mehr Spannung geht nicht
+      else if BridgeOk then
+        Txt := Format(_(rsAWarnDim1), [FormatPercent(Floor(FARes.Brightness * 100) / 100)])   // eine LED: mehr Spannung
+      else
+        Txt := Format(_(rsAWarnDim4), [FormatPercent(Floor(FARes.Brightness * 100) / 100)]);
+    end;
+    Inc(N);
+  end;
+  if awRPower in FARes.Warnings then
+  begin
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipRPower);
+      if FAInput.Circuit = acSimple then
+        Txt := Format(_(rsAWarnRPower), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)])
+      else
+        Txt := Format(_(rsAWarnRPowerB), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)]);
+    end;
+    Inc(N);
+  end;
+  if awBigCap in FARes.Warnings then
+  begin
+    if N = 0 then
+    begin
+      ChipText := _(rsAChipBigCap);
+      Txt := Format(_(rsAWarnBigCap), [FormatCap(FARes.C)]);
+    end;
+    Inc(N);
+  end;
+  if N > 1 then
+    Txt := Txt + Format(_(rsMoreHints), [N - 1]);    // weitere Hinweise nur gezählt
+  if N > 0 then
+  begin
+    Sym := 1;
+    Fore := clrWarn;
+    Back := clrWarnBack;
+    Exit;
+  end;
+  // ----- 3. OK -----
+  ChipText := _(rsAChipOk);
+  if (FAInput.Circuit = acSimple) and BridgeOk then
+    Txt := _(rsAOkSimple)
+  else if FAInput.Circuit = acSimple then
+    Txt := _(rsAOkSimple2)                               // «Ohne Flackern» reicht hier nicht
+  else
+    Txt := _(rsAOkBridge);
+  Sym := 0;
+  Fore := clrOk;
+  Back := clrOkBack;
+end;
+
+{------------------------------------------------------------------------------
+  AcSummary
+------------------------------------------------------------------------------
+  Zusammenfassung für die Zwischenablage (Wechselstrom).
+------------------------------------------------------------------------------}
+function TFormMain.AcSummary: string;
+var
+  SL: TStringList;                                       // Zeilen
+begin
+  if FARes.Status <> asOk then
+    Exit(StringReplace(AcStatusText(FARes.Status), '_', '', [rfReplaceAll]));
+  SL := TStringList.Create;
+  try
+    SL.Add(Format(_(rsACopyTitle), [APP_VER, ComboAc.Text]));
+    SL.Add(StringReplace(Format(_(rsACopyInput), [FormatVolt(FAInput.U), FAInput.N, LedColorName,
+      FormatVolt(FAInput.Ud), FormatMilliAmp(FAInput.I)]), '_', '', [rfReplaceAll]));
+    SL.Add(Format(_(rsCopyStd), [FormatOhm(FARes.R), SeriesName(FAInput.Series), BandNames(FABands, '-'),
+      FormatOhm(FARes.RCalc)]));
+    if FAInput.Circuit = acSimple then
+    begin
+      SL.Add(Format(_(rsACopyISimple), [FormatMilliAmp(FARes.IPeak), FormatMilliAmp(FARes.IAvg)]));
+      SL.Add(Format(_(rsACopyDiode), [AcDiodeName]));
+    end
+    else
+    begin
+      SL.Add(Format(_(rsCopyCurrent), [FormatMilliAmp(FARes.IAct)]));
+      SL.Add(Format(_(rsACopyCap), [FormatCap(FARes.C), FormatVolt(FARes.CVolt)]));
+      SL.Add(Format(_(rsACopyBridge), [AcBridgeName(FAInput.I), AcBridgeDiode(FAInput.I)]));
+    end;
+    SL.Add(Format(_(rsACopyPower), [FormatPower(FARes.PR), AcRatingText(FARes.RRating)]));
     Result := TrimRight(SL.Text);
   finally
     SL.Free;

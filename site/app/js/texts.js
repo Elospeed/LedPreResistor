@@ -1,4 +1,4 @@
-/* texts.js - alle sichtbaren Texte [Deutsch, Englisch], erzeugt aus uMain.pas und lang/en.po (Windows 2.5.2) */
+/* texts.js - alle sichtbaren Texte [Deutsch, Englisch], erzeugt aus uMain.pas und lang/en.po (Windows 2.7) */
 window.LPR_TEXTS = {
 "rsCaption": [
 "LedPreResistor · Elospeed %s",
@@ -1171,5 +1171,257 @@ window.LPR_TEXTS = {
 "rsAbout": [
 "LedPreResistor %s\nVorwiderstand für LEDs berechnen.\n\n© 2026 Elospeed – freie Software (MIT-Lizenz)\nNeuauflage der Freeware «LED Pre-Resistor» von 2004.",
 "LedPreResistor %s\nCalculates the series resistor for LEDs.\n\n© 2026 Elospeed – free software (MIT license)\nNew edition of the 2004 freeware \"LED Pre-Resistor\"."
+],
+"rsTabAc": [
+"Wechselstrom",
+"AC supply"
+],
+"rsLabelTrafo": [
+"Trafospannung",
+"AC voltage"
+],
+"rsAcSimple": [
+"Einfach (mit Schutzdiode)",
+"Simple (protection diode)"
+],
+"rsAcBridge": [
+"Ohne Flackern (mit Elko)",
+"Flicker-free (capacitor)"
+],
+"rsACardIAvg": [
+"Mittlerer LED-Strom",
+"Average LED current"
+],
+"rsACardIAvgSub": [
+"Spitze %s; etwa %s der Helligkeit mit %s Gleichstrom",
+"Peak %s; about %s of the brightness at %s DC"
+],
+"rsACardISubB": [
+"Soll %s; schwankt um ±%s (100 Hz, nicht sichtbar)",
+"Target %s; varies by ±%s (100 Hz, not visible)"
+],
+"rsACardPeak": [
+"Spitzenspannung",
+"Peak voltage"
+],
+"rsACardPeakSub": [
+"%s × √2; ein Trafo ohne Last liefert oft etwas mehr",
+"%s × √2; an unloaded transformer often gives a bit more"
+],
+"rsACardDiode": [
+"Schutzdiode",
+"Protection diode"
+],
+"rsACardDiodeSub": [
+"antiparallel zu den LEDs: Sperrspannung nur %s statt %s",
+"anti-parallel to LEDs: reverse voltage %s instead of %s"
+],
+"rsACardCap": [
+"Elko",
+"Capacitor"
+],
+"rsACardCapSub": [
+"mindestens %s; Plus an «+» des Gleichrichters",
+"at least %s; plus to «+» of the rectifier"
+],
+"rsACardBridge": [
+"Gleichrichter",
+"Rectifier"
+],
+"rsACardBridgeSub": [
+"oder 4 × %s; am Elko bis %s",
+"or 4 × %s; up to %s at the capacitor"
+],
+"rsAStepS1": [
+"Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**",
+"Peak voltage: Û = U × √2 = %s × 1.414 = **%s**"
+],
+"rsAStepS2": [
+"In der Spitze höchstens %s: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s**",
+"At most %s at the peak: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → next %s value up: **%s**"
+],
+"rsAStepS3": [
+"Strom nur in einer Halbwelle, solange mehr als %s anliegen: Spitze Î = **%s**, Mittelwert **%s** (ca. %s von %s)",
+"Current flows in one half-wave only, while more than %s is applied: peak Î = **%s**, average **%s** (approx. %s of %s)"
+],
+"rsAStepS4": [
+"Leistung am R über beide Halbwellen (die negative fliesst über D): **%s** → %s",
+"Power in R over both half-waves (the negative one flows through D): **%s** → %s"
+],
+"rsAStepS5": [
+"Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**",
+"Protection diode D: LEDs often withstand only 5 V reverse voltage, D limits it to %s · current through D up to %s → **%s**"
+],
+"rsAStepB1": [
+"Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**",
+"Rectifier (2 diodes in the current path): U_D_C = U × √2 − 2 × 0.7 V = %s − 1.4 V = **%s**"
+],
+"rsAStepB2": [
+"Elko für ca. ±10 %% Stromschwankung: ΔU = 0,2 × (%s − %s) / 1,1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**",
+"Capacitor for approx. ±10%% current ripple: ΔU = 0.2 × (%s − %s) / 1.1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**"
+],
+"rsAStepB3": [
+"Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**",
+"Average voltage at the capacitor: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · capacitor voltage at least 1.25 × %s → **%s**"
+],
+"rsAStepB4": [
+"R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**",
+"R = (%s − %s) / %s = %s → next %s value up: **%s** → I = **%s**"
+],
+"rsAStepB5": [
+"Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s",
+"Power in R: P = %s × %s = **%s** → %s · in the LEDs: %s"
+],
+"rsLegendAcS": [
+"U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode",
+"U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I peak current entered · Î peak current with the standard value · D protection diode"
+],
+"rsLegendAcB": [
+"U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom",
+"U AC voltage (RMS) · U_D_C capacitor voltage (peak) · ΔU ripple voltage · ΔU′ ripple with the standard value · C capacitor · U_L_E_D voltage of all LEDs · I LED current"
+],
+"rsErrAU": [
+"Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).",
+"Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
+],
+"rsErrAUTooLow": [
+"Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).",
+"AC voltage %s~ too low for %s at the LEDs: at least %s~ needed or fewer LEDs (at most %d)."
+],
+"rsErrACurrent": [
+"Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.",
+"More than 1 A is too much for these circuits: choose a smaller current."
+],
+"rsAChipOk": [
+"Schaltung passt",
+"Circuit OK"
+],
+"rsAOkSimple": [
+"Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen",
+"Visible flicker (50 Hz) and dimmer: choose «Flicker-free» for full brightness"
+],
+"rsAOkBridge": [
+"Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)",
+"No visible flicker; fit the capacitor the right way round (plus to «+»)"
+],
+"rsAChipRPower": [
+"Leistungs-R nötig",
+"Power resistor needed"
+],
+"rsAWarnRPower": [
+"R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen",
+"R dissipates %s (mostly in the negative half-wave): use a %s type or a smaller current"
+],
+"rsAChipBigCap": [
+"grosser Elko",
+"large capacitor"
+],
+"rsAWarnBigCap": [
+"Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen",
+"The capacitor gets very large (%s): a smaller current, fewer LEDs in series or a higher AC voltage help"
+],
+"rsACopyTitle": [
+"LedPreResistor %s – Wechselstrom: %s",
+"LedPreResistor %s – AC supply: %s"
+],
+"rsACopyInput": [
+"Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s",
+"AC voltage %s~, %d × %s LED with U_F = %s, current %s"
+],
+"rsACopyISimple": [
+"LED-Strom: Spitze %s, Mittelwert %s",
+"LED current: peak %s, average %s"
+],
+"rsACopyDiode": [
+"Schutzdiode antiparallel zu den LEDs: %s",
+"Protection diode anti-parallel to the LEDs: %s"
+],
+"rsACopyCap": [
+"Elko: %s, mindestens %s",
+"Capacitor: %s, at least %s"
+],
+"rsACopyBridge": [
+"Gleichrichter: %s (oder 4 × %s)",
+"Rectifier: %s (or 4 × %s)"
+],
+"rsACopyPower": [
+"Leistung am Widerstand: %s → %s",
+"Power in the resistor: %s → %s"
+],
+"rsErrAUMax": [
+"Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen.",
+"At most %s~ (extra-low voltage): never connect mains voltage directly to an LED circuit."
+],
+"rsErrARev": [
+"In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen.",
+"In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s or choose «Flicker-free»."
+],
+"rsAChipDim": [
+"sehr dunkel",
+"very dim"
+],
+"rsAWarnDim": [
+"Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen",
+"Only %s of the brightness: fewer LEDs in series or choose «Flicker-free»"
+],
+"rsLabelIPeak": [
+"Spitzenstrom",
+"Peak current"
+],
+"rsSchemBridgeAlt": [
+"oder 4 × %s",
+"or 4 × %s"
+],
+"rsSchemNoRoom": [
+"Zu wenig Platz für den Schaltplan: Rechenweg zuklappen",
+"Not enough room for the schematic: collapse the calculation steps"
+],
+"rsErrAUTooLowN": [
+"Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d).",
+"AC voltage %s~ too low for %s at the LEDs: fewer LEDs in series (at most %d)."
+],
+"rsErrAUTooLow1": [
+"Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
+"AC voltage %s~ too low for %s at the LEDs: at least %s~ needed."
+],
+"rsAWarnDim1": [
+"Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen",
+"Only %s of the brightness: a higher AC voltage or choose «Flicker-free»"
+],
+"rsAWarnRPowerB": [
+"R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung",
+"R dissipates %s: use a %s type, more LEDs in series or a lower AC voltage"
+],
+"rsErrAUTooLowMax": [
+"Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen.",
+"For %s at the LEDs even %s~ is not enough: choose LEDs with a lower forward voltage."
+],
+"rsErrARev2": [
+"In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken.",
+"In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
+],
+"rsErrAUTooLow42": [
+"Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d).",
+"AC voltage %s~ too low for %s at the LEDs: even with %s~ only fewer LEDs (at most %d)."
+],
+"rsAWarnDim2": [
+"Nur %s der Helligkeit: «Ohne Flackern» wählen",
+"Only %s of the brightness: choose «Flicker-free»"
+],
+"rsErrAAlsoCurrent": [
+" Dann zusätzlich den Spitzenstrom auf höchstens %s senken (Rückstrom durch die Schutzdiode).",
+" Then also lower the peak current to at most %s (reverse current through the protection diode)."
+],
+"rsAWarnDim3": [
+"Nur %s der Helligkeit: weniger LEDs in Reihe",
+"Only %s of the brightness: fewer LEDs in series"
+],
+"rsAWarnDim4": [
+"Nur %s der Helligkeit: mehr Trafospannung",
+"Only %s of the brightness: a higher AC voltage"
+],
+"rsAOkSimple2": [
+"Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht",
+"Visible flicker (50 Hz) and dimmer; the AC voltage is not enough for «Flicker-free»"
 ]
 };

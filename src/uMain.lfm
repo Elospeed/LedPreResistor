@@ -472,6 +472,18 @@ object FormMain: TFormMain
       TabOrder = 20
       Visible = False
     end
+    object ComboAc: TComboBox
+      Left = 16
+      Height = 24
+      Top = 30
+      Width = 237
+      ItemHeight = 20
+      OnChange = AcCircuitChange
+      OnDrawItem = ComboDrawItem
+      Style = csOwnerDrawFixed
+      TabOrder = 21
+      Visible = False
+    end
     object LabelHeadSupply: TLabel
       Left = 16
       Height = 15

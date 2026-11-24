@@ -1114,3 +1114,258 @@ msgstr "Entirely optional – the program stays free. This note won't appear aga
 #: uMain.pas rsDankSchliessen
 msgid "Schliessen"
 msgstr "Close"
+
+#: uMain.pas rsTabAc
+msgid "Wechselstrom"
+msgstr "AC supply"
+
+#: uMain.pas rsLabelTrafo
+msgid "Trafospannung"
+msgstr "AC voltage"
+
+#: uMain.pas rsAcSimple
+msgid "Einfach (mit Schutzdiode)"
+msgstr "Simple (protection diode)"
+
+#: uMain.pas rsAcBridge
+msgid "Ohne Flackern (mit Elko)"
+msgstr "Flicker-free (capacitor)"
+
+
+#: uMain.pas rsACardIAvg
+msgid "Mittlerer LED-Strom"
+msgstr "Average LED current"
+
+#: uMain.pas rsACardIAvgSub
+msgid "Spitze %s; etwa %s der Helligkeit mit %s Gleichstrom"
+msgstr "Peak %s; about %s of the brightness at %s DC"
+
+#: uMain.pas rsACardISubB
+msgid "Soll %s; schwankt um ±%s (100 Hz, nicht sichtbar)"
+msgstr "Target %s; varies by ±%s (100 Hz, not visible)"
+
+#: uMain.pas rsACardPeak
+msgid "Spitzenspannung"
+msgstr "Peak voltage"
+
+#: uMain.pas rsACardPeakSub
+msgid "%s × √2; ein Trafo ohne Last liefert oft etwas mehr"
+msgstr "%s × √2; an unloaded transformer often gives a bit more"
+
+#: uMain.pas rsACardDiode
+msgid "Schutzdiode"
+msgstr "Protection diode"
+
+#: uMain.pas rsACardDiodeSub
+msgid "antiparallel zu den LEDs: Sperrspannung nur %s statt %s"
+msgstr "anti-parallel to LEDs: reverse voltage %s instead of %s"
+
+#: uMain.pas rsACardCap
+msgid "Elko"
+msgstr "Capacitor"
+
+#: uMain.pas rsACardCapSub
+msgid "mindestens %s; Plus an «+» des Gleichrichters"
+msgstr "at least %s; plus to «+» of the rectifier"
+
+#: uMain.pas rsACardBridge
+msgid "Gleichrichter"
+msgstr "Rectifier"
+
+#: uMain.pas rsACardBridgeSub
+msgid "oder 4 × %s; am Elko bis %s"
+msgstr "or 4 × %s; up to %s at the capacitor"
+
+
+#: uMain.pas rsAStepS1
+msgid "Spitzenspannung: Û = U × √2 = %s × 1,414 = **%s**"
+msgstr "Peak voltage: Û = U × √2 = %s × 1.414 = **%s**"
+
+#: uMain.pas rsAStepS2
+msgid "In der Spitze höchstens %s: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s**"
+msgstr "At most %s at the peak: R = (Û − U_L_E_D) / I = (%s − %s) / %s = %s → next %s value up: **%s**"
+
+#: uMain.pas rsAStepS3
+msgid "Strom nur in einer Halbwelle, solange mehr als %s anliegen: Spitze Î = **%s**, Mittelwert **%s** (ca. %s von %s)"
+msgstr "Current flows in one half-wave only, while more than %s is applied: peak Î = **%s**, average **%s** (approx. %s of %s)"
+
+#: uMain.pas rsAStepS4
+msgid "Leistung am R über beide Halbwellen (die negative fliesst über D): **%s** → %s"
+msgstr "Power in R over both half-waves (the negative one flows through D): **%s** → %s"
+
+#: uMain.pas rsAStepS5
+msgid "Schutzdiode D: LEDs vertragen oft nur 5 V Sperrspannung, mit D liegen nur %s an · Strom durch D bis %s → **%s**"
+msgstr "Protection diode D: LEDs often withstand only 5 V reverse voltage, D limits it to %s · current through D up to %s → **%s**"
+
+#: uMain.pas rsAStepB1
+msgid "Gleichrichter (2 Dioden im Stromweg): U_D_C = U × √2 − 2 × 0,7 V = %s − 1,4 V = **%s**"
+msgstr "Rectifier (2 diodes in the current path): U_D_C = U × √2 − 2 × 0.7 V = %s − 1.4 V = **%s**"
+
+#: uMain.pas rsAStepB2
+msgid "Elko für ca. ±10 %% Stromschwankung: ΔU = 0,2 × (%s − %s) / 1,1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**"
+msgstr "Capacitor for approx. ±10%% current ripple: ΔU = 0.2 × (%s − %s) / 1.1 = %s → C = I / (2 × 50 Hz × ΔU) = %s → **%s**"
+
+#: uMain.pas rsAStepB3
+msgid "Mittlere Spannung am Elko: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · Elko-Spannung mindestens 1,25 × %s → **%s**"
+msgstr "Average voltage at the capacitor: U_D_C − ΔU′ / 2 = %s − %s / 2 = **%s** · capacitor voltage at least 1.25 × %s → **%s**"
+
+#: uMain.pas rsAStepB4
+msgid "R = (%s − %s) / %s = %s → nächster %s-Wert darüber: **%s** → I = **%s**"
+msgstr "R = (%s − %s) / %s = %s → next %s value up: **%s** → I = **%s**"
+
+#: uMain.pas rsAStepB5
+msgid "Leistung am R: P = %s × %s = **%s** → %s · in den LEDs: %s"
+msgstr "Power in R: P = %s × %s = **%s** → %s · in the LEDs: %s"
+
+#: uMain.pas rsLegendAcS
+msgid "U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode"
+msgstr "U AC voltage (RMS) · Û peak voltage · U_L_E_D voltage of all LEDs · I peak current entered · Î peak current with the standard value · D protection diode"
+
+#: uMain.pas rsLegendAcB
+msgid "U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom"
+msgstr "U AC voltage (RMS) · U_D_C capacitor voltage (peak) · ΔU ripple voltage · ΔU′ ripple with the standard value · C capacitor · U_L_E_D voltage of all LEDs · I LED current"
+
+#: uMain.pas rsErrAU
+msgid "Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung)."
+msgstr "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
+
+#: uMain.pas rsErrAUTooLow
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: at least %s~ needed or fewer LEDs (at most %d)."
+
+#: uMain.pas rsErrACurrent
+msgid "Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen."
+msgstr "More than 1 A is too much for these circuits: choose a smaller current."
+
+#: uMain.pas rsAChipOk
+msgid "Schaltung passt"
+msgstr "Circuit OK"
+
+#: uMain.pas rsAOkSimple
+msgid "Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen"
+msgstr "Visible flicker (50 Hz) and dimmer: choose «Flicker-free» for full brightness"
+
+#: uMain.pas rsAOkBridge
+msgid "Kein sichtbares Flackern; Elko richtig herum einbauen (Plus an «+»)"
+msgstr "No visible flicker; fit the capacitor the right way round (plus to «+»)"
+
+#: uMain.pas rsAChipRPower
+msgid "Leistungs-R nötig"
+msgstr "Power resistor needed"
+
+#: uMain.pas rsAWarnRPower
+msgid "R verheizt %s (vor allem in der negativen Halbwelle): Bauform %s nehmen oder den Strom kleiner wählen"
+msgstr "R dissipates %s (mostly in the negative half-wave): use a %s type or a smaller current"
+
+#: uMain.pas rsAChipBigCap
+msgid "grosser Elko"
+msgstr "large capacitor"
+
+#: uMain.pas rsAWarnBigCap
+msgid "Der Elko wird sehr gross (%s): kleinerer Strom, weniger LEDs in Reihe oder mehr Trafospannung helfen"
+msgstr "The capacitor gets very large (%s): a smaller current, fewer LEDs in series or a higher AC voltage help"
+
+#: uMain.pas rsACopyTitle
+msgid "LedPreResistor %s – Wechselstrom: %s"
+msgstr "LedPreResistor %s – AC supply: %s"
+
+#: uMain.pas rsACopyInput
+msgid "Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s"
+msgstr "AC voltage %s~, %d × %s LED with U_F = %s, current %s"
+
+
+#: uMain.pas rsACopyISimple
+msgid "LED-Strom: Spitze %s, Mittelwert %s"
+msgstr "LED current: peak %s, average %s"
+
+#: uMain.pas rsACopyDiode
+msgid "Schutzdiode antiparallel zu den LEDs: %s"
+msgstr "Protection diode anti-parallel to the LEDs: %s"
+
+#: uMain.pas rsACopyCap
+msgid "Elko: %s, mindestens %s"
+msgstr "Capacitor: %s, at least %s"
+
+#: uMain.pas rsACopyBridge
+msgid "Gleichrichter: %s (oder 4 × %s)"
+msgstr "Rectifier: %s (or 4 × %s)"
+
+#: uMain.pas rsACopyPower
+msgid "Leistung am Widerstand: %s → %s"
+msgstr "Power in the resistor: %s → %s"
+
+#: uMain.pas rsErrAUMax
+msgid "Höchstens %s~ (Kleinspannung): Netzspannung nie direkt an eine LED-Schaltung anschliessen."
+msgstr "At most %s~ (extra-low voltage): never connect mains voltage directly to an LED circuit."
+
+#: uMain.pas rsErrARev
+msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken oder «Ohne Flackern» wählen."
+msgstr "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s or choose «Flicker-free»."
+
+#: uMain.pas rsAChipDim
+msgid "sehr dunkel"
+msgstr "very dim"
+
+#: uMain.pas rsAWarnDim
+msgid "Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: fewer LEDs in series or choose «Flicker-free»"
+
+#: uMain.pas rsLabelIPeak
+msgid "Spitzenstrom"
+msgstr "Peak current"
+
+#: uMain.pas rsErrAUTooLowN
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: fewer LEDs in series (at most %d)."
+
+#: uMain.pas rsErrAUTooLow1
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
+msgstr "AC voltage %s~ too low for %s at the LEDs: at least %s~ needed."
+
+#: uMain.pas rsAWarnDim1
+msgid "Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: a higher AC voltage or choose «Flicker-free»"
+
+#: uMain.pas rsAWarnRPowerB
+msgid "R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung"
+msgstr "R dissipates %s: use a %s type, more LEDs in series or a lower AC voltage"
+
+#: uMain.pas rsErrAUTooLowMax
+msgid "Für %s an den LEDs reichen auch %s~ nicht: LEDs mit kleinerer Durchlassspannung wählen."
+msgstr "For %s at the LEDs even %s~ is not enough: choose LEDs with a lower forward voltage."
+
+#: uMain.pas rsErrARev2
+msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken."
+msgstr "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
+
+#: uMain.pas rsErrAUTooLow42
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: even with %s~ only fewer LEDs (at most %d)."
+
+#: uMain.pas rsAWarnDim2
+msgid "Nur %s der Helligkeit: «Ohne Flackern» wählen"
+msgstr "Only %s of the brightness: choose «Flicker-free»"
+
+#: uMain.pas rsErrAAlsoCurrent
+msgid " Dann zusätzlich den Spitzenstrom auf höchstens %s senken (Rückstrom durch die Schutzdiode)."
+msgstr " Then also lower the peak current to at most %s (reverse current through the protection diode)."
+
+#: uMain.pas rsAWarnDim3
+msgid "Nur %s der Helligkeit: weniger LEDs in Reihe"
+msgstr "Only %s of the brightness: fewer LEDs in series"
+
+#: uMain.pas rsAWarnDim4
+msgid "Nur %s der Helligkeit: mehr Trafospannung"
+msgstr "Only %s of the brightness: a higher AC voltage"
+
+#: uMain.pas rsAOkSimple2
+msgid "Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht"
+msgstr "Visible flicker (50 Hz) and dimmer; the AC voltage is not enough for «Flicker-free»"
+
+#: uMain.pas rsSchemNoRoom
+msgid "Zu wenig Platz für den Schaltplan: Rechenweg zuklappen"
+msgstr "Not enough room for the schematic: collapse the calculation steps"
+
+#: uMain.pas rsSchemBridgeAlt
+msgid "oder 4 × %s"
+msgstr "or 4 × %s"

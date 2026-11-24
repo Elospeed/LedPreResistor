@@ -22,7 +22,7 @@ program LedPreResistorTests;
 uses
   Interfaces,                                            // LCL: zum Zeichnen der Schaltpläne
   Classes, SysUtils, fpcunit, testregistry,
-  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink, TestKsq,
+  TestESeries, TestColorCode, TestCalc, TestFormat, TestLang, TestBlink, TestKsq, TestAc,
   TestSchaltplan;
 
 {==============================================================================
