@@ -491,7 +491,17 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>A bridge rectifier (e.g. B80C1500 or four 1N4007) and an electrolytic capacitor turn it into an almost smooth DC voltage, a little below the peak. The series resistor is then calculated as usual, and the LED lights fully without visible flicker. Fit the capacitor the right way round: plus to «+» of the rectifier. Its voltage rating has a margin, because an unloaded transformer often delivers more than its label says.</p>
     </div>
   </div>
-  <p class="note"><strong>Tip:</strong> If you can, measure the transformer voltage and enter that value. Up to 42 V~ (extra-low voltage); mains voltage (230 V) must never go directly to an LED circuit.</p>
+  <h3>What to watch out for</h3>
+  <ul class="check">
+    <li><span>Connect only to the fixed <strong>lighting output</strong> of the transformer, not to the speed controller: its voltage changes, and AC model railway transformers send a short pulse of much higher voltage to reverse the locomotive.</span></li>
+    <li><span>If you can, <strong>measure</strong> the transformer voltage (multimeter on V~) and enter that value. Without load a transformer often delivers 10–20 % more than its rating.</span></li>
+    <li><span>Never leave out the <strong>protection diode</strong>, and fit it the right way round: the ring (cathode) of the diode to the anode of the LED. Without it the LED gets the full peak voltage in reverse during the other half-wave.</span></li>
+    <li><span>Fit the <strong>capacitor</strong> the right way round (minus stripe to “−” of the rectifier) and use at least the voltage rating shown. A capacitor fitted backwards can burst.</span></li>
+    <li><span>With several LED groups, each group gets its own series resistor. The groups may share the rectifier and capacitor if these are rated for the total current.</span></li>
+    <li><span>The lighting output has a limit (power in VA on the transformer). All bulbs and LEDs on it together must stay below it.</span></li>
+    <li><span>On a <strong>digital track</strong> the voltage is not a sine wave but a square wave whose peak equals the digital voltage. For “Flicker-free”, enter the digital voltage divided by 1.41 as the AC voltage (e.g. 18 V → 12.7 V~). Often simpler: a decoder function output with DC voltage (“Series resistor” tab).</span></li>
+    <li><span>Up to 42 V~ (extra-low voltage). Mains voltage (230 V) must never go directly to an LED circuit.</span></li>
+  </ul>
 </section>
 
 <section id="waerme">

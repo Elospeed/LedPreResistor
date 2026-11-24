@@ -491,7 +491,17 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <p>Ein Brückengleichrichter (z. B. B80C1500 oder vier 1N4007) und ein Elko machen daraus eine fast glatte Gleichspannung, etwas unter der Spitze. Danach rechnet der Vorwiderstand wie gewohnt, die LED leuchtet voll und ohne sichtbares Flackern. Den Elko richtig herum einbauen: Plus an «+» des Gleichrichters. Seine Spannungsfestigkeit hat Reserve, weil ein Trafo ohne Last oft mehr liefert als aufgedruckt.</p>
     </div>
   </div>
-  <p class="note"><strong>Tipp:</strong> Wenn möglich die Trafospannung messen und diesen Wert eingeben. Bis 42 V~ (Kleinspannung); Netzspannung 230 V gehört nie direkt an eine LED-Schaltung.</p>
+  <h3>Worauf achten</h3>
+  <ul class="check">
+    <li><span>Nur am festen <strong>Lichtausgang</strong> des Trafos anschliessen, nicht am Fahrregler: Dort ändert sich die Spannung, und Wechselstrom-Trafos geben zum Umschalten der Fahrtrichtung einen kurzen Impuls mit deutlich höherer Spannung.</span></li>
+    <li><span>Die Trafospannung wenn möglich <strong>messen</strong> (Multimeter auf V~) und diesen Wert eingeben. Ohne Last liefert ein Trafo oft 10–20 % mehr als aufgedruckt.</span></li>
+    <li><span>Die <strong>Schutzdiode</strong> nie weglassen und richtig herum einlöten: Ring (Kathode) der Diode an die Anode der LED. Ohne sie bekommt die LED in der anderen Halbwelle die volle Spitzenspannung in Sperrrichtung.</span></li>
+    <li><span>Den <strong>Elko</strong> richtig herum einbauen (Minus-Streifen an «−» des Gleichrichters) und mindestens die angezeigte Spannungsfestigkeit nehmen. Ein falsch gepolter Elko kann platzen.</span></li>
+    <li><span>Bei mehreren LED-Gruppen bekommt jede Gruppe ihren eigenen Vorwiderstand. Gleichrichter und Elko dürfen sich die Gruppen teilen, wenn sie für den Gesamtstrom reichen.</span></li>
+    <li><span>Der Lichtausgang hat eine Grenze (Leistung in VA auf dem Trafo). Alle Lämpchen und LEDs daran zusammen dürfen sie nicht überschreiten.</span></li>
+    <li><span>Am <strong>Digitalgleis</strong> ist die Spannung kein Sinus, sondern eine Rechteckspannung mit der Spitze gleich der Digitalspannung. Für «Ohne Flackern» dann die Digitalspannung geteilt durch 1,41 als Trafospannung eingeben (z. B. 18 V → 12,7 V~). Einfacher ist oft ein Funktionsausgang des Decoders mit Gleichspannung (Reiter «Vorwiderstand»).</span></li>
+    <li><span>Bis 42 V~ (Kleinspannung). Netzspannung 230 V gehört nie direkt an eine LED-Schaltung.</span></li>
+  </ul>
 </section>
 
 <section id="waerme">
