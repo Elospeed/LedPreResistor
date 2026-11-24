@@ -690,7 +690,7 @@ resourcestring
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
   rsErrAUTooLow = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).';
-  rsErrAUTooLowN = 'Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung.';
+  rsErrAUTooLowN = 'Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d).';
   rsErrAUTooLow1 = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';

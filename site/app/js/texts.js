@@ -1373,8 +1373,8 @@ window.LPR_TEXTS = {
 "Not enough room for the schematic: collapse the calculation steps"
 ],
 "rsErrAUTooLowN": [
-"Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung.",
-"AC voltage %s~ too low for %s at the LEDs: fewer LEDs (at most %d), else too little voltage is left at the resistor."
+"Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d).",
+"AC voltage %s~ too low for %s at the LEDs: fewer LEDs in series (at most %d)."
 ],
 "rsErrAUTooLow1": [
 "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",

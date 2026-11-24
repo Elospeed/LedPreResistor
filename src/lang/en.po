@@ -1315,8 +1315,8 @@ msgid "Spitzenstrom"
 msgstr "Peak current"
 
 #: uMain.pas rsErrAUTooLowN
-msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung."
-msgstr "AC voltage %s~ too low for %s at the LEDs: fewer LEDs (at most %d), else too little voltage is left at the resistor."
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d)."
+msgstr "AC voltage %s~ too low for %s at the LEDs: fewer LEDs in series (at most %d)."
 
 #: uMain.pas rsErrAUTooLow1
 msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
