@@ -1368,6 +1368,10 @@ window.LPR_TEXTS = {
 "Spitzenstrom",
 "Peak current"
 ],
+"rsSchemBridgeAlt": [
+"oder 4 × %s",
+"or 4 × %s"
+],
 "rsSchemNoRoom": [
 "Zu wenig Platz für den Schaltplan: Rechenweg zuklappen",
 "Not enough room for the schematic: collapse the calculation steps"

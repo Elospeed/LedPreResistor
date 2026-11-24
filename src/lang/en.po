@@ -1365,3 +1365,7 @@ msgstr "Visible flicker (50 Hz) and dimmer; the AC voltage is not enough for «F
 #: uMain.pas rsSchemNoRoom
 msgid "Zu wenig Platz für den Schaltplan: Rechenweg zuklappen"
 msgstr "Not enough room for the schematic: collapse the calculation steps"
+
+#: uMain.pas rsSchemBridgeAlt
+msgid "oder 4 × %s"
+msgstr "or 4 × %s"

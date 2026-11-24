@@ -14,7 +14,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
   - «Einfach»: Vorwiderstand und Schutzdiode antiparallel zu den LEDs. Der Widerstand ist so gewählt, dass in der Spitze (U × √2) höchstens der eingegebene Strom fliesst; angezeigt werden Spitzen- und Mittelwert des Stroms, die Leistung über beide Halbwellen und die Diode (1N4148, bei grossem Strom 1N4007).
   - «Ohne Flackern»: Brückengleichrichter und Elko. Der Elko ist so gross, dass der LED-Strom höchstens etwa ±10 % schwankt; seine Spannungsfestigkeit hat 25 % Reserve.
   - Grenzen: bis 42 V~ (Spitze unter 60 V) und 1 A.
-- Schaltpläne mit Trafo-Symbol, Schutzdiode bzw. Gleichrichter und Elko; der Verbindungstest prüft auch hier Polung und Richtung.
+- Schaltpläne mit Trafo-Symbol, Schutzdiode bzw. Gleichrichter (vier Dioden als Raute, wahlweise fertiger Brückengleichrichter) und Elko; der Verbindungstest prüft auch hier Polung und Richtung.
 - LED-Info: neuer Abschnitt «LEDs an Wechselspannung» mit Liste «Worauf achten» (Lichtausgang statt Fahrregler, Trafospannung messen, Polung von Schutzdiode und Elko, Digitalgleis).
 - Webversion: ebenfalls mit dem Reiter «Wechselstrom»; auf dem Handy passen die vier Reiter nebeneinander.
 

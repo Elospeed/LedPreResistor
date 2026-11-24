@@ -722,6 +722,7 @@ resourcestring
   rsAChipDim = 'sehr dunkel';
   rsAWarnDim = 'Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
   rsLabelIPeak = 'Spitzenstrom';
+  rsSchemBridgeAlt = 'oder 4 × %s';
   rsSchemNoRoom = 'Zu wenig Platz für den Schaltplan: Rechenweg zuklappen';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
@@ -5878,6 +5879,7 @@ begin
   end;
   V.DiodeSubText := _(rsACardDiode);
   V.BridgeText := AcBridgeName(FAInput.I);
+  V.BridgeSubText := Format(_(rsSchemBridgeAlt), [AcBridgeDiode(FAInput.I)]);
   if FAInput.N > 1 then
   begin
     V.LedText := Format(_(rsSchemLedN), [FAInput.N, LedName]);

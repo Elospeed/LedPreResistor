@@ -216,6 +216,14 @@ procedure Npn(C: TCanvas; const M: TMap; CX, CY, PX: Double; FromLeft: Boolean;
 ------------------------------------------------------------------------------}
 procedure CapV(C: TCanvas; const M: TMap; X, Y: Double; Elko: Boolean; const Col: TBlinkSchemColors);
 
+{------------------------------------------------------------------------------
+  WireHop
+------------------------------------------------------------------------------
+  Waagrechte Leitung mit kleinem Bogen über eine kreuzende senkrechte
+  Leitung (ohne Verbindung); auch für uAcSchematic.
+------------------------------------------------------------------------------}
+procedure WireHop(C: TCanvas; const M: TMap; X1, Y, X2, HopX: Double);
+
 implementation
 
 uses

@@ -48,6 +48,7 @@ type
     CapText: string;                                     // Ohne Flackern: "C = 68 µF"
     CapSubText: string;                                  // Ohne Flackern: "35 V"
     BridgeText: string;                                  // Ohne Flackern: "B80C1500"
+    BridgeSubText: string;                               // Ohne Flackern: "oder 4 × 1N4007"
     UDcText: string;                                     // Ohne Flackern: "U_D_C = 21,2 V" (Spitze am Elko)
     LedText: string;                                     // "2 × LED weiss"
     UFText: string;                                      // "U_F = 2 × 3,2 V"
@@ -281,7 +282,7 @@ end;
   Ablauf:
     1. Massstab
     2. Trafo links an die beiden «~» des Gleichrichters
-    3. Gleichrichter als Kasten, «+» oben rechts, «–» unten rechts
+    3. Gleichrichter: Rahmen mit vier Dioden als Raute, Plus und Minus rechts hinaus
     4. Elko zwischen Plus und Minus (Plus oben)
     5. R und LEDs rechts senkrecht
     6. Beschriftung
@@ -297,22 +298,39 @@ begin
   C := Canvas;
   if not Prepare(C, Rect, Col, M) then Exit;
 
-  // ----- 2. Trafo an den Gleichrichter -----
-  Wire(C, M, [60, 148, 60, 130, 120, 130]);
-  Wire(C, M, [60, 192, 60, 210, 120, 210]);
-  AcSource(C, M, 60, 170, Col);
-
-  // ----- 3. Gleichrichter -----
-  Wire(C, M, [220, 130, 290, 130, 290, 60, 420, 60, 420, 72]);  // Plus -> R
-  Wire(C, M, [220, 210, 290, 210, 290, 280, 420, 280]);         // Minus -> Rückleitung
+  // ----- 2. Trafo an den Gleichrichter (obere und untere Ecke der Raute) -----
+  // zuerst der Rahmen des Gleichrichters, damit die Leitungen darin sichtbar bleiben
   C.Brush.Style := bsSolid;
   C.Brush.Color := Col.Body;
   C.Pen.Width := MW(M, 1.6);
-  SmoothRectangle(C, MX(M, 120), MY(M, 110), MX(M, 220), MY(M, 230));
-  NetzName('GL');                                        // Anschlüsse am Rand des Kastens
-  NetzBauteil('GL', ['~1', '~2', '+', '-'], [120, 130, 120, 210, 220, 130, 220, 210]);
-  // Diodensymbol im Kasten (Zeichen für «Gleichrichter», kein eigenes Bauteil)
-  DiodeSeg(C, M, 146, 170, 194, 170, False, Col.Line);
+  SmoothRectangle(C, MX(M, 116), MY(M, 108), MX(M, 224), MY(M, 236));
+  C.Brush.Style := bsClear;
+  Wire(C, M, [60, 148, 60, 130, 170, 130]);
+  Wire(C, M, [60, 192, 60, 210]);
+  // kreuzt die Minus-Leitung bei x = 130 ohne Verbindung (Bogen)
+  WireHop(C, M, 60, 210, 170, 130);
+  AcSource(C, M, 60, 170, Col);
+
+  // ----- 3. Gleichrichter -----
+  // Rahmen wie das fertige Bauteil, darin vier Dioden als Raute (Mitte
+  // 170/170, Ecken 40 Punkte entfernt): oben und unten die Wechselspannung,
+  // rechts Plus (zwei Kathoden), links Minus (zwei Anoden).
+  Wire(C, M, [210, 170, 210, 130, 290, 130, 290, 60, 420, 60, 420, 72]);  // Plus -> R
+  Wire(C, M, [130, 170, 130, 222, 290, 222, 290, 280, 420, 280]);  // Minus -> Rückleitung
+  NetzName('D1');
+  DiodeSeg(C, M, 170, 130, 210, 170, True, Col.Line);   // oben -> Plus
+  NetzName('D2');
+  DiodeSeg(C, M, 130, 170, 170, 130, True, Col.Line);   // Minus -> oben
+  NetzName('D3');
+  DiodeSeg(C, M, 130, 170, 170, 210, True, Col.Line);   // Minus -> unten
+  NetzName('D4');
+  DiodeSeg(C, M, 170, 210, 210, 170, True, Col.Line);   // unten -> Plus
+  C.Pen.Color := Col.Line;
+  C.Pen.Width := MW(M, 1.6);
+  Dot(C, M, 170, 130, Col.Line);
+  Dot(C, M, 170, 210, Col.Line);
+  Dot(C, M, 130, 170, Col.Line);
+  Dot(C, M, 210, 170, Col.Line);
 
   // ----- 4. Elko -----
   Wire(C, M, [340, 60, 340, 158]);
@@ -336,15 +354,16 @@ begin
   // ----- 6. Beschriftung -----
   Txt(C, M, 60, 254, V.UText, Col.Text, 1, False);
   Txt(C, M, 60, 274, V.UPeakText, Col.Dim, 1, False);
-  Txt(C, M, 170, 254, V.BridgeText, Col.Text, 1, False);
+  Txt(C, M, 170, 252, V.BridgeText, Col.Text, 1, False);
+  Txt(C, M, 170, 269, V.BridgeSubText, Col.Dim, 1, False);
   Txt(C, M, 318, 152, V.CapText, Col.Accent, 2, True);  // links vom Elko, die Platten reichen bis 326
   Txt(C, M, 318, 172, V.CapSubText, Col.Accent, 2, False);
   Txt(C, M, 300, 50, V.UDcText, Col.Dim, 0, False);
   C.Font.Height := SmoothFontHeight(8, 12 * M.S);        // Anschlussnamen
-  Txt(C, M, 126, 126, '~', Col.Text, 0, False);
-  Txt(C, M, 126, 224, '~', Col.Text, 0, False);
-  Txt(C, M, 214, 126, '+', Col.Text, 2, False);
-  Txt(C, M, 214, 224, '−', Col.Text, 2, False);       // Minuszeichen U+2212
+  Txt(C, M, 110, 126, '~', Col.Text, 2, False);        // links ausserhalb des Rahmens
+  Txt(C, M, 110, 206, '~', Col.Text, 2, False);
+  Txt(C, M, 230, 126, '+', Col.Text, 0, False);        // rechts ausserhalb, über der Leitung
+  Txt(C, M, 230, 218, '−', Col.Text, 0, False);       // Minuszeichen U+2212
   C.Font.Height := SmoothFontHeight(9, 12 * M.S);        // Schrift zurücksetzen
   LedLabels(C, M, V, Col);
 end;

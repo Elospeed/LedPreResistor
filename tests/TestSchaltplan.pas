@@ -18,8 +18,8 @@
                Multivibrator, LM317, zwei Transistoren: jede LED in Reihe
                mit ihrem Vorwiderstand an den richtigen Knoten
              - Wechselstrom: Schutzdiode antiparallel (Kathode an der
-               Anode der ersten LED), Gleichrichter richtig gepolt, Elko
-               mit Plus am Plus des Gleichrichters
+               Anode der ersten LED), Gleichrichter (vier Dioden) richtig
+               gepolt, Elko mit Plus am Plus des Gleichrichters
 
   Benutzung: Die Tests laufen mit LedPreResistorTests (FPCUnit). Jede
              Prozedur unter «published» ist ein Test. Braucht die LCL
@@ -494,15 +494,24 @@ begin
     DrawSchematicAcBridge(Flaeche, Rect(0, 0, 580, 300), V, Farben);
     NetzStop;
     PruefeGrundregeln(Plan);
-    Verbunden(Plan, 'TRAFO.1', 'GL.~1');                 // Trafo nur an die Wechselspannungs-Anschlüsse
-    Verbunden(Plan, 'TRAFO.2', 'GL.~2');
-    Getrennt(Plan, 'TRAFO.1', 'GL.+');
-    Getrennt(Plan, 'TRAFO.2', 'GL.-');
-    Verbunden(Plan, 'GL.+', 'C.+');                      // Elko richtig gepolt
-    Verbunden(Plan, 'GL.-', 'C.-');
-    Getrennt(Plan, 'GL.+', 'C.-');
-    Verbunden(Plan, 'GL.+', 'R.1');
-    KsqKette(Plan, N, 'R.2', 'GL.-');                    // LEDs mit der Anode zum Plus
+    // Gleichrichter als Raute aus vier Dioden: Trafo an die obere und
+    // untere Ecke, Plus = beide Kathoden (D1, D4), Minus = beide Anoden (D2, D3)
+    Verbunden(Plan, 'TRAFO.1', 'D1.A');
+    Verbunden(Plan, 'TRAFO.1', 'D2.K');
+    Verbunden(Plan, 'TRAFO.2', 'D3.K');
+    Verbunden(Plan, 'TRAFO.2', 'D4.A');
+    Verbunden(Plan, 'D1.K', 'D4.K');
+    Verbunden(Plan, 'D2.A', 'D3.A');
+    Getrennt(Plan, 'TRAFO.1', 'TRAFO.2');
+    Getrennt(Plan, 'TRAFO.1', 'D1.K');
+    Getrennt(Plan, 'TRAFO.1', 'D2.A');
+    Getrennt(Plan, 'TRAFO.2', 'D1.K');
+    Getrennt(Plan, 'TRAFO.2', 'D2.A');                   // Kreuzung mit Bogen verbindet nicht
+    Verbunden(Plan, 'D1.K', 'C.+');                      // Elko richtig gepolt
+    Verbunden(Plan, 'D2.A', 'C.-');
+    Getrennt(Plan, 'D1.K', 'C.-');
+    Verbunden(Plan, 'D1.K', 'R.1');
+    KsqKette(Plan, N, 'R.2', 'D2.A');                    // LEDs mit der Anode zum Plus
   end;
 end;
 

@@ -597,13 +597,20 @@
   /* Ohne Flackern: Trafo, Gleichrichter-Kasten, Elko (Plus oben), R, LEDs */
   function acBridge(V) {
     var P = new Pen(), C = COL, top, bot;
-    wire(P, [60, 148, 60, 130, 120, 130]);
-    wire(P, [60, 192, 60, 210, 120, 210]);
+    // Rahmen wie das fertige Bauteil, darin vier Dioden als Raute: oben und
+    // unten die Wechselspannung, rechts Plus, links Minus (wie uAcSchematic)
+    P.rect(116, 108, 224, 236, C.body, C.line, 1.6);
+    wire(P, [60, 148, 60, 130, 170, 130]);
+    wire(P, [60, 192, 60, 210]);
+    wireHop(P, 60, 210, 170, 130);                       // kreuzt die Minus-Leitung
     acSource(P, 60, 170);
-    wire(P, [220, 130, 290, 130, 290, 60, 420, 60, 420, 72]);  // Plus -> R
-    wire(P, [220, 210, 290, 210, 290, 280, 420, 280]);         // Minus -> Rückleitung
-    P.rect(120, 110, 220, 230, C.body, C.line, 1.6);
-    diodeSeg(P, 146, 170, 194, 170, C.line);
+    wire(P, [210, 170, 210, 130, 290, 130, 290, 60, 420, 60, 420, 72]);  // Plus -> R
+    wire(P, [130, 170, 130, 222, 290, 222, 290, 280, 420, 280]);         // Minus -> Rückleitung
+    diodeSeg(P, 170, 130, 210, 170, C.line);             // oben -> Plus
+    diodeSeg(P, 130, 170, 170, 130, C.line);             // Minus -> oben
+    diodeSeg(P, 130, 170, 170, 210, C.line);             // Minus -> unten
+    diodeSeg(P, 170, 210, 210, 170, C.line);             // unten -> Plus
+    dot(P, 170, 130); dot(P, 170, 210); dot(P, 130, 170); dot(P, 210, 170);
     wire(P, [340, 60, 340, 158]);
     wire(P, [340, 166, 340, 280]);
     capV(P, 340, 158, true);
@@ -615,14 +622,15 @@
     wire(P, [420, bot, 420, 280]);
     P.txt(60, 254, V.UText, C.text, 1, false);
     P.txt(60, 274, V.UPeakText, C.dim, 1, false);
-    P.txt(170, 254, V.BridgeText, C.text, 1, false);
+    P.txt(170, 252, V.BridgeText, C.text, 1, false);
+    P.txt(170, 269, V.BridgeSubText, C.dim, 1, false);
     P.txt(318, 152, V.CapText, C.accent, 2, true);
     P.txt(318, 172, V.CapSubText, C.accent, 2, false);
     P.txt(300, 50, V.UDcText, C.dim, 0, false);
-    P.txt(126, 126, '~', C.text, 0, false);
-    P.txt(126, 224, '~', C.text, 0, false);
-    P.txt(214, 126, '+', C.text, 2, false);
-    P.txt(214, 224, '\u2212', C.text, 2, false);      // Minuszeichen
+    P.txt(110, 126, '~', C.text, 2, false);
+    P.txt(110, 206, '~', C.text, 2, false);
+    P.txt(230, 126, '+', C.text, 0, false);
+    P.txt(230, 218, '\u2212', C.text, 0, false);      // Minuszeichen
     acLabels(P, V);
     return P.svg(580, 300);
   }

@@ -611,6 +611,7 @@
     }
     V.DiodeSubText = _('rsACardDiode');
     V.BridgeText = acBridgeName();
+    V.BridgeSubText = fmt(_('rsSchemBridgeAlt'), acBridgeDiode());
     if (aInp.N > 1) { V.LedText = fmt(_('rsSchemLedN'), aInp.N, name); V.UFText = fmt(_('rsSchemUFN'), aInp.N, F.formatVolt(aInp.Ud)); }
     else { V.LedText = fmt(_('rsSchemLed'), name); V.UFText = fmt(_('rsSchemUF'), F.formatVolt(aInp.Ud)); }
     V.LedCount = aInp.N;
