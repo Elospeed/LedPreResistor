@@ -7,7 +7,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ---
 
-## 2.7 – Unveröffentlicht
+## 2.7 – 24. November 2026
+
+**Kurz:** Neuer Reiter «Wechselstrom» für LEDs am Modellbahn-Trafo, mit Schutzdiode oder flackerfrei mit Gleichrichter und Elko. / **In short:** New «AC supply» tab for LEDs on a model railway transformer, with a protection diode or flicker-free with rectifier and capacitor.
 
 ### Neu
 - Reiter «Wechselstrom» für LEDs an Wechselspannung, z. B. am Lichtausgang eines Modellbahn-Trafos (16 V~):
