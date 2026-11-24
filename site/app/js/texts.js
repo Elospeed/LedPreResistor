@@ -1214,7 +1214,7 @@ window.LPR_TEXTS = {
 ],
 "rsACardDiodeSub": [
 "antiparallel zu den LEDs: Sperrspannung nur %s statt %s",
-"anti-parallel to the LEDs: reverse voltage only %s instead of %s"
+"anti-parallel to LEDs: reverse voltage %s instead of %s"
 ],
 "rsACardCap": [
 "Elko",
@@ -1285,7 +1285,7 @@ window.LPR_TEXTS = {
 "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 ],
 "rsErrAUTooLow": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe (höchstens %d).",
+"Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).",
 "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or fewer LEDs in series (at most %d)."
 ],
 "rsErrACurrent": [
@@ -1326,7 +1326,7 @@ window.LPR_TEXTS = {
 ],
 "rsACopyInput": [
 "Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s",
-"AC voltage %s~, %d × LED %s with U_F = %s, current %s"
+"AC voltage %s~, %d × %s LED with U_F = %s, current %s"
 ],
 "rsACopyISimple": [
 "LED-Strom: Spitze %s, Mittelwert %s",
@@ -1369,11 +1369,11 @@ window.LPR_TEXTS = {
 "Peak current"
 ],
 "rsErrAUTooLowN": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d), sonst bleibt zu wenig Spannung am Widerstand.",
+"Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung.",
 "The AC voltage %s~ is not enough for %s at the LEDs: fewer LEDs in series (at most %d), otherwise too little voltage remains across the resistor."
 ],
 "rsErrAUTooLow1": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
+"Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.",
 "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
 ],
 "rsAWarnDim1": [
@@ -1393,7 +1393,7 @@ window.LPR_TEXTS = {
 "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
 ],
 "rsErrAUTooLow42": [
-"Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs in Reihe (höchstens %d).",
+"Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d).",
 "The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ only fewer LEDs in series (at most %d)."
 ],
 "rsAWarnDim2": [

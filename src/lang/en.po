@@ -1158,7 +1158,7 @@ msgstr "Protection diode"
 
 #: uMain.pas rsACardDiodeSub
 msgid "antiparallel zu den LEDs: Sperrspannung nur %s statt %s"
-msgstr "anti-parallel to the LEDs: reverse voltage only %s instead of %s"
+msgstr "anti-parallel to LEDs: reverse voltage %s instead of %s"
 
 #: uMain.pas rsACardCap
 msgid "Elko"
@@ -1230,7 +1230,7 @@ msgid "Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung)."
 msgstr "Please enter an AC voltage above 0 up to %s~ (extra-low voltage)."
 
 #: uMain.pas rsErrAUTooLow
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe (höchstens %d)."
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d)."
 msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed, or fewer LEDs in series (at most %d)."
 
 #: uMain.pas rsErrACurrent
@@ -1271,7 +1271,7 @@ msgstr "LedPreResistor %s – AC supply: %s"
 
 #: uMain.pas rsACopyInput
 msgid "Trafospannung %s~, %d × LED %s mit U_F = %s, Strom %s"
-msgstr "AC voltage %s~, %d × LED %s with U_F = %s, current %s"
+msgstr "AC voltage %s~, %d × %s LED with U_F = %s, current %s"
 
 
 #: uMain.pas rsACopyISimple
@@ -1315,11 +1315,11 @@ msgid "Spitzenstrom"
 msgstr "Peak current"
 
 #: uMain.pas rsErrAUTooLowN
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d), sonst bleibt zu wenig Spannung am Widerstand."
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung."
 msgstr "The AC voltage %s~ is not enough for %s at the LEDs: fewer LEDs in series (at most %d), otherwise too little voltage remains across the resistor."
 
 #: uMain.pas rsErrAUTooLow1
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig."
 msgstr "The AC voltage %s~ is not enough for %s at the LEDs: at least %s~ is needed."
 
 #: uMain.pas rsAWarnDim1
@@ -1339,7 +1339,7 @@ msgid "In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig h
 msgstr "In the negative half-wave %s would flow through the protection diode (at most %s allowed): lower the peak current to at most %s."
 
 #: uMain.pas rsErrAUTooLow42
-msgid "Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs in Reihe (höchstens %d)."
+msgid "Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d)."
 msgstr "The AC voltage %s~ is not enough for %s at the LEDs: even with %s~ only fewer LEDs in series (at most %d)."
 
 #: uMain.pas rsAWarnDim2
@@ -1361,3 +1361,7 @@ msgstr "Only %s of the brightness: a higher AC voltage"
 #: uMain.pas rsAOkSimple2
 msgid "Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht"
 msgstr "Visible flicker (50 Hz) and dimmer; the AC voltage is not enough for «Flicker-free»"
+
+#: uMain.pas rsSchemNoRoom
+msgid "Zu wenig Platz für den Schaltplan: Rechenweg zuklappen"
+msgstr "Not enough room for the schematic: collapse the calculation steps"

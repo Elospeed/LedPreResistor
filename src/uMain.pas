@@ -193,6 +193,7 @@ type
     procedure PaintRechenwegMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PaintRechenwegPaint(Sender: TObject);
+    procedure SchemNoRoom;                               // Hinweis statt zu kleinem Schaltplan
     procedure PaintSchematicPaint(Sender: TObject);
     procedure PaintStatusPaint(Sender: TObject);
     procedure TimerBlinkTimer(Sender: TObject);
@@ -687,9 +688,9 @@ resourcestring
   rsLegendAcS = 'U Trafospannung (Effektivwert) · Û Spitzenspannung · U_L_E_D Spannung aller LEDs · I eingegebener Spitzenstrom · Î Spitzenstrom mit dem Normwert · D Schutzdiode';
   rsLegendAcB = 'U Trafospannung (Effektivwert) · U_D_C Spannung am Elko (Spitze) · ΔU Brummspannung · ΔU′ Brummspannung mit dem Normwert · C Elko · U_L_E_D Spannung aller LEDs · I LED-Strom';
   rsErrAU = 'Bitte eine Trafospannung über 0 bis %s~ eingeben (Kleinspannung).';
-  rsErrAUTooLow = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig, oder weniger LEDs in Reihe (höchstens %d).';
-  rsErrAUTooLowN = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs in Reihe (höchstens %d), sonst bleibt zu wenig Spannung am Widerstand.';
-  rsErrAUTooLow1 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
+  rsErrAUTooLow = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig oder weniger LEDs (höchstens %d).';
+  rsErrAUTooLowN = 'Trafospannung %s~ reicht nicht für %s an den LEDs: weniger LEDs (höchstens %d), sonst bleibt am Widerstand zu wenig Spannung.';
+  rsErrAUTooLow1 = 'Trafospannung %s~ reicht nicht für %s an den LEDs: mindestens %s~ nötig.';
   rsErrACurrent = 'Mehr als 1 A ist für diese Schaltungen zu viel: Strom kleiner wählen.';
   rsAChipOk = 'Schaltung passt';
   rsAOkSimple = 'Flackert sichtbar (50 Hz) und leuchtet schwächer: für volle Helligkeit «Ohne Flackern» wählen';
@@ -710,7 +711,7 @@ resourcestring
   rsAWarnDim4 = 'Nur %s der Helligkeit: mehr Trafospannung';
   rsAOkSimple2 = 'Flackert sichtbar (50 Hz) und leuchtet schwächer; für «Ohne Flackern» reicht die Trafospannung nicht';
   rsErrARev2 = 'In der negativen Halbwelle flössen %s durch die Schutzdiode (zulässig höchstens %s): Spitzenstrom auf höchstens %s senken.';
-  rsErrAUTooLow42 = 'Die Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs in Reihe (höchstens %d).';
+  rsErrAUTooLow42 = 'Trafospannung %s~ reicht nicht für %s an den LEDs: auch mit %s~ nur weniger LEDs (höchstens %d).';
   rsAWarnDim2 = 'Nur %s der Helligkeit: «Ohne Flackern» wählen';
   rsAWarnDim1 = 'Nur %s der Helligkeit: mehr Trafospannung oder «Ohne Flackern» wählen';
   rsAWarnRPowerB = 'R verheizt %s: Bauform %s nehmen, mehr LEDs in Reihe oder weniger Trafospannung';
@@ -720,6 +721,7 @@ resourcestring
   rsAChipDim = 'sehr dunkel';
   rsAWarnDim = 'Nur %s der Helligkeit: weniger LEDs in Reihe oder «Ohne Flackern» wählen';
   rsLabelIPeak = 'Spitzenstrom';
+  rsSchemNoRoom = 'Zu wenig Platz für den Schaltplan: Rechenweg zuklappen';
   rsAbout = 'LedPreResistor %s' + LineEnding + 'Vorwiderstand für LEDs berechnen.' + LineEnding + LineEnding +
     '© 2026 Elospeed – freie Software (MIT-Lizenz)' + LineEnding +
     'Neuauflage der Freeware «LED Pre-Resistor» von 2004.';
@@ -1830,6 +1832,32 @@ begin
 end;
 
 {------------------------------------------------------------------------------
+  SchemNoRoom
+------------------------------------------------------------------------------
+  Hinweis mitten in der Schaltplan-Fläche, wenn sie zu klein ist
+------------------------------------------------------------------------------}
+procedure TFormMain.SchemNoRoom;
+var
+  C: TCanvas;                                            // Zeichenfläche
+  TR: TRect;                                             // Bereich für den Hinweis
+  TS: TTextStyle;                                        // Umbruch und Mitte
+begin
+  C := PaintSchematic.Canvas;
+  C.Brush.Style := bsClear;
+  C.Font.Size := 9;
+  C.Font.Style := [];
+  C.Font.Color := clrTextDim;
+  TS := C.TextStyle;
+  TS.Wordbreak := True;
+  TS.SingleLine := False;
+  TS.Alignment := taCenter;
+  TS.Layout := tlCenter;
+  TR := PaintSchematic.ClientRect;
+  InflateRect(TR, -Px(12), -Px(6));
+  C.TextRect(TR, TR.Left, TR.Top, _(rsSchemNoRoom), TS);
+end;
+
+{------------------------------------------------------------------------------
   TimerBlinkTimer
 ------------------------------------------------------------------------------
   Blink-Timer: je nach verstrichener Zeit seit dem Start die LED an- oder
@@ -1890,6 +1918,15 @@ begin
     Pen.Color := clrBorder;
     Pen.Width := 1;
     Rectangle(R);
+  end;
+  // ----- 1b. Zu wenig Platz (offener Rechenweg bei 200 % auf Full HD) -----
+  // Der Schaltplan würde so klein, dass die Beschriftungen übereinander
+  // liegen. Statt eines unlesbaren Bilds steht dann ein kurzer Hinweis
+  // (VM-Test 24.11.2026). Px(180) wie in RechenwegZuBeiPlatzmangel.
+  if FRechenwegOpen and (PaintSchematic.Height < Px(180)) then
+  begin
+    SchemNoRoom;
+    Exit;
   end;
   // ----- 2. Anderer Reiter: dessen Schaltplan -----
   if FMode = 1 then
@@ -2654,8 +2691,9 @@ end;
   Ablauf:
     1. Fenster ohne Grössenänderung, dunkel wie das Programm
     2. eine Zeichenfläche für Text und Knöpfe
-    3. Grösse nach der Schrift, Lage oben rechts im Schaltplan (dort ist meist
-       Platz; Statuszeile, «Kopieren» und Ko-fi-Knopf bleiben frei)
+    3. Grösse nach der Schrift, Lage unten rechts im offenen Rechenweg, sonst
+       oben rechts im Schaltplan (Karten, Statuszeile, «Kopieren» und
+       Ko-fi-Knopf bleiben frei)
 ------------------------------------------------------------------------------}
 procedure TFormMain.DankZeigen;
 var
@@ -2695,6 +2733,15 @@ begin
   T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
   FDank.Left := Max(Left, P.X - W - Px(24));
   FDank.Top := Max(T, P.Y - H - Px(40) - Px(8));
+  // Rechenweg zugeklappt (z. B. 200 % auf Full HD, s. RechenwegZuBeiPlatzmangel): sonst
+  // würde das Fenster nach oben über Karten und Statuszeile geschoben.
+  // Dann oben rechts in den Schaltplan, dort ist Platz (VM-Test 24.11.2026).
+  if not FRechenwegOpen then
+  begin
+    P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
+    FDank.Left := Max(Left, P.X - W - Px(16));
+    FDank.Top := P.Y + Px(8);
+  end;
   WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
   if FDank.Top + H + Px(40) > WA.Bottom then
     FDank.Top := Max(WA.Top, WA.Bottom - H - Px(40));

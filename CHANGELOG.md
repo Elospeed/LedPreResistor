@@ -20,6 +20,7 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 
 ### Behoben
 - Bei 150 und 200 % Windows-Skalierung war der untere Rand der Feldbeschriftungen (z. B. «Durchlassspannung») abgeschnitten (seit 2.5.2).
+- Bei 200 % auf einem Full-HD-Bildschirm wurde der Schaltplan mit aufgeklapptem Rechenweg so klein, dass die Beschriftungen übereinander lagen; jetzt steht dort ein kurzer Hinweis, den Rechenweg zuzuklappen.
 
 ## 2.6 – 21. November 2026
 
