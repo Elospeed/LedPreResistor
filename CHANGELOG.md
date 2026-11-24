@@ -18,6 +18,9 @@ Die technischen Hintergründe stehen im [Entwicklungslog](docs/ENTWICKLUNGSLOG.m
 - LED-Info: neuer Abschnitt «LEDs an Wechselspannung».
 - Webversion: ebenfalls mit dem Reiter «Wechselstrom»; auf dem Handy passen die vier Reiter nebeneinander.
 
+### Behoben
+- Bei 150 und 200 % Windows-Skalierung war der untere Rand der Feldbeschriftungen (z. B. «Durchlassspannung») abgeschnitten (seit 2.5.2).
+
 ## 2.6 – 21. November 2026
 
 ### Anzeige

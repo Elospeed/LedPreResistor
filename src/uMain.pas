@@ -3340,6 +3340,12 @@ var
     begin
       TLabel(C).AutoSize := False;
       if X < 140 then W := 140 - X - 4 else W := 253 - X;
+      // Ohne AutoSize bleibt sonst die Höhe aus dem Formular (15 Punkte);
+      // die Schrift braucht mit Unterlängen (g, p) etwa 16 Punkte, und bei
+      // 150 und 200 % wurde der untere Rand abgeschnitten. 17 Punkte reichen
+      // und stossen noch nicht an das Eingabefeld darunter (17–18 Punkte tiefer).
+      C.SetBounds(Px(X), Px(Top), Px(W), Px(17));
+      Exit;
     end;
     if W > 0 then
       C.SetBounds(Px(X), Px(Top), Px(W), C.Height)
