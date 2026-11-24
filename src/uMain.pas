@@ -342,7 +342,8 @@ type
     procedure DankAnstossen;
     procedure DankTimerTimer(Sender: TObject);
     function DankErgebnisOk: Boolean;
-    procedure DankZeigen;
+    function DankLage(out ALeft, ATop: Integer): Boolean;
+    procedure DankZeigen(ALeft, ATop: Integer);
     procedure DankPaint(Sender: TObject);
     procedure DankMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure DankMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -2676,31 +2677,71 @@ end;
   Hauptfenster vorne ist; sonst bei der nächsten Berechnung erneut versuchen.
 ------------------------------------------------------------------------------}
 procedure TFormMain.DankTimerTimer(Sender: TObject);
+var
+  L, T: Integer;                                         // Lage des Dankfensters
 begin
   FDankTimer.Enabled := False;
   if FDankDone or not DankErgebnisOk or not Active then Exit;
+  // kein freier Platz (z. B. 200 % mit offenem Rechenweg): nicht zeigen und
+  // nichts merken, bei der nächsten Eingabe erneut versuchen
+  if not DankLage(L, T) then Exit;
   FDankDone := True;
   WriteViewSetting(INI_KEY_THANKS, THANKS_VERSION);      // in dieser Version nicht wieder
-  DankZeigen;
+  DankZeigen(L, T);
+end;
+
+{------------------------------------------------------------------------------
+  DankLage
+------------------------------------------------------------------------------
+  Sucht die Lage des Dankfensters (Bildschirmpunkte der linken oberen Ecke),
+  ohne Karten, Statuszeile und deren Knöpfe zu verdecken:
+    1. Rechenweg offen: unten rechts darin, unterhalb seiner Kopfzeile
+    2. sonst oben rechts im Schaltplan, wenn er hoch genug ist
+  Liefert False, wenn beides nicht geht (VM-Test 24.11.2026: bei 125-200 %
+  wurde das Fenster sonst über «Kopieren» und die Statuszeile geschoben).
+------------------------------------------------------------------------------}
+function TFormMain.DankLage(out ALeft, ATop: Integer): Boolean;
+var
+  W, H, TB: Integer;                                     // Grösse samt Titelleiste und Rahmen
+  P: TPoint;                                             // Bezugspunkt auf dem Bildschirm
+  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
+  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
+begin
+  W := Px(380);
+  H := Px(178);
+  TB := Px(40);                                          // ungefähre Höhe der Titelleiste samt Rahmen
+  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
+  // ----- 1. im offenen Rechenweg -----
+  if FRechenwegOpen then
+  begin
+    P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
+    T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
+    ALeft := Max(Left, P.X - W - Px(24));
+    ATop := Max(T, P.Y - H - TB - Px(8));
+    if ATop + H + TB > WA.Bottom then
+      ATop := WA.Bottom - H - TB;
+    if ATop >= T then
+      Exit(True);
+  end;
+  // ----- 2. oben rechts im Schaltplan -----
+  P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
+  ALeft := Max(Left, P.X - W - Px(16));
+  ATop := P.Y + Px(8);
+  Result := (PaintSchematic.Height >= H + TB + Px(16)) and (ATop + H + TB <= WA.Bottom);
 end;
 
 {------------------------------------------------------------------------------
   DankZeigen
 ------------------------------------------------------------------------------
-  Legt das Dankfenster an und zeigt es (Lage siehe Schritt 3).
+  Legt das Dankfenster an und zeigt es an der Stelle, die DankLage gefunden hat.
   Ablauf:
     1. Fenster ohne Grössenänderung, dunkel wie das Programm
     2. eine Zeichenfläche für Text und Knöpfe
-    3. Grösse nach der Schrift, Lage unten rechts im offenen Rechenweg, sonst
-       oben rechts im Schaltplan (Karten, Statuszeile und deren Knöpfe
-       bleiben frei)
+    3. Grösse und Lage
 ------------------------------------------------------------------------------}
-procedure TFormMain.DankZeigen;
+procedure TFormMain.DankZeigen(ALeft, ATop: Integer);
 var
   W, H: Integer;                                         // Grösse des Fensters
-  P: TPoint;                                             // untere rechte Ecke des Rechenwegs auf dem Bildschirm
-  T: Integer;                                            // Unterkante der Rechenweg-Kopfzeile auf dem Bildschirm
-  WA: TRect;                                             // nutzbarer Bildschirmbereich (ohne Taskleiste)
 begin
   // ----- 1. Fenster -----
   FDank := TForm.CreateNew(Self);
@@ -2726,25 +2767,8 @@ begin
   FDank.ClientWidth := W;
   FDank.ClientHeight := H;
   FDank.Position := poDesigned;
-  // Unten rechts im Rechenweg: Eingaben, Schaltplan, Ergebniskarten und
-  // «Kopieren» bleiben frei; oben nie über die Kopfzeile des Rechenwegs.
-  // Px(40) = ungefähre Höhe der Titelleiste samt Rahmen.
-  P := PaintRechenweg.ClientToScreen(Point(PaintRechenweg.Width, PaintRechenweg.Height));
-  T := PaintRechenweg.ClientToScreen(Point(0, Px(28) + Px(6))).Y;
-  FDank.Left := Max(Left, P.X - W - Px(24));
-  FDank.Top := Max(T, P.Y - H - Px(40) - Px(8));
-  // Rechenweg zugeklappt (z. B. 200 % auf Full HD, s. RechenwegZuBeiPlatzmangel): sonst
-  // würde das Fenster nach oben über Karten und Statuszeile geschoben.
-  // Dann oben rechts in den Schaltplan, dort ist Platz (VM-Test 24.11.2026).
-  if not FRechenwegOpen then
-  begin
-    P := PaintSchematic.ClientToScreen(Point(PaintSchematic.Width, 0));
-    FDank.Left := Max(Left, P.X - W - Px(16));
-    FDank.Top := P.Y + Px(8);
-  end;
-  WA := Screen.MonitorFromWindow(Handle).WorkareaRect;
-  if FDank.Top + H + Px(40) > WA.Bottom then
-    FDank.Top := Max(WA.Top, WA.Bottom - H - Px(40));
+  FDank.Left := ALeft;                                   // Lage aus DankLage
+  FDank.Top := ATop;
   FDank.Show;
 end;
 
