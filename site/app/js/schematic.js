@@ -594,7 +594,7 @@
     acLabels(P, V);
     return P.svg(580, 300);
   }
-  /* Ohne Flackern: Trafo, Gleichrichter-Kasten, Elko (Plus oben), R, LEDs */
+  /* Ohne Flackern: Trafo, Gleichrichter (Raute im Rahmen), Elko (Plus oben), R, LEDs */
   function acBridge(V) {
     var P = new Pen(), C = COL, top, bot;
     // Rahmen wie das fertige Bauteil, darin vier Dioden als Raute: oben und

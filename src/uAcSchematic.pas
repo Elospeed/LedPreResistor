@@ -10,8 +10,8 @@
                  (Plus oben), Vorwiderstand R, LEDs
 
   Symbole:   Wechselspannungsquelle: Kreis mit Sinuswelle.
-             Brückengleichrichter: Kasten mit Diodensymbol, links die
-             beiden Wechselspannungs-Anschlüsse «~», rechts «+» und «–».
+             Brückengleichrichter: Rahmen mit vier Dioden als Raute, oben
+             und unten die Wechselspannung «~», rechts «+» und «−» hinaus.
              Diode: Dreieck mit Querstrich (Kathode), wie in uBlinkSchematic.
 
   Technik:   Die Zeichenhilfen (Leitung, Widerstand, LED, Elko, Punkt, Text)
